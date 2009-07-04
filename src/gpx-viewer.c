@@ -345,7 +345,7 @@ static void graph_point_clicked(double lat_dec,  double lon_dec)
             24, 0);
 
     ClutterActor *marker = NULL;    if(ii) {
-        gchar *path2 = gtk_icon_info_get_filename(ii);
+        const gchar *path2 = gtk_icon_info_get_filename(ii);
         if(path2)
         {
            marker = champlain_marker_new_from_file(path2, NULL); 
@@ -361,7 +361,7 @@ static void graph_point_clicked(double lat_dec,  double lon_dec)
     champlain_marker_set_color (CHAMPLAIN_MARKER (marker), &waypoint);
     clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(marker),NULL);
     clutter_actor_show(CLUTTER_ACTOR(marker_layer));
-    g_timeout_add_seconds(1, graph_point_remove, marker);
+    g_timeout_add_seconds(1, (GSourceFunc)graph_point_remove, marker);
 }
 
 /* Create the interface */
@@ -530,11 +530,15 @@ int main (int argc, char **argv)
         if(files == NULL) return EXIT_SUCCESS;
         
     }
+    /* Open all the files given on the command line */
     for(i =1; i < argc; i++)
     {
         /* Try to open the gpx file */
         GpxFile *file = gpx_file_new(argv[i]);
-        files = g_list_append(files, file);
+        if(file != NULL)
+        {
+            files = g_list_append(files, file);
+        }
     }
 
     create_interface();
