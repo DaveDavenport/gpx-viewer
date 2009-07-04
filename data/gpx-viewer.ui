@@ -364,6 +364,21 @@
               </packing>
             </child>
             <child>
+              <object class="GtkCheckButton" id="show_marker_layer">
+                <property name="label" translatable="yes">Show Waypoints</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="active">True</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="show_marker_layer_toggled_cb"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkStatusbar" id="statusbar2">
                 <property name="visible">True</property>
                 <property name="spacing">2</property>

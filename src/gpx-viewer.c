@@ -236,6 +236,21 @@ void route_set_visible(GtkCheckButton  *button, gpointer user_data)
 		}
 	}
 }
+
+void show_marker_layer_toggled_cb(GtkToggleButton *button, gpointer user_data)
+{
+    if(marker_layer) {
+        gboolean active = gtk_toggle_button_get_active(button);
+        if(active)
+        {
+            clutter_actor_show_all(CLUTTER_ACTOR(marker_layer));
+        }else{
+            clutter_actor_hide(CLUTTER_ACTOR(marker_layer));
+        }
+    }
+
+}
+
 void routes_combo_changed_cb(GtkComboBox *box, gpointer user_data)
 {
     GtkTreeModel *model = gtk_combo_box_get_model(box);
@@ -291,14 +306,12 @@ static void smooth_factor_changed (GpxGraph *graph,
   gint zoom;
   g_object_get(G_OBJECT(graph), "smooth-factor", &zoom, NULL);
   gtk_spin_button_set_value(spinbutton, zoom);
-  printf("smooth changed: %i\n", zoom);
 }
 
 void smooth_factor_change_value_cb(GtkSpinButton *spin, gpointer user_data)
 {
     int current = gpx_graph_get_smooth_factor(gpx_graph);
     int new = gtk_spin_button_get_value_as_int(spin);
-    printf("changed: %i %i\n", current, new);
     if(current != new)
     {
         gpx_graph_set_smooth_factor(gpx_graph, new);
@@ -311,14 +324,12 @@ static void map_zoom_changed (ChamplainView *view,
   gint zoom;
   g_object_get(G_OBJECT(view), "zoom-level", &zoom, NULL);
   gtk_spin_button_set_value(spinbutton, zoom);
-  printf("zoom changed: %i\n", zoom);
 }
 void map_zoom_level_change_value_cb(GtkSpinButton *spin, gpointer user_data)
 {
     ChamplainView *view = gtk_champlain_embed_get_view (GTK_CHAMPLAIN_EMBED (champlain_view));
     int current = champlain_view_get_zoom_level(view);
     int new = gtk_spin_button_get_value_as_int(spin);
-    printf("changed: %i %i\n", current, new);
     if(current != new)
     {
         champlain_view_set_zoom_level(view, new);
@@ -377,7 +388,6 @@ static void create_interface(void)
     if(!gtk_builder_add_from_file(builder,path, NULL)){
 	    g_error("Failed to create ui: %s\n", error->message);
     }
-    printf("path: %s\n", path);
     g_free(path);
 
     /* Create map view */
