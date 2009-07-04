@@ -34,7 +34,7 @@ namespace Gpx
             this.button_press_event.connect(button_press_event_cb);
         }
 
-        public void set_track(Gpx.Track track)
+        public void set_track(Gpx.Track? track)
         {
             this.track =track;
             /* Invalidate the previous plot, so it is redrawn */

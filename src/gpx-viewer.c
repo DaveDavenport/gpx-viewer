@@ -267,7 +267,14 @@ void routes_combo_changed_cb(GtkComboBox *box, gpointer user_data)
                         route->track->bottom->lat_dec,route->track->bottom->lon_dec,
                         FALSE);
             }
-           gpx_graph_set_track(gpx_graph, route->track);
+
+            if(gpx_track_get_total_time(route->track) > 0) {
+                gpx_graph_set_track(gpx_graph, route->track);
+                gtk_widget_show(GTK_WIDGET(gpx_graph));
+            }else{ 
+                gpx_graph_set_track(gpx_graph,NULL);
+                gtk_widget_hide(GTK_WIDGET(gpx_graph));
+            }
         }
         active_route = route;
 
