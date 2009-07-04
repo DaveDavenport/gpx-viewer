@@ -1,0 +1,41 @@
+commit 000c7dc5f61905df5982df2aaa00b7921ff6e04f
+Author: qball <qball@S010375T.TUE>
+Date:   Tue Jun 30 17:07:20 2009 +0200
+
+    Make no input file not cause bug-report util to popup, shutdown libgoffice
+
+commit 83013d7fd1c7da825c0e04a1b320a8eae13cfb5e
+Author: qball <qball@S010375T.TUE>
+Date:   Tue Jun 30 17:01:17 2009 +0200
+
+    Adding autotools magic.
+
+commit 5c1de232341fa6a163ff5473d79f4c224233cfa7
+Author: Qball Cow <qball@sarine.nl>
+Date:   Tue Jun 30 15:28:58 2009 +0200
+
+    Add comments and fix compile warnings
+
+commit f914bdaabf5d44bc7383d70fbba2a7ccd9fbe662
+Author: qball <qball@S010375T.TUE>
+Date:   Tue Jun 30 14:41:08 2009 +0200
+
+    Only show the main window once
+
+commit 0cba52871a9030c31e81c6e93b2e252d327e394e
+Author: qball <qball@S010375T.TUE>
+Date:   Tue Jun 30 14:36:00 2009 +0200
+
+    Add pane to the map/chart
+
+commit 56d3486c587eebb4a9d4c7a58c0644b81d5e0218
+Author: Qball Cow <qball@sarine.nl>
+Date:   Tue Jun 30 12:12:04 2009 +0200
+
+    Add README.
+
+commit 8271a68c9f2ece499b1d3a49391012902b04301d
+Author: Qball Cow <qball@sarine.nl>
+Date:   Tue Jun 30 12:03:10 2009 +0200
+
+    Initial import

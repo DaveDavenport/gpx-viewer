@@ -1,0 +1,8 @@
+Dependencies:
+* libcamplain-gtk (0.3?)
+* vala 0.7.*
+* gtk+-2.0
+
+The program is ment as a simple gpx viewer. It has no intention to become a full blown manager, editor or analyzer. 
+
+Patches with more features are welcome as long as they are maintained.

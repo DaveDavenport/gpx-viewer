@@ -1,0 +1,10 @@
+[Desktop Entry]
+_Name=Gpx Viewer
+_Comment=A simple program to visualize one or more gpx files.
+Exec=gpxviewer %U
+MimeType=application/gpx+xml;
+Terminal=false
+Type=Application
+Icon=gpxviewer
+Categories=GNOME;GTK;Utility;
+StartupNotify=true
