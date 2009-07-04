@@ -24,7 +24,8 @@
 #include <clutter-gtk/gtk-clutter-embed.h>
 #include <config.h>
 #include <glib/gi18n.h>
-#include "speed-plot.h"
+#include "gpx-parser.h"
+#include "gpx-graph.h"
 
 /* List of gpx files */
 GList *files = NULL;

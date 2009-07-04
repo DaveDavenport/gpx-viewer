@@ -2,12 +2,12 @@ bin_PROGRAMS=gpxviewer
 
 gpxviewer_SOURCES=\
 	gpx-viewer.c\
-    speed-plot.c\
+    gpx-graph.c\
 	gpx-parser.c
 
 BUILT_SOURCES=\
 	gpx-parser.c\
-    speed-plot.c
+    gpx-graph.c
 
 LIBS=\
 	@modules_LIBS@
@@ -18,14 +18,14 @@ AM_CFLAGS=\
 	
 EXTRA_DIST=\
 	gpx-parser.vala\
-    speed-plot.vala
+    gpx-graph.vala
 
 gpx-parser.c: gpx-parser.vala
 	$(VALAC) -C -H gpx-parser.h gpx-parser.vala --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=glib-2.0 --library=gpx-parser
 # Update time stamps, even if vala didn't find need to rebuild them.
 	touch gpx-parser.c gpx-parser.h
 
-speed-plot.c: speed-plot.vala
-	$(VALAC) -C -H speed-plot.h speed-plot.vala --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=glib-2.0  --pkg=gpx-parser --vapidir=.
+gpx-graph.c: gpx-graph.vala
+	$(VALAC) -C -H gpx-graph.h gpx-graph.vala --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=glib-2.0  --pkg=gpx-parser --vapidir=.
 # Update time stamps, even if vala didn't find need to rebuild them.
-	touch speed-plot.c speed-plot.h
+	touch gpx-graph.c gpx-graph.h
