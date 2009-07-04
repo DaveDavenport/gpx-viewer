@@ -282,7 +282,6 @@ namespace Gpx {
                                 if(trkseg->name == "name"){
                                     if(track.name == null){
                                         track.name = trkseg->get_content();
-                                        stdout.printf("Track name: '%s'\n", track.name);
                                     }
                                     else{
                                         GLib.warning("Track name allready set: %s\n", track.name);
@@ -308,7 +307,6 @@ namespace Gpx {
                                     if(info->name == "name"){
                                         if(p.name == null){
                                             p.name = info->get_content();
-                                            stdout.printf("Point name: '%s'\n", p.name);
                                         }
                                         else{
                                             GLib.warning("Point name allready set: %s\n", p.name);

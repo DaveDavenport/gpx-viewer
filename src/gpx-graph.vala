@@ -52,10 +52,8 @@ namespace Gpx
             if(this.track == null) return false;
             if(event.x > LEFT_OFFSET && event.x < (this.allocation.width-10))
             {
-                stdout.printf("Inside graph: %f\n", event.x);
                 double elapsed_time = track.get_total_time();
                 time_t time = (time_t)((event.x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
-                stdout.printf("%02i:%02i\n", (int)time/3600, (int)time/60%60);
 
 
                 weak List<Point?> iter = this.track.points.first();
@@ -64,7 +62,6 @@ namespace Gpx
                 {
                     if(time < iter.next.data.get_time() && (time == iter.data.get_time() || time > iter.data.get_time()))
                     {
-                        stdout.printf("Found point: %f-%f\n", iter.data.lat_dec, iter.data.lon_dec); 
                         point_clicked(iter.data.lat_dec, iter.data.lon_dec);
                         
                         return false;
@@ -82,7 +79,6 @@ namespace Gpx
         }
         override bool expose_event(Gdk.EventExpose event)
         {
-            stdout.printf("Expose event\n");
             var ctx = Gdk.cairo_create(this.window);
             /* If no valid surface, render it */
             if(surf == null)
@@ -130,7 +126,6 @@ namespace Gpx
             double elapsed_time = track.get_total_time();
             ctx.translate(LEFT_OFFSET,20);
             Point f = track.points.data;
-            stdout.printf("%f\n", f.get_time());
 
             /* Draw Grid */
             double graph_width = win.allocation.width-LEFT_OFFSET-10;
@@ -212,7 +207,6 @@ namespace Gpx
             layout.set_font_description(fd);
             uint interval = (uint)elapsed_time/((uint)(graph_width/(5*12.0)));
             int current = 0;
-            stdout.printf("interval %u\n", interval);
             uint i;
             for(i=0; i < elapsed_time; i+= interval)
             {
