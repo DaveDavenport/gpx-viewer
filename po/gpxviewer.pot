@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-04 12:39+0200\n"
+"POT-Creation-Date: 2009-07-04 12:54+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,8 +16,68 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/gpx-viewer.c:468
+#: ../src/gpx-viewer.c:468 ../data/gpx-viewer.ui.h:10
 msgid "GPX Viewer"
+msgstr ""
+
+#: ../data/gpx-viewer-file-chooser.ui.h:1
+msgid "Choose gpx file(s)"
+msgstr ""
+
+#: ../data/gpx-viewer-file-chooser.ui.h:2
+msgid "gtk-cancel"
+msgstr ""
+
+#: ../data/gpx-viewer-file-chooser.ui.h:3
+msgid "gtk-open"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:1
+msgid "<b>Average:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:2
+msgid "<b>Distance:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:3
+msgid "<b>Duration:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:4
+msgid "<b>Gps points:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:5
+msgid "<b>Max. speed:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:6
+msgid "<b>Moving average:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:7
+msgid "<b>Moving time:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:8
+msgid "Change the smoothing factor used when plotting the speed graph."
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:9
+msgid "Change the zoom level of the map."
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:11
+msgid "Show"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:12
+msgid "_File"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:13
+msgid "n/a"
 msgstr ""
 
 #: ../data/gpxviewer.desktop.in.h:1

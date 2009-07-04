@@ -3,8 +3,8 @@ src/gpx-viewer.c
 src/gpx-parser.c
 
 # UI Files
-data/gpx-viewer-file-chooser.ui
-data/gpx-viewer.ui
+[type: gettext/glade]data/gpx-viewer-file-chooser.ui
+[type: gettext/glade]data/gpx-viewer.ui
 
 # Desktop file
 data/gpxviewer.desktop.in
