@@ -28,16 +28,20 @@
 #include "gpx-graph.h"
 
 /* List of gpx files */
-GList *files = NULL;
+GList *files                        = NULL;
+GtkWidget *champlain_view           = NULL;
+GtkBuilder *builder                 = NULL;
+GpxGraph *gpx_graph                 = NULL;
+ChamplainLayer *marker_layer        = NULL;
 
-GtkWidget *champlain_view = NULL;
-GtkBuilder *builder = NULL;
-GpxGraph *gpx_graph = NULL;
-ChamplainLayer *marker_layer = NULL;
+
+/* List of routes */
+GList *routes                       = NULL;
+
 /* Clutter  collors */
-ClutterColor waypoint = { 0xf3, 0x94, 0x07, 0xff };
-ClutterColor highlight_track_color = { 0xf3, 0x94, 0x07, 0xff };
-ClutterColor normal_track_color = { 0x00, 0x00, 0xff, 0x66 };
+ClutterColor waypoint               = { 0xf3, 0x94, 0x07, 0xff };
+ClutterColor highlight_track_color  = { 0xf3, 0x94, 0x07, 0xff };
+ClutterColor normal_track_color     = { 0x00, 0x00, 0xff, 0x66 };
 
 typedef struct Route {
     GpxFile *file;
@@ -45,10 +49,9 @@ typedef struct Route {
     ChamplainPolygon *polygon;
     gboolean visible;
 } Route;
-/* List of routes */
-GList *routes = NULL;
+
 /* The currently active route */
-Route *active_route = NULL;
+Route *active_route                 = NULL;
 
 static void free_Route(Route *route)
 {
@@ -189,11 +192,9 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track)
 
 static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 {
-    GpxPoint *p = NULL;
-    GList *iter;
     route->polygon = champlain_polygon_new();
-    for (iter = g_list_first(route->track->points); iter; iter = iter->next) {
-        p = iter->data;
+    for (GList *iter = g_list_first(route->track->points); iter; iter = iter->next) {
+        GpxPoint *p = iter->data;
         champlain_polygon_append_point(route->polygon, p->lat_dec, p->lon_dec);
     }
     champlain_polygon_set_stroke_width(route->polygon, 5.0);
@@ -210,15 +211,14 @@ static void interface_map_make_waypoints(ChamplainView * view)
     }
     for (iter = g_list_first(files); iter != NULL; iter = g_list_next(iter)) {
         GpxFile *file = iter->data;
-        GList *it = g_list_first(file->waypoints);
-        while (it) {
+        for(GList *it = g_list_first(file->waypoints); it; it = g_list_next(it))
+        {
             GpxPoint *p = it->data;
             ClutterActor *marker = champlain_marker_new_with_text(p->name, "Seric 12", NULL, NULL);
             champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), p->lat_dec, p->lon_dec);
             champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
             clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(marker), NULL);
             clutter_actor_show(CLUTTER_ACTOR(marker_layer));
-            it = g_list_next(it);
         }
     }
 }
@@ -338,16 +338,16 @@ static gboolean graph_point_remove(ClutterActor * marker)
 static void graph_point_clicked(double lat_dec, double lon_dec)
 {
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+    ClutterActor *marker = NULL;
+    GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+            "gtk-find",
+            24, 0);
+
     if (marker_layer == NULL) {
         marker_layer = champlain_layer_new();
         champlain_view_add_layer(view, marker_layer);
     }
 
-    GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-            "gtk-find",
-            24, 0);
-
-    ClutterActor *marker = NULL;
     if (ii) {
         const gchar *path2 = gtk_icon_info_get_filename(ii);
         if (path2) {
@@ -369,11 +369,11 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
 /* Create the interface */
 static void create_interface(void)
 {
+    double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
     time_t temp;
     GError *error = NULL;
     const gchar *const *dirs = g_get_system_data_dirs();
     int i = 0;
-    GList *fiter;
     GtkWidget *sp = NULL;
     gchar *path = g_build_filename(DATA_DIR, "gpx-viewer.ui", NULL);
     int current;
@@ -401,17 +401,16 @@ static void create_interface(void)
 
     interface_map_make_waypoints(view);
 
-    double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
-    for (fiter = g_list_first(files); fiter; fiter = g_list_next(fiter)) {
+    for (GList *fiter = g_list_first(files); fiter; fiter = g_list_next(fiter)) {
         GpxFile *file = fiter->data;
         if (file->tracks) {
             GpxTrack *track = file->tracks->data;
-            GList *iter = g_list_first(file->tracks);
             /* Plot all tracks, and get total bounding box */
             GtkTreeIter liter;
             GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
-            while (iter) {
+            for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
                 struct Route *route = g_new0(Route, 1);
+                /* Route */
                 route->file = file;
                 route->track = iter->data;
                 route->visible = TRUE;
@@ -429,12 +428,11 @@ static void create_interface(void)
                     lon2 = track->bottom->lon_dec;
 
                 gtk_list_store_append(GTK_LIST_STORE(model), &liter);
-                gtk_list_store_set(GTK_LIST_STORE(model), &liter, 0, (route->track->name) ? route->track->name : "n/a",
+                gtk_list_store_set(GTK_LIST_STORE(model), &liter, 
+                        0, (route->track->name) ? route->track->name : "n/a",
                         1, route, -1);
 
                 routes = g_list_append(routes, route);
-
-                iter = g_list_next(iter);
             }
         }
     }
@@ -523,9 +521,7 @@ int main(int argc, char **argv)
     for (i = 1; i < argc; i++) {
         /* Try to open the gpx file */
         GpxFile *file = gpx_file_new(argv[i]);
-        if (file != NULL) {
-            files = g_list_append(files, file);
-        }
+        files = g_list_append(files, file);
     }
 
     create_interface();

@@ -15,6 +15,8 @@ LIBS=\
 AM_CFLAGS=\
 	@modules_CFLAGS@\
 	-DDATA_DIR="\"$(pkgdatadir)\""
+
+CFLAGS=-std=c99
 	
 EXTRA_DIST=\
 	gpx-parser.vala\
