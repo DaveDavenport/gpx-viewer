@@ -395,32 +395,35 @@ static void create_interface(void)
     for(fiter = g_list_first(files); fiter; fiter = g_list_next(fiter))
     {
         GpxFile *file = fiter->data;
-        GpxTrack *track = file->tracks->data;
-        GList *iter = g_list_first(file->tracks);
-        /* Plot all tracks, and get total bounding box */
-        GtkTreeIter liter;
-        GtkTreeModel *model = (GtkTreeModel *)gtk_builder_get_object(builder, "routes_store");
-        while(iter)
+        if(file->tracks)
         {
-            struct Route *route= g_new0(Route, 1);
-	    route->file = file;
-            route->track = iter->data;
-	    route->visible = TRUE;
+            GpxTrack *track = file->tracks->data;
+            GList *iter = g_list_first(file->tracks);
+            /* Plot all tracks, and get total bounding box */
+            GtkTreeIter liter;
+            GtkTreeModel *model = (GtkTreeModel *)gtk_builder_get_object(builder, "routes_store");
+            while(iter)
+            {
+                struct Route *route= g_new0(Route, 1);
+                route->file = file;
+                route->track = iter->data;
+                route->visible = TRUE;
 
-            /* draw the track */
-            interface_map_plot_route(view, route);
-            if(track->top && track->top->lat_dec < lat1) lat1 = track->top->lat_dec;
-            if(track->top && track->top->lon_dec < lon1) lon1 = track->top->lon_dec;
+                /* draw the track */
+                interface_map_plot_route(view, route);
+                if(track->top && track->top->lat_dec < lat1) lat1 = track->top->lat_dec;
+                if(track->top && track->top->lon_dec < lon1) lon1 = track->top->lon_dec;
 
-            if(track->bottom && track->bottom->lat_dec > lat2) lat2 = track->bottom->lat_dec;
-            if(track->bottom && track->bottom->lon_dec > lon2) lon2 = track->bottom->lon_dec;
+                if(track->bottom && track->bottom->lat_dec > lat2) lat2 = track->bottom->lat_dec;
+                if(track->bottom && track->bottom->lon_dec > lon2) lon2 = track->bottom->lon_dec;
 
-            gtk_list_store_append(GTK_LIST_STORE(model), &liter);
-            gtk_list_store_set(GTK_LIST_STORE(model), &liter, 0, (route->track->name)?route->track->name:"n/a", 1, route, -1);
+                gtk_list_store_append(GTK_LIST_STORE(model), &liter);
+                gtk_list_store_set(GTK_LIST_STORE(model), &liter, 0, (route->track->name)?route->track->name:"n/a", 1, route, -1);
 
-            routes = g_list_append(routes, route);
+                routes = g_list_append(routes, route);
 
-            iter = g_list_next(iter);
+                iter = g_list_next(iter);
+            }
         }
     }
     /* Set up the zoom widget */
