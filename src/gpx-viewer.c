@@ -340,7 +340,7 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     ClutterActor *marker = NULL;
     GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-            "gtk-find",
+            "pin-red",
             24, 0);
 
     if (marker_layer == NULL) {
@@ -466,6 +466,7 @@ int main(int argc, char **argv)
     int i = 0;
     GOptionContext *context = NULL;
     GError *error = NULL;
+	gchar *path;
     context = g_option_context_new(_("GPX Viewer"));
 
     g_option_context_add_group(context, gtk_get_option_group(TRUE));
@@ -479,7 +480,13 @@ int main(int argc, char **argv)
 
     g_thread_init(NULL);
     gtk_clutter_init(&argc, &argv);
-    /* If no file(s) given, ask for it */
+
+	path = g_build_filename(DATA_DIR, "icons", NULL);
+	gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
+			path);
+	g_free(path);
+
+	/* If no file(s) given, ask for it */
     if (argc < 2) {
         GtkWidget *dialog;
         GtkBuilder *fbuilder = gtk_builder_new();

@@ -41,4 +41,5 @@ AC_OUTPUT([
 	data/icons/32x32/apps/Makefile
 	data/icons/scalable/Makefile
 	data/icons/scalable/apps/Makefile
+	data/icons/scalable/status/Makefile
 ])
