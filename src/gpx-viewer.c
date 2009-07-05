@@ -328,42 +328,52 @@ void map_zoom_level_change_value_cb(GtkSpinButton * spin, gpointer user_data)
     }
 }
 
-#define MARKER_SIZE 10
+ClutterActor *click_marker = NULL;
+guint click_marker_source = 0;
 static gboolean graph_point_remove(ClutterActor * marker)
 {
-    clutter_actor_destroy(marker);
+    clutter_actor_destroy(click_marker);
+	click_marker = NULL;
+	click_marker_source =0;
     return FALSE;
 }
 
 static void graph_point_clicked(double lat_dec, double lon_dec)
 {
-    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
-    ClutterActor *marker = NULL;
-    GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-            "pin-red",
-            24, 0);
+	if(click_marker == NULL)
+	{
+		ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+		GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+				"pin-red",
+				100, 0);
 
-    if (marker_layer == NULL) {
-        marker_layer = champlain_layer_new();
-        champlain_view_add_layer(view, marker_layer);
-    }
+		if (marker_layer == NULL) {
+			marker_layer = champlain_layer_new();
+			champlain_view_add_layer(view, marker_layer);
+		}
 
-    if (ii) {
-        const gchar *path2 = gtk_icon_info_get_filename(ii);
-        if (path2) {
-            marker = champlain_marker_new_from_file(path2, NULL);
-            champlain_marker_set_draw_background(CHAMPLAIN_MARKER(marker), FALSE);
-        }
-    }
-    if (!marker) {
-        marker = champlain_marker_new();
-    }
-    /* Create the marker */
-    champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), lat_dec, lon_dec);
-    champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
-    clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(marker), NULL);
-    clutter_actor_show(CLUTTER_ACTOR(marker_layer));
-    g_timeout_add_seconds(1, (GSourceFunc) graph_point_remove, marker);
+		if (ii) {
+			const gchar *path2 = gtk_icon_info_get_filename(ii);
+			if (path2) {
+				click_marker = champlain_marker_new_from_file(path2, NULL);
+				champlain_marker_set_draw_background(CHAMPLAIN_MARKER(click_marker), FALSE);
+			}
+		}
+		if (!click_marker) {
+			click_marker = champlain_marker_new();
+		}
+		/* Create the marker */
+		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), lat_dec, lon_dec);
+		champlain_marker_set_color(CHAMPLAIN_MARKER(click_marker), &waypoint);
+		clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(click_marker), NULL);
+		clutter_actor_show(CLUTTER_ACTOR(marker_layer));
+	}else{
+		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), lat_dec, lon_dec);
+	}
+	if(click_marker_source >0) {
+		g_source_remove(click_marker_source);
+	}
+    click_marker_source = g_timeout_add_seconds(1, (GSourceFunc) graph_point_remove, click_marker);
 }
 
 /* Create the interface */
