@@ -373,7 +373,7 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
 	if(click_marker_source >0) {
 		g_source_remove(click_marker_source);
 	}
-    click_marker_source = g_timeout_add_seconds(1, (GSourceFunc) graph_point_remove, click_marker);
+    click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, click_marker);
 }
 
 /* Create the interface */
