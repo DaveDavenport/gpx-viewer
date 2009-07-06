@@ -340,9 +340,10 @@ static gboolean graph_point_remove(ClutterActor * marker)
 
 static void graph_point_clicked(double lat_dec, double lon_dec)
 {
+	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+	ChamplainBaseMarker *marker[2] = {NULL, NULL};
 	if(click_marker == NULL)
 	{
-		ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 		GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
 				"pin-red",
 				100, 0);
@@ -373,6 +374,10 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
 	if(click_marker_source >0) {
 		g_source_remove(click_marker_source);
 	}
+
+	marker[0] = click_marker;
+	champlain_view_ensure_markers_visible(view, marker, TRUE);
+
     click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, click_marker);
 }
 
