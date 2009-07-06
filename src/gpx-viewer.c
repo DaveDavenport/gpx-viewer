@@ -32,6 +32,7 @@ GList *files                        = NULL;
 GtkWidget *champlain_view           = NULL;
 GtkBuilder *builder                 = NULL;
 GpxGraph *gpx_graph                 = NULL;
+ChamplainLayer *waypoint_layer		= NULL;
 ChamplainLayer *marker_layer        = NULL;
 
 
@@ -47,6 +48,8 @@ typedef struct Route {
     GpxFile *file;
     GpxTrack *track;
     ChamplainPolygon *polygon;
+	ChamplainBaseMarker *start;
+	ChamplainBaseMarker *stop;
     gboolean visible;
 } Route;
 
@@ -205,9 +208,9 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 static void interface_map_make_waypoints(ChamplainView * view)
 {
     GList *iter;
-    if (marker_layer == NULL) {
-        marker_layer = champlain_layer_new();
-        champlain_view_add_layer(view, marker_layer);
+    if (waypoint_layer == NULL) {
+        waypoint_layer = champlain_layer_new();
+        champlain_view_add_layer(view, waypoint_layer);
     }
     for (iter = g_list_first(files); iter != NULL; iter = g_list_next(iter)) {
         GpxFile *file = iter->data;
@@ -217,10 +220,10 @@ static void interface_map_make_waypoints(ChamplainView * view)
             ClutterActor *marker = champlain_marker_new_with_text(p->name, "Seric 12", NULL, NULL);
             champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), p->lat_dec, p->lon_dec);
             champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
-            clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(marker), NULL);
-            clutter_actor_show(CLUTTER_ACTOR(marker_layer));
+            clutter_container_add(CLUTTER_CONTAINER(waypoint_layer), CLUTTER_ACTOR(marker), NULL);
         }
     }
+	clutter_actor_show(CLUTTER_ACTOR(waypoint_layer));
 }
 
 /* UI functions */
@@ -241,12 +244,12 @@ void route_set_visible(GtkCheckButton * button, gpointer user_data)
 
 void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
 {
-    if (marker_layer) {
+    if (waypoint_layer) {
         gboolean active = gtk_toggle_button_get_active(button);
         if (active) {
-            clutter_actor_show_all(CLUTTER_ACTOR(marker_layer));
+            clutter_actor_show_all(CLUTTER_ACTOR(waypoint_layer));
         } else {
-            clutter_actor_hide(CLUTTER_ACTOR(marker_layer));
+            clutter_actor_hide(CLUTTER_ACTOR(waypoint_layer));
         }
     }
 
@@ -263,6 +266,12 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
             champlain_polygon_set_stroke_color(active_route->polygon, &normal_track_color);
             if (active_route->visible)
                 champlain_polygon_show(active_route->polygon);
+
+			if(active_route->stop) 
+				clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
+
+			if(active_route->start) 
+				clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
         }
 
         if (route) {
@@ -287,6 +296,12 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
                 gpx_graph_set_track(gpx_graph, NULL);
                 gtk_widget_hide(GTK_WIDGET(gpx_graph));
             }
+
+			if(route->stop) 
+				clutter_actor_show(CLUTTER_ACTOR(route->stop));
+
+			if(route->start) 
+				clutter_actor_show(CLUTTER_ACTOR(route->start));
         }
         active_route = route;
 
@@ -348,10 +363,6 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
 				"pin-red",
 				100, 0);
 
-		if (marker_layer == NULL) {
-			marker_layer = champlain_layer_new();
-			champlain_view_add_layer(view, marker_layer);
-		}
 
 		if (ii) {
 			const gchar *path2 = gtk_icon_info_get_filename(ii);
@@ -367,15 +378,16 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
 		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), lat_dec, lon_dec);
 		champlain_marker_set_color(CHAMPLAIN_MARKER(click_marker), &waypoint);
 		clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(click_marker), NULL);
-		clutter_actor_show(CLUTTER_ACTOR(marker_layer));
+		clutter_actor_show(CLUTTER_ACTOR(click_marker));
 	}else{
 		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), lat_dec, lon_dec);
+		clutter_actor_show(CLUTTER_ACTOR(click_marker));
 	}
 	if(click_marker_source >0) {
 		g_source_remove(click_marker_source);
 	}
 
-	marker[0] = click_marker;
+	marker[0] =(ChamplainBaseMarker *) click_marker;
 	champlain_view_ensure_markers_visible(view, marker, TRUE);
 
     click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, click_marker);
@@ -414,6 +426,11 @@ static void create_interface(void)
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     g_object_set(G_OBJECT(view), "scroll-mode", CHAMPLAIN_SCROLL_MODE_KINETIC, "zoom-level", 5, NULL);
 
+	if (marker_layer == NULL) {
+		marker_layer = champlain_layer_new();
+		champlain_view_add_layer(view, marker_layer);
+	}
+
     interface_map_make_waypoints(view);
 
     for (GList *fiter = g_list_first(files); fiter; fiter = g_list_next(fiter)) {
@@ -424,7 +441,8 @@ static void create_interface(void)
             GtkTreeIter liter;
             GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
             for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
-                struct Route *route = g_new0(Route, 1);
+				GtkIconInfo *ii;
+				struct Route *route = g_new0(Route, 1);
                 /* Route */
                 route->file = file;
                 route->track = iter->data;
@@ -446,9 +464,59 @@ static void create_interface(void)
                 gtk_list_store_set(GTK_LIST_STORE(model), &liter, 
                         0, (route->track->name) ? route->track->name : "n/a",
                         1, route, -1);
+				/* Pin's */
+				if(route->track)
+				{
+					const GList *start = g_list_first(route->track->points);
+					const GList *stop = g_list_last(route->track->points);
 
-                routes = g_list_append(routes, route);
-            }
+					ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+							"pin-green",
+							100, 0);
+					if (ii) {
+						const gchar *path2 = gtk_icon_info_get_filename(ii);
+						if (path2) {
+							route->start = (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
+							champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->start), FALSE);
+						}
+						gtk_icon_info_free(ii);
+					}
+					if (!route->start) {
+						route->start = (ChamplainBaseMarker *)champlain_marker_new();
+					}
+					/* Create the marker */
+					champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->start), 
+							((GpxPoint*)start->data)->lat_dec, 
+							((GpxPoint*)start->data)->lon_dec);
+					champlain_marker_set_color(CHAMPLAIN_MARKER(route->start), &waypoint);
+					clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->start), NULL);
+
+					ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+							"pin-blue",
+							100, 0);
+					if (ii) {
+						const gchar *path2 = gtk_icon_info_get_filename(ii);
+						if (path2) {
+							route->stop =  (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
+							champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->stop), FALSE);
+						}
+						gtk_icon_info_free(ii);
+					}
+					if (!route->stop) {
+						route->stop = (ChamplainBaseMarker *)champlain_marker_new();
+					}
+					/* Create the marker */
+					champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop), 
+							((GpxPoint*)stop->data)->lat_dec, 
+							((GpxPoint*)stop->data)->lon_dec);
+					champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
+					clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->stop), NULL);
+
+					clutter_actor_hide(CLUTTER_ACTOR(route->stop));
+					clutter_actor_hide(CLUTTER_ACTOR(route->start));
+				}
+				routes = g_list_append(routes, route);
+			}
         }
     }
     /* Set up the zoom widget */
@@ -458,7 +526,8 @@ static void create_interface(void)
     current = champlain_view_get_zoom_level(view);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
 
-    g_signal_connect(view, "notify::zoom-level", G_CALLBACK(map_zoom_changed), sp);
+
+	g_signal_connect(view, "notify::zoom-level", G_CALLBACK(map_zoom_changed), sp);
     /* Set up the smooth widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "smooth_factor"));
     current = gpx_graph_get_smooth_factor(gpx_graph);
