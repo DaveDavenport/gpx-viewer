@@ -210,7 +210,7 @@ namespace Gpx {
 
 	}
 
-	
+
 	/**
 	 * This is the top level class representing the gpx file it self.
 	 * This contains a list of tracks and waypoings.
@@ -223,6 +223,9 @@ namespace Gpx {
 		public GLib.List<Gpx.Track> tracks = null;
 		/* A gpx file can also contains a list of waypoints */
 		public GLib.List<Gpx.Point> waypoints = null; 
+
+		/* A gpx file can also contains a list of Routes */
+		public GLib.List<Gpx.Track> routes = null; 
 
 		private void parse_track(Xml.Node *node)
 		{
@@ -307,6 +310,57 @@ namespace Gpx {
 			}
 
 		}
+
+
+		private void parse_route(Xml.Node *node)
+		{
+			/* Create new track here */
+			Gpx.Track track = new Gpx.Track();
+
+			var trkseg = node->children;
+			/* iterretate over track segments */
+			while(trkseg != null){
+				if(trkseg->name == "rtept") {
+					var point = trkseg;
+					var lat = point->get_prop("lat");
+					var lon = point->get_prop("lon");
+					if(lat != null && lon != null)
+					{
+						Point p = new Point();
+						double flat = lat.to_double();
+						double flon = lon.to_double();
+						p.set_position(flat, flon);
+						var info = point->children;
+						while(info != null) {
+							/* height */
+							if(info->name == "ele") {
+								var content = info->get_content();
+								if(content != null)
+									p.elevation = content.to_double();
+							}else if (info->name == "time") {
+								p.time = info->get_content();
+							}
+							info = info->next;
+						}
+
+						track.add_point(p);
+					}else{
+						GLib.message("Failed to get point: %s\n", point->name);
+					}
+				}
+				else if(trkseg->name == "name"){
+					if(track.name == null){
+						track.name = trkseg->get_content();
+					}
+					else{
+						GLib.warning("Track name allready set: %s\n", track.name);
+					}
+				}
+
+				trkseg = trkseg->next; 
+			}
+			this.routes.append(track);
+		}
 		/**
 		 * Parse a file
 		 */
@@ -329,11 +383,17 @@ namespace Gpx {
 							var name2 = reader.const_name();
 							/* Get the track element */
 							if(name2 == "trk") {
+								/* Track */
 								var node = reader.expand();
 								this.parse_track(node);
 							} else if (name2 == "wpt") {
+								/* Waypoint */
 								var node = reader.expand();
 								this.parse_waypoint(node);
+							} else if (name2 == "rte") {
+								var node = reader.expand();
+								/* Route */
+								this.parse_route(node);
 							}
 							doc2 = reader.next();
 						}

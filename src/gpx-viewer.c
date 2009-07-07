@@ -399,7 +399,88 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
 
     click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, click_marker);
 }
+static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
+{
+	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+	/* Plot all tracks, and get total bounding box */
+	GtkTreeIter liter;
+	GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+	GtkIconInfo *ii;
+	struct Route *route = g_new0(Route, 1);
+	/* Route */
+	//route->file = file;
+	route->track = track;//iter->data;
+	route->visible = TRUE;
 
+	/* draw the track */
+	interface_map_plot_route(view, route);
+	if (track->top && track->top->lat_dec < *lat1)
+		*lat1 = track->top->lat_dec;
+	if (track->top && track->top->lon_dec < *lon1)
+		*lon1 = track->top->lon_dec;
+
+	if (track->bottom && track->bottom->lat_dec > *lat2)
+		*lat2 = track->bottom->lat_dec;
+	if (track->bottom && track->bottom->lon_dec > *lon2)
+		*lon2 = track->bottom->lon_dec;
+
+	gtk_list_store_append(GTK_LIST_STORE(model), &liter);
+	gtk_list_store_set(GTK_LIST_STORE(model), &liter, 
+			0, (route->track->name) ? route->track->name : "n/a",
+			1, route, -1);
+	/* Pin's */
+	if(route->track)
+	{
+		const GList *start = g_list_first(route->track->points);
+		const GList *stop = g_list_last(route->track->points);
+
+		ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+				"pin-green",
+				100, 0);
+		if (ii) {
+			const gchar *path2 = gtk_icon_info_get_filename(ii);
+			if (path2) {
+				route->start = (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
+				champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->start), FALSE);
+			}
+			gtk_icon_info_free(ii);
+		}
+		if (!route->start) {
+			route->start = (ChamplainBaseMarker *)champlain_marker_new();
+		}
+		/* Create the marker */
+		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->start), 
+				((GpxPoint*)start->data)->lat_dec, 
+				((GpxPoint*)start->data)->lon_dec);
+		champlain_marker_set_color(CHAMPLAIN_MARKER(route->start), &waypoint);
+		clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->start), NULL);
+
+		ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+				"pin-blue",
+				100, 0);
+		if (ii) {
+			const gchar *path2 = gtk_icon_info_get_filename(ii);
+			if (path2) {
+				route->stop =  (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
+				champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->stop), FALSE);
+			}
+			gtk_icon_info_free(ii);
+		}
+		if (!route->stop) {
+			route->stop = (ChamplainBaseMarker *)champlain_marker_new();
+		}
+		/* Create the marker */
+		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop), 
+				((GpxPoint*)stop->data)->lat_dec, 
+				((GpxPoint*)stop->data)->lon_dec);
+		champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
+		clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->stop), NULL);
+
+		clutter_actor_hide(CLUTTER_ACTOR(route->stop));
+		clutter_actor_hide(CLUTTER_ACTOR(route->start));
+	}
+	routes = g_list_append(routes, route);
+}
 /* Create the interface */
 static void create_interface(void)
 {
@@ -444,90 +525,17 @@ static void create_interface(void)
     for (GList *fiter = g_list_first(files); fiter; fiter = g_list_next(fiter)) {
         GpxFile *file = fiter->data;
         if (file->tracks) {
-            GpxTrack *track = file->tracks->data;
-            /* Plot all tracks, and get total bounding box */
-            GtkTreeIter liter;
-            GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
-            for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
-				GtkIconInfo *ii;
-				struct Route *route = g_new0(Route, 1);
-                /* Route */
-                route->file = file;
-                route->track = iter->data;
-                route->visible = TRUE;
-
-                /* draw the track */
-                interface_map_plot_route(view, route);
-                if (track->top && track->top->lat_dec < lat1)
-                    lat1 = track->top->lat_dec;
-                if (track->top && track->top->lon_dec < lon1)
-                    lon1 = track->top->lon_dec;
-
-                if (track->bottom && track->bottom->lat_dec > lat2)
-                    lat2 = track->bottom->lat_dec;
-                if (track->bottom && track->bottom->lon_dec > lon2)
-                    lon2 = track->bottom->lon_dec;
-
-                gtk_list_store_append(GTK_LIST_STORE(model), &liter);
-                gtk_list_store_set(GTK_LIST_STORE(model), &liter, 
-                        0, (route->track->name) ? route->track->name : "n/a",
-                        1, route, -1);
-				/* Pin's */
-				if(route->track)
-				{
-					const GList *start = g_list_first(route->track->points);
-					const GList *stop = g_list_last(route->track->points);
-
-					ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-							"pin-green",
-							100, 0);
-					if (ii) {
-						const gchar *path2 = gtk_icon_info_get_filename(ii);
-						if (path2) {
-							route->start = (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
-							champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->start), FALSE);
-						}
-						gtk_icon_info_free(ii);
-					}
-					if (!route->start) {
-						route->start = (ChamplainBaseMarker *)champlain_marker_new();
-					}
-					/* Create the marker */
-					champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->start), 
-							((GpxPoint*)start->data)->lat_dec, 
-							((GpxPoint*)start->data)->lon_dec);
-					champlain_marker_set_color(CHAMPLAIN_MARKER(route->start), &waypoint);
-					clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->start), NULL);
-
-					ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-							"pin-blue",
-							100, 0);
-					if (ii) {
-						const gchar *path2 = gtk_icon_info_get_filename(ii);
-						if (path2) {
-							route->stop =  (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
-							champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->stop), FALSE);
-						}
-						gtk_icon_info_free(ii);
-					}
-					if (!route->stop) {
-						route->stop = (ChamplainBaseMarker *)champlain_marker_new();
-					}
-					/* Create the marker */
-					champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop), 
-							((GpxPoint*)stop->data)->lat_dec, 
-							((GpxPoint*)stop->data)->lon_dec);
-					champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
-					clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->stop), NULL);
-
-					clutter_actor_hide(CLUTTER_ACTOR(route->stop));
-					clutter_actor_hide(CLUTTER_ACTOR(route->start));
-				}
-				routes = g_list_append(routes, route);
+			for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
+				interface_plot_add_track(iter->data, &lat1, &lon1, &lat2, &lon2);
 			}
-        }
-    }
-    /* Set up the zoom widget */
+		}
+		if(file->routes) {
+			for (GList *iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
+				interface_plot_add_track(iter->data, &lat1, &lon1, &lat2, &lon2);
+			}
+		}
+	}
+	/* Set up the zoom widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
     champlain_view_set_min_zoom_level(view, 1);
     champlain_view_set_max_zoom_level(view, 18);
