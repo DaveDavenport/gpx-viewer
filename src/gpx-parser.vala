@@ -308,9 +308,7 @@ namespace Gpx {
 				}
 				this.waypoints.append(p);
 			}
-
 		}
-
 
 		private void parse_route(Xml.Node *node)
 		{
@@ -321,16 +319,15 @@ namespace Gpx {
 			/* iterretate over track segments */
 			while(trkseg != null){
 				if(trkseg->name == "rtept") {
-					var point = trkseg;
-					var lat = point->get_prop("lat");
-					var lon = point->get_prop("lon");
+					var lat = trkseg->get_prop("lat");
+					var lon = trkseg->get_prop("lon");
 					if(lat != null && lon != null)
 					{
 						Point p = new Point();
 						double flat = lat.to_double();
 						double flon = lon.to_double();
 						p.set_position(flat, flon);
-						var info = point->children;
+						var info = trkseg->children;
 						while(info != null) {
 							/* height */
 							if(info->name == "ele") {
@@ -345,18 +342,15 @@ namespace Gpx {
 
 						track.add_point(p);
 					}else{
-						GLib.message("Failed to get point: %s\n", point->name);
+						GLib.message("Failed to get trkseg: %s\n", trkseg->name);
 					}
-				}
-				else if(trkseg->name == "name"){
+				} else if(trkseg->name == "name") {
 					if(track.name == null){
 						track.name = trkseg->get_content();
-					}
-					else{
+					} else {
 						GLib.warning("Track name allready set: %s\n", track.name);
 					}
 				}
-
 				trkseg = trkseg->next; 
 			}
 			this.routes.append(track);
