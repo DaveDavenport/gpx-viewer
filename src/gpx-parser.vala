@@ -211,6 +211,10 @@ namespace Gpx {
 	}
 
 	
+	/**
+	 * This is the top level class representing the gpx file it self.
+	 * This contains a list of tracks and waypoings.
+	 */
 	public class File : GLib.Object 
 	{
 		/* The filename */
@@ -219,10 +223,7 @@ namespace Gpx {
 		public GLib.List<Gpx.Track> tracks = null;
 		/* A gpx file can also contains a list of waypoints */
 		public GLib.List<Gpx.Point> waypoints = null; 
-		/**
-		 * This is the top level class representing the gpx file it self.
-		 * This contains a list of tracks and waypoings.
-		 */
+
 		private void parse_track(Xml.Node *node)
 		{
 			/* Create new track here */
@@ -306,29 +307,39 @@ namespace Gpx {
 			}
 
 		}
+		/**
+		 * Parse a file
+		 */
 		public File (string filename)
 		{
 			this.filename = filename;
-			/* Start parsing the xml file */
-			Xml.Doc doc  = Xml.Parser.parse_file(this.filename);
-			if(doc != null)
+			Xml.TextReader reader = new Xml.TextReader.for_file(this.filename, null, 0);
+			if(reader != null)
 			{
-				var node = doc.get_root_element();
-				if(node != null)
+				/* Start parsing the xml file */
+				var doc = reader.read(); 
+				while(doc == 1)
 				{
-					node = node->children;
-					while(node != null){
-						/* Get the track element */
-						if(node->name == "trk")
+					var name = reader.const_name();
+					if(name == "gpx")
+					{
+						int doc2 = reader.read();
+						while(doc2 == 1)
 						{
-							this.parse_track(node);
+							var name2 = reader.const_name();
+							/* Get the track element */
+							if(name2 == "trk") {
+								var node = reader.expand();
+								this.parse_track(node);
+							} else if (name2 == "wpt") {
+								var node = reader.expand();
+								this.parse_waypoint(node);
+							}
+							doc2 = reader.next();
 						}
-						else if (node->name == "wpt")
-						{
-							this.parse_waypoint(node);
-						}
-						node = node->next;
 					}
+					else
+						doc = reader.read();
 				}
 			}else{
 				/* Todo add error trower here http://www.vala-project.org/doc/vala-draft/errors.html#exceptionsexamples*/
