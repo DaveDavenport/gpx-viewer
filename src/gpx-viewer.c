@@ -205,6 +205,18 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
     champlain_view_add_polygon(CHAMPLAIN_VIEW(view), route->polygon);
 }
 
+static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
+{
+	for(GList *it = g_list_first(file->waypoints); it; it = g_list_next(it))
+	{
+		GpxPoint *p = it->data;
+		ClutterActor *marker = champlain_marker_new_with_text(p->name, "Seric 12", NULL, NULL);
+		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), p->lat_dec, p->lon_dec);
+		champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
+		clutter_container_add(CLUTTER_CONTAINER(waypoint_layer), CLUTTER_ACTOR(marker), NULL);
+	}
+}
+
 static void interface_map_make_waypoints(ChamplainView * view)
 {
     GList *iter;
@@ -213,16 +225,9 @@ static void interface_map_make_waypoints(ChamplainView * view)
         champlain_view_add_layer(view, waypoint_layer);
     }
     for (iter = g_list_first(files); iter != NULL; iter = g_list_next(iter)) {
-        GpxFile *file = iter->data;
-        for(GList *it = g_list_first(file->waypoints); it; it = g_list_next(it))
-        {
-            GpxPoint *p = it->data;
-            ClutterActor *marker = champlain_marker_new_with_text(p->name, "Seric 12", NULL, NULL);
-            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), p->lat_dec, p->lon_dec);
-            champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
-            clutter_container_add(CLUTTER_CONTAINER(waypoint_layer), CLUTTER_ACTOR(marker), NULL);
-        }
-    }
+		GpxFile *file = iter->data;
+		interface_map_file_waypoints(view, file);
+	}
 	clutter_actor_show(CLUTTER_ACTOR(waypoint_layer));
 }
 
@@ -242,6 +247,7 @@ void route_set_visible(GtkCheckButton * button, gpointer user_data)
     }
 }
 
+/* Show and hide waypoint layer */
 void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
 {
     if (waypoint_layer) {
@@ -252,7 +258,6 @@ void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
             clutter_actor_hide(CLUTTER_ACTOR(waypoint_layer));
         }
     }
-
 }
 
 void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
@@ -310,6 +315,7 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
     }
 }
 
+/* Smooth factor changed */
 static void smooth_factor_changed(GpxGraph * graph, GParamSpec * gobject, GtkSpinButton * spinbutton)
 {
     gint zoom;
@@ -326,6 +332,7 @@ void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
     }
 }
 
+/* Zoom level changed */
 static void map_zoom_changed(ChamplainView * view, GParamSpec * gobject, GtkSpinButton * spinbutton)
 {
     gint zoom;
@@ -405,6 +412,7 @@ static void create_interface(void)
     gchar *path = g_build_filename(DATA_DIR, "gpx-viewer.ui", NULL);
     int current;
 
+	/* Open UI description file */
     builder = gtk_builder_new();
     if (!gtk_builder_add_from_file(builder, path, NULL)) {
         g_error("Failed to create ui: %s\n", error->message);
