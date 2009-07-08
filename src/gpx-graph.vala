@@ -48,7 +48,7 @@ namespace Gpx
 
 		public Graph ()
 		{
-			this.fd = new Pango.FontDescription();//from_string("sans mono"); 
+			this.fd = new Pango.FontDescription();/
 			fd.set_family("sans mono");
 			this.app_paintable = true;
 			this.visible_window = true;
@@ -82,7 +82,8 @@ namespace Gpx
 				time += iter.data.get_time();
 				while(iter.next != null)
 				{
-					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || time > iter.data.get_time()))
+					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
+								time > iter.data.get_time()))
 					{
 						point_clicked(iter.data);
 
@@ -225,7 +226,8 @@ namespace Gpx
 					ii = ii.prev;
 				}
 				speed = speed/i;
-				ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),graph_height*(double)(1.0-speed/max_speed));
+				ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+						graph_height*(double)(1.0-speed/max_speed));
 				iter = iter.next;
 			}
 			ctx.line_to(graph_width, graph_height);
