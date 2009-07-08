@@ -21,6 +21,7 @@ using Gtk;
 using Gpx;
 using GLib;
 
+static const string LOG_DOMAIN="GPX_PARSER";
 namespace Gpx
 {
 	public class Graph: Gtk.EventBox
@@ -120,6 +121,7 @@ namespace Gpx
 					win.allocation.width, win.allocation.height); 
 			ctx = new Cairo.Context(this.surf);
 
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Updating surface");
 			/* Paint background white */
 			ctx.set_source_rgba(1,1,1,1);
 			ctx.paint();
@@ -147,6 +149,12 @@ namespace Gpx
 			else 
 				max_speed = track.max_speed;
 			double elapsed_time = track.get_total_time();
+
+
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Max speed: %f, elapsed_time: %f",
+					max_speed,
+					elapsed_time);
+
 			ctx.translate(LEFT_OFFSET,20);
 			Point f = track.points.data;
 
@@ -180,6 +188,9 @@ namespace Gpx
 				ctx.move_to(-w-5, j-h/2.0);
 				Pango.cairo_layout_path(ctx, layout);
 				ctx.fill();
+
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set speed tick: %s",
+						text);
 
 				ctx.move_to(-4, j);
 				ctx.line_to(0, j);
@@ -231,7 +242,7 @@ namespace Gpx
 			uint interval = (uint)elapsed_time/((uint)(graph_width/(5*12.0)));
 			int current = 0;
 			uint i;
-			for(i=0; i < elapsed_time; i+= interval)
+			for(i=0; i < elapsed_time && interval > 0; i+= interval)
 			{
 				if(graph_width*(1-(i/elapsed_time)) > 2.5*12 ){
 					int w,h;
@@ -242,6 +253,8 @@ namespace Gpx
 					Pango.cairo_layout_path(ctx, layout);
 					ctx.fill();
 
+					log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set time tick: %s",
+							text);
 
 					ctx.move_to(graph_width*(double)(i/elapsed_time), graph_height);
 					ctx.line_to(graph_width*(double)(i/elapsed_time), graph_height+5);
