@@ -48,7 +48,7 @@ namespace Gpx
 
 		public Graph ()
 		{
-			this.fd = new Pango.FontDescription();/
+			this.fd = new Pango.FontDescription();
 			fd.set_family("sans mono");
 			this.app_paintable = true;
 			this.visible_window = true;

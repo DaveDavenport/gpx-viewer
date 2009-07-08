@@ -358,48 +358,81 @@ namespace Gpx {
 		/**
 		 * Parse a file
 		 */
-		public File (string filename)
-		{
-			this.filename = filename;
-			Xml.TextReader reader = new Xml.TextReader.for_file(this.filename, null, 0);
-			if(reader != null)
-			{
-				/* Start parsing the xml file */
-				var doc = reader.read(); 
-				while(doc == 1)
-				{
-					var name = reader.const_name();
-					if(name == "gpx")
-					{
-						int doc2 = reader.read();
-						while(doc2 == 1)
-						{
-							var name2 = reader.const_name();
-							/* Get the track element */
-							if(name2 == "trk") {
-								/* Track */
-								var node = reader.expand();
-								this.parse_track(node);
-							} else if (name2 == "wpt") {
-								/* Waypoint */
-								var node = reader.expand();
-								this.parse_waypoint(node);
-							} else if (name2 == "rte") {
-								var node = reader.expand();
-								/* Route */
-								this.parse_route(node);
-							}
-							doc2 = reader.next();
-						}
-					}
-					else
-						doc = reader.read();
-				}
-			}else{
-				/* Todo add error trower here http://www.vala-project.org/doc/vala-draft/errors.html#exceptionsexamples*/
-				GLib.message("Failed to open file");
-			}
-		}
+
+		 /* IO Functions */
+		 /* Used for paring */
+		 private GLib.File file = null;
+		 private GLib.FileInputStream stream = null;
+		 private int read_file(char[] buffer)
+		 {
+			 try{
+					var value = this.stream.read(buffer, buffer.length, null);
+					return (int)value;
+			 }catch (GLib.Error e) {
+				 GLib.critical("error reading from stream: %s\n", e.message);
+				 return -1;
+			 }
+		 }
+		 private int close_file()
+		 {
+			GLib.log("GPX PARSER", GLib.LogLevelFlags.LEVEL_DEBUG, "Close_file()");
+			this.stream = null;
+			return 0;
+		 }
+
+		 public File (string filename)
+		 {
+			 this.filename = filename;
+			 this.file = GLib.File.new_for_commandline_arg(this.filename);
+			 try {
+				 this.stream = file.read(null);
+				 Xml.TextReader reader = new Xml.TextReader.for_io(
+						 (Xml.InputReadCallback)read_file,
+						 (Xml.InputCloseCallback) close_file,this,
+						 this.filename, "", 0);
+				 if(reader != null)
+				 {
+					 /* Start parsing the xml file */
+					 var doc = reader.read(); 
+					 while(doc == 1)
+					 {
+						 var name = reader.const_name();
+						 if(name == "gpx")
+						 {
+							 int doc2 = reader.read();
+							 while(doc2 == 1)
+							 {
+								 var name2 = reader.const_name();
+								 /* Get the track element */
+								 if(name2 == "trk") {
+									 /* Track */
+									 var node = reader.expand();
+									 this.parse_track(node);
+								 } else if (name2 == "wpt") {
+									 /* Waypoint */
+									 var node = reader.expand();
+									 this.parse_waypoint(node);
+								 } else if (name2 == "rte") {
+									 var node = reader.expand();
+									 /* Route */
+									 this.parse_route(node);
+								 }
+								 doc2 = reader.next();
+							 }
+						 }
+						 else
+							 doc = reader.read();
+					 }
+				 }else{
+					 /* Todo add error trower here http://www.vala-project.org/doc/vala-draft/errors.html#exceptionsexamples*/
+					 GLib.message("Failed to open file");
+				 }
+				 reader.close();
+			 }catch (GLib.Error e){
+				 GLib.critical("failed to open file: %s", e.message);
+			 }
+
+		 }
 	}
 }
 
