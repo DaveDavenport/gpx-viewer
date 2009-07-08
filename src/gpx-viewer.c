@@ -360,7 +360,7 @@ static gboolean graph_point_remove(ClutterActor * marker)
     return FALSE;
 }
 
-static void graph_point_clicked(double lat_dec, double lon_dec)
+static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 {
 	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 	ChamplainBaseMarker *marker[2] = {NULL, NULL};
@@ -382,14 +382,13 @@ static void graph_point_clicked(double lat_dec, double lon_dec)
 			click_marker = champlain_marker_new();
 		}
 		/* Create the marker */
-		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), lat_dec, lon_dec);
 		champlain_marker_set_color(CHAMPLAIN_MARKER(click_marker), &waypoint);
 		clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(click_marker), NULL);
-		clutter_actor_show(CLUTTER_ACTOR(click_marker));
-	}else{
-		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), lat_dec, lon_dec);
-		clutter_actor_show(CLUTTER_ACTOR(click_marker));
 	}
+
+	champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), point->lat_dec, point->lon_dec);
+	clutter_actor_show(CLUTTER_ACTOR(click_marker));
+
 	if(click_marker_source >0) {
 		g_source_remove(click_marker_source);
 	}

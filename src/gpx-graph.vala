@@ -65,7 +65,7 @@ namespace Gpx
 			this.queue_draw();
 		}
 
-		signal void point_clicked(double lat_dec, double lon_dec);
+		signal void point_clicked(Gpx.Point point);
 		/**
 		 * Private functions
 		 */
@@ -84,7 +84,7 @@ namespace Gpx
 				{
 					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || time > iter.data.get_time()))
 					{
-						point_clicked(iter.data.lat_dec, iter.data.lon_dec);
+						point_clicked(iter.data);
 
 						return false;
 					}
@@ -171,8 +171,8 @@ namespace Gpx
 				ctx.move_to(0.0,j);
 				ctx.line_to(graph_width,j);
 				ctx.stroke();
-
 			}
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw grid lines");
 			/* Draw speed and ticks */
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 			double size = LEFT_OFFSET/("%.1f".printf(max_speed).length);
@@ -196,6 +196,7 @@ namespace Gpx
 				ctx.line_to(0, j);
 				ctx.stroke();
 			}
+
 			/* Draw axis */
 			ctx.move_to(0.0,0.0);
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1);
@@ -204,6 +205,7 @@ namespace Gpx
 			ctx.line_to(graph_width, graph_height);
 			ctx.stroke();
 
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis"); 
 
 			/* Draw the graph */
 			ctx.set_source_rgba(0.1, 0.2, 0.3, 1);
@@ -233,6 +235,7 @@ namespace Gpx
 			ctx.set_source_rgba(0.1, 0.2, 0.8, 0.5);
 			ctx.fill();
 
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw graph"); 
 
 			iter = track.points.first();
 
@@ -269,7 +272,7 @@ namespace Gpx
 			ctx.move_to(0.0, graph_height*(1-avg/max_speed));
 			ctx.line_to(graph_width, graph_height*(1-avg/max_speed));
 			ctx.stroke();
-
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw average speed line @ %.02f km/h", avg);
 
 			/* Draw moving speed */
 			time_t moving_time;
@@ -279,20 +282,31 @@ namespace Gpx
 			ctx.line_to(graph_width, graph_height*(1-avg/max_speed));
 			ctx.stroke();
 
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw moving average speed line @ %.02f km/h", avg);
+
+			/* Draw the title */
+			int w,h;
+			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+			fd.set_absolute_size(12*1024);
+			layout.set_font_description(fd);
+			if(this.smooth_factor != 1)
 			{
-				int w,h;
-				ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-				fd.set_absolute_size(12*1024);
-				layout.set_font_description(fd);
-				if(this.smooth_factor != 1)
-					layout.set_markup("Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>".printf(this.smooth_factor),-1);
-				else
-					layout.set_text("Speed (km/h) vs Time (HH:MM)",-1);
-				layout.get_pixel_size(out w, out h);
-				ctx.move_to(graph_width/2-w/2, -20);
-				Pango.cairo_layout_path(ctx, layout);
-				ctx.fill();
+				var markup = "Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>".printf(this.smooth_factor);
+				layout.set_markup(markup,-1);
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set graph title: %s",
+						markup);
 			}
+			else
+			{
+				var text = "Speed (km/h) vs Time (HH:MM)";
+				layout.set_text(text,-1);
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set graph title: %s",
+						text);
+			}
+			layout.get_pixel_size(out w, out h);
+			ctx.move_to(graph_width/2-w/2, -20);
+			Pango.cairo_layout_path(ctx, layout);
+			ctx.fill();
 		}
 	}
 }
