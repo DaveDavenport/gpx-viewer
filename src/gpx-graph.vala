@@ -27,7 +27,7 @@ namespace Gpx
 	public class Graph: Gtk.EventBox
 	{
 		private int _smooth_factor =4;
-		private Gpx.Track track = null;
+		public Gpx.Track track = null;
 		private Pango.FontDescription fd = null; 
 		private Cairo.Surface surf = null;
 		private int LEFT_OFFSET=60;
@@ -54,6 +54,8 @@ namespace Gpx
 			this.visible_window = true;
 			this.size_allocate.connect(size_allocate_cb);
 			this.button_press_event.connect(button_press_event_cb);
+
+			this.button_release_event.connect(button_release_event_cb);
 		}
 
 		public void set_track(Gpx.Track? track)
@@ -66,6 +68,8 @@ namespace Gpx
 		}
 
 		signal void point_clicked(Gpx.Point point);
+
+		signal void selection_changed(Gpx.Point start, Gpx.Point stop);
 		/**
 		 * Private functions
 		 */
@@ -85,8 +89,57 @@ namespace Gpx
 					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
 								time > iter.data.get_time()))
 					{
-						point_clicked(iter.data);
+						if(event.button == 1)
+							this.start = iter.data;
+						else{ this.start = null;
+							point_clicked(iter.data);
+						}
 
+						return false;
+					}
+
+					iter = iter.next;
+				}
+			}
+			return false;
+		}
+		private bool button_release_event_cb(Gdk.EventButton event)
+		{
+			if(this.track == null) return false;
+			if(event.x > LEFT_OFFSET && event.x < (this.allocation.width-10))
+			{
+				double elapsed_time = track.get_total_time();
+				time_t time = (time_t)((event.x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
+
+
+				weak List<Point?> iter = this.track.points.first();
+				time += iter.data.get_time();
+				while(iter.next != null)
+				{
+					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
+								time > iter.data.get_time()))
+					{
+						if(event.button == 1)
+							this.stop = iter.data;
+						else this.stop = null;
+						this.queue_draw();
+						stdout.printf("Selection range set\n");
+						if(event.button == 1)
+						{
+							if(this.start != null && this.stop  != null)
+							{
+								if(start.get_time() != stop.get_time())
+								{
+									if(start.get_time() < stop.get_time()) {
+										selection_changed(start, stop);
+									} else {
+										selection_changed(stop, start);
+									}
+									return false;
+								}
+							}
+							selection_changed(this.track.points.first().data, this.track.points.last().data);
+						}
 						return false;
 					}
 
@@ -100,6 +153,9 @@ namespace Gpx
 			/* Invalidate the previous plot, so it is redrawn */
 			this.surf = null;
 		}
+
+		private Gpx.Point start = null;
+		private Gpx.Point stop = null;
 		override bool expose_event(Gdk.EventExpose event)
 		{
 			var ctx = Gdk.cairo_create(this.window);
@@ -112,6 +168,26 @@ namespace Gpx
 			Gdk.cairo_region(ctx, event.region);
 			ctx.clip();
 			ctx.paint();
+			/* Draw selection, if available */
+			if(start != null && stop != null)
+			{
+				if(start.get_time() != stop.get_time())
+				{
+					Gpx.Point f = this.track.points.first().data;
+					double elapsed_time = track.get_total_time();
+					double graph_width = this.allocation.width-LEFT_OFFSET-10;
+					double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
+
+					ctx.translate(LEFT_OFFSET,20);
+					ctx.set_source_rgba(0.3, 0.2, 0.3, 0.8);
+					ctx.rectangle((start.get_time()-f.get_time())/elapsed_time*graph_width, 0, 
+							(stop.get_time()-start.get_time())/elapsed_time*graph_width, graph_height);
+					ctx.stroke_preserve();
+					ctx.fill();
+					stdout.printf("painted selection\n");
+				}
+
+			}
 			return false;
 		}
 		private void update_surface(Gtk.Widget win)
@@ -278,7 +354,7 @@ namespace Gpx
 
 			/* Draw moving speed */
 			time_t moving_time;
-			avg = track.calculate_moving_average(out moving_time);
+			avg = track.calculate_moving_average(this.track.points.first().data, this.track.points.last().data,out moving_time);
 			ctx.set_source_rgba(0.7, 0.0, 0.0, 0.7);
 			ctx.move_to(0.0, graph_height*(1-avg/max_speed));
 			ctx.line_to(graph_width, graph_height*(1-avg/max_speed));

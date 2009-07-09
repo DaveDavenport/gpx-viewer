@@ -76,14 +76,18 @@ void on_destroy(void)
 /**
  * Update on track changes
  */
-static void interface_update_heading(GtkBuilder * builder, GpxTrack * track)
+static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, GpxPoint *start, GpxPoint *stop)
 {
     time_t temp;
     gdouble gtemp;
     GtkWidget *label = NULL;
     /* Duration */
     label = (GtkWidget *) gtk_builder_get_object(builder, "duration_label");
-    temp = gpx_track_get_total_time(track);
+
+    temp = 0;//gpx_track_get_total_time(track);
+	if(start && stop) {
+		temp = gpx_point_get_time(stop) - gpx_point_get_time(start);
+	}
     if (temp > 0) {
         int hour = temp / 3600;
         int minutes = ((temp % 3600) / 60);
@@ -112,8 +116,10 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track)
     }
     /* Distance */
     label = (GtkWidget *) gtk_builder_get_object(builder, "distance_label");
-    gtemp = track->total_distance;
-    if (gtemp > 0) {
+
+    gtemp = 0;//track->total_distance;
+	if(start && stop) gtemp = stop->distance-start->distance;
+	if (gtemp > 0) {
         gchar *string = g_strdup_printf("%.2f km", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
@@ -123,7 +129,8 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track)
 
     /* Average */
     label = (GtkWidget *) gtk_builder_get_object(builder, "average_label");
-    gtemp = gpx_track_get_track_average(track);
+    gtemp = 0;//gpx_track_get_track_average(track);
+	if(start && stop) gtemp = gpx_track_calculate_point_to_point_speed(track,start, stop);
     if (gtemp > 0) {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
@@ -134,7 +141,9 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track)
 
     /* Moving Average */
     label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_label");
-    gtemp = gpx_track_calculate_moving_average(track, &temp);
+    gtemp = 0;//gpx_track_calculate_moving_average(track, &temp);
+	temp = 0;
+	if(start && stop) gtemp = gpx_track_calculate_moving_average(track,start, stop, &temp);
     if (gtemp > 0) {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
@@ -286,7 +295,9 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
             if (route->visible)
                 champlain_polygon_show(route->polygon);
 
-            interface_update_heading(builder, route->track);
+            interface_update_heading(builder, route->track, 
+					(route->track)?g_list_first(route->track->points)->data:NULL,
+					(route->track)?g_list_last(route->track->points)->data:NULL);
 
             if (route->track->top && route->track->bottom) {
                 champlain_view_ensure_visible(view,
@@ -360,6 +371,10 @@ static gboolean graph_point_remove(ClutterActor * marker)
     return FALSE;
 }
 
+static void graph_selection_changed(GpxGraph *graph, GpxPoint *start, GpxPoint *stop)
+{
+	interface_update_heading(builder, graph->track, start, stop);
+}
 static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 {
 	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
@@ -550,6 +565,7 @@ static void create_interface(void)
 
     g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
     g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
+    g_signal_connect(gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), NULL);
     gtk_builder_connect_signals(builder, NULL);
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0) {

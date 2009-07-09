@@ -167,23 +167,27 @@ namespace Gpx {
 		/**
 		 * Try not to calculate time that we "stopped"  in average
 		 */
-		public double calculate_moving_average(out time_t moving_time)
+		public double calculate_moving_average(Gpx.Point start, Gpx.Point stop, out time_t moving_time)
 		{
 			double time = 1;
 			double distance = 0;
 			moving_time = 0;
-			weak List<Point?> iter = this.points.first();
+			weak List<Point?> iter = this.points.find(start);
 			if(iter == null) return 0;
 			Point a  = iter.data;
-			while((iter = iter.next)!= null)
+			if((iter = iter.next)!=null)
 			{
-				Point b  = iter.data;
-				if( (b.distance-a.distance) > 0.007){
-					a = iter.prev.data;
-					time += (b.get_time()-a.get_time());
-					distance += b.distance-a.distance; 
+				while(iter != null && iter.data != stop)
+				{
+					Point b  = iter.data;
+					if( (b.distance-a.distance) > 0.007){
+						a = iter.prev.data;
+						time += (b.get_time()-a.get_time());
+						distance += b.distance-a.distance; 
 
-					a = b; 
+						a = b; 
+					}
+					iter = iter.next;
 				}
 			}
 			moving_time = (time_t)time;	
