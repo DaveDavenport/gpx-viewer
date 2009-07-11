@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-04 13:20+0200\n"
+"POT-Creation-Date: 2009-07-11 14:57+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/gpx-viewer.c:479 ../data/gpx-viewer.ui.h:10
+#: ../src/gpx-viewer.c:603 ../data/gpx-viewer.ui.h:10
 msgid "GPX Viewer"
 msgstr ""
 
@@ -73,10 +73,14 @@ msgid "Show"
 msgstr ""
 
 #: ../data/gpx-viewer.ui.h:12
-msgid "_File"
+msgid "Show Waypoints"
 msgstr ""
 
 #: ../data/gpx-viewer.ui.h:13
+msgid "_File"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:14
 msgid "n/a"
 msgstr ""
 
