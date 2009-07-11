@@ -54,7 +54,7 @@ namespace Gpx
 			this.visible_window = true;
 			this.size_allocate.connect(size_allocate_cb);
 			this.button_press_event.connect(button_press_event_cb);
-
+			this.motion_notify_event.connect(motion_notify_event_cb);
 			this.button_release_event.connect(button_release_event_cb);
 		}
 
@@ -65,11 +65,16 @@ namespace Gpx
 			this.surf = null;
 			/* Force a redraw */
 			this.queue_draw();
+			/* */
+			if(this.track != null && this.track.points != null)
+				selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
+			else
+				selection_changed(this.track, null, null);
 		}
 
 		signal void point_clicked(Gpx.Point point);
 
-		signal void selection_changed(Gpx.Point start, Gpx.Point stop);
+		signal void selection_changed(Gpx.Track? track, Gpx.Point? start, Gpx.Point? stop);
 		/**
 		 * Private functions
 		 */
@@ -103,6 +108,47 @@ namespace Gpx
 			}
 			return false;
 		}
+		private bool motion_notify_event_cb(Gdk.EventMotion event)
+		{
+			if(this.track == null) return false;
+			if(event.x > LEFT_OFFSET && event.x < (this.allocation.width-10))
+			{
+				double elapsed_time = track.get_total_time();
+				time_t time = (time_t)((event.x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
+
+
+				weak List<Point?> iter = this.track.points.first();
+				time += iter.data.get_time();
+				while(iter.next != null)
+				{
+					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
+								time > iter.data.get_time()))
+					{
+						if(this.start != null )
+							this.stop = iter.data;
+						else return false; 
+						this.queue_draw();
+						if(this.start != null && this.stop  != null)
+						{
+							if(start.get_time() != stop.get_time())
+							{
+								if(start.get_time() < stop.get_time()) {
+									selection_changed(this.track, start, stop);
+								} else {
+									selection_changed(this.track, stop, start);
+								}
+								return false;
+							}
+						}
+						selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
+						return false;
+					}
+
+					iter = iter.next;
+				}
+			}
+			return false;
+		}
 		private bool button_release_event_cb(Gdk.EventButton event)
 		{
 			if(this.track == null) return false;
@@ -123,7 +169,6 @@ namespace Gpx
 							this.stop = iter.data;
 						else this.stop = null;
 						this.queue_draw();
-						stdout.printf("Selection range set\n");
 						if(event.button == 1)
 						{
 							if(this.start != null && this.stop  != null)
@@ -131,14 +176,14 @@ namespace Gpx
 								if(start.get_time() != stop.get_time())
 								{
 									if(start.get_time() < stop.get_time()) {
-										selection_changed(start, stop);
+										selection_changed(this.track, start, stop);
 									} else {
-										selection_changed(stop, start);
+										selection_changed(this.track, stop, start);
 									}
 									return false;
 								}
 							}
-							selection_changed(this.track.points.first().data, this.track.points.last().data);
+							selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
 						}
 						return false;
 					}
@@ -184,7 +229,6 @@ namespace Gpx
 							(stop.get_time()-start.get_time())/elapsed_time*graph_width, graph_height);
 					ctx.stroke_preserve();
 					ctx.fill();
-					stdout.printf("painted selection\n");
 				}
 
 			}

@@ -180,8 +180,19 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
     /* Max speed */
+	double max_speed = 0;
+	double points = 0;
+	if(track && start && stop)
+	{
+		GList *list ;
+		for(list = g_list_find(track->points, start); list && list->data != stop; list = g_list_next(list)){
+			points++;
+			max_speed = MAX(max_speed, ((GpxPoint *)list->data)->speed);
+		}
+
+	}
     label = (GtkWidget *) gtk_builder_get_object(builder, "max_speed_label");
-    gtemp = track->max_speed;
+    gtemp =  max_speed;//(track != NULL)?track->max_speed:0;
     if (gtemp > 0) {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
@@ -192,7 +203,7 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
 
     /* GPS Points */
     label = (GtkWidget *) gtk_builder_get_object(builder, "num_points_label");
-    gtemp = (double)g_list_length(track->points);
+    gtemp = points;// (track != NULL)?(double)g_list_length(track->points):0.0;
     if (gtemp > 0) {
         gchar *string = g_strdup_printf("%.0f points", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
@@ -294,11 +305,11 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
 
             if (route->visible)
                 champlain_polygon_show(route->polygon);
-
+/*
             interface_update_heading(builder, route->track, 
 					(route->track)?g_list_first(route->track->points)->data:NULL,
 					(route->track)?g_list_last(route->track->points)->data:NULL);
-
+*/
             if (route->track->top && route->track->bottom) {
                 champlain_view_ensure_visible(view,
                         route->track->top->lat_dec, route->track->top->lon_dec,
@@ -371,9 +382,16 @@ static gboolean graph_point_remove(ClutterActor * marker)
     return FALSE;
 }
 
-static void graph_selection_changed(GpxGraph *graph, GpxPoint *start, GpxPoint *stop)
+static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *start, GpxPoint *stop)
 {
-	interface_update_heading(builder, graph->track, start, stop);
+	interface_update_heading(builder, track, start, stop);
+	if(start && active_route) {
+		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->start), start->lat_dec, start->lon_dec);
+	}
+
+	if(stop && active_route) {
+		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->stop), stop->lat_dec, stop->lon_dec);
+	}
 }
 static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 {
