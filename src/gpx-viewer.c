@@ -600,6 +600,11 @@ int main(int argc, char **argv)
     GOptionContext *context = NULL;
     GError *error = NULL;
 	gchar *path;
+
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	bind_textdomain_codeset(PACKAGE, "UTF-8");
+	textdomain(PACKAGE);
+
     context = g_option_context_new(_("GPX Viewer"));
 
     g_option_context_add_group(context, gtk_get_option_group(TRUE));

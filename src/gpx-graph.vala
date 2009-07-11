@@ -20,8 +20,10 @@
 using Gtk;
 using Gpx;
 using GLib;
+using Config;
 
 static const string LOG_DOMAIN="GPX_PARSER";
+static const string unique_graph = Config.VERSION;
 namespace Gpx
 {
 	public class Graph: Gtk.EventBox
@@ -413,14 +415,14 @@ namespace Gpx
 			layout.set_font_description(fd);
 			if(this.smooth_factor != 1)
 			{
-				var markup = "Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>".printf(this.smooth_factor);
+				var markup = _("Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>").printf(this.smooth_factor);
 				layout.set_markup(markup,-1);
 				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set graph title: %s",
 						markup);
 			}
 			else
 			{
-				var text = "Speed (km/h) vs Time (HH:MM)";
+				var text = _("Speed (km/h) vs Time (HH:MM)");
 				layout.set_text(text,-1);
 				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set graph title: %s",
 						text);

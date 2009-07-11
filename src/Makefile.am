@@ -27,7 +27,7 @@ gpx-parser.vala.stamp: gpx-parser.vala
 	touch gpx-parser.c gpx-parser.h $@
 
 gpx-graph.vala.stamp: gpx-graph.vala gpx-parser.vala
-	$(VALAC) -C -H gpx-graph.h $< --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=glib-2.0  --pkg=gpx-parser --vapidir=$(top_builddir)/src --basedir=$(top_builddir)/src
+	$(VALAC) -C -H gpx-graph.h $<  --pkg=config --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=glib-2.0  --pkg=gpx-parser --vapidir=$(top_builddir)/src --basedir=$(top_builddir)/src
 # Update time stamps, even if vala didn't find need to rebuild them.
 	touch gpx-graph.c gpx-graph.h $@
 
