@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gpx-viewer\n"
-"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2009-07-11 14:57+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-07-11 16:47+0200\n"
 "PO-Revision-Date: 2009-07-08 07:47+0000\n"
 "Last-Translator: Radek Stastny <Unknown>\n"
 "Language-Team: Czech <cs@li.org>\n"
@@ -17,9 +17,18 @@ msgstr ""
 "X-Launchpad-Export-Date: 2009-07-11 13:20+0000\n"
 "X-Generator: Launchpad (build Unknown)\n"
 
-#: ../src/gpx-viewer.c:603 ../data/gpx-viewer.ui.h:10
+#: ../src/gpx-viewer.c:608 ../data/gpx-viewer.ui.h:10
 msgid "GPX Viewer"
 msgstr "Prohlížeč GPX"
+
+#: ../src/gpx-graph.c:768
+#, c-format
+msgid "Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>"
+msgstr ""
+
+#: ../src/gpx-graph.c:776
+msgid "Speed (km/h) vs Time (HH:MM)"
+msgstr ""
 
 #: ../data/gpx-viewer-file-chooser.ui.h:1
 msgid "Choose gpx file(s)"

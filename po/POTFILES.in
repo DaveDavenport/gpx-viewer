@@ -1,6 +1,7 @@
 # Source code
 src/gpx-viewer.c
 src/gpx-parser.c
+src/gpx-graph.c
 
 # UI Files
 [type: gettext/glade]data/gpx-viewer-file-chooser.ui
