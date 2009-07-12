@@ -189,6 +189,7 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
 			points++;
 			max_speed = MAX(max_speed, ((GpxPoint *)list->data)->speed);
 		}
+		points++;
 
 	}
     label = (GtkWidget *) gtk_builder_get_object(builder, "max_speed_label");

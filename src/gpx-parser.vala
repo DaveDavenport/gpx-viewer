@@ -169,25 +169,24 @@ namespace Gpx {
 		 */
 		public double calculate_moving_average(Gpx.Point start, Gpx.Point stop, out time_t moving_time)
 		{
-			double time = 1;
+			double time = 0;
 			double distance = 0;
 			moving_time = 0;
 			weak List<Point?> iter = this.points.find(start);
 			if(iter == null) return 0;
 			Point a  = iter.data;
-			if((iter = iter.next)!=null)
+			if((iter)!=null)
 			{
-				while(iter != null && iter.data != stop)
+				while((iter = iter.next) != null && iter.prev.data != stop)
 				{
 					Point b  = iter.data;
-					if( (b.distance-a.distance) > 0.007){
+					if(((b.distance-a.distance)*3600)/(b.get_time()-iter.prev.data.get_time()) > 1.0){
 						a = iter.prev.data;
-						time += (b.get_time()-a.get_time());
+						time += (b.get_time()-(iter.prev.data).get_time());
 						distance += b.distance-a.distance; 
 
 						a = b; 
 					}
-					iter = iter.next;
 				}
 			}
 			moving_time = (time_t)time;	
