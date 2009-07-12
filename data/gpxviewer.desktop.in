@@ -1,5 +1,5 @@
 [Desktop Entry]
-_Name=Gpx Viewer
+_Name=GPX Viewer
 _Comment=A simple program to visualize one or more gpx files.
 Exec=gpxviewer %U
 MimeType=application/gpx+xml;

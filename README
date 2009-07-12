@@ -1,5 +1,6 @@
 Dependencies:
-* libcamplain-gtk (0.3?)
+* libchamplain-gtk (0.3.3)
+* libchamplain  (0.3.3)
 * vala 0.7.*
 * gtk+-2.0
 
