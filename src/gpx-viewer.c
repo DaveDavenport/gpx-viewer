@@ -80,11 +80,13 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
 {
     time_t temp;
     gdouble gtemp;
+	double max_speed = 0;
+	double points = 0;
     GtkWidget *label = NULL;
     /* Duration */
     label = (GtkWidget *) gtk_builder_get_object(builder, "duration_label");
 
-    temp = 0;//gpx_track_get_total_time(track);
+    temp = 0;
 	if(start && stop) {
 		temp = gpx_point_get_time(stop) - gpx_point_get_time(start);
 	}
@@ -117,7 +119,7 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
     /* Distance */
     label = (GtkWidget *) gtk_builder_get_object(builder, "distance_label");
 
-    gtemp = 0;//track->total_distance;
+    gtemp = 0;
 	if(start && stop) gtemp = stop->distance-start->distance;
 	if (gtemp > 0) {
         gchar *string = g_strdup_printf("%.2f km", gtemp);
@@ -129,7 +131,7 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
 
     /* Average */
     label = (GtkWidget *) gtk_builder_get_object(builder, "average_label");
-    gtemp = 0;//gpx_track_get_track_average(track);
+    gtemp = 0;
 	if(start && stop) gtemp = gpx_track_calculate_point_to_point_speed(track,start, stop);
     if (gtemp > 0) {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
@@ -141,7 +143,7 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
 
     /* Moving Average */
     label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_label");
-    gtemp = 0;//gpx_track_calculate_moving_average(track, &temp);
+    gtemp = 0;
 	temp = 0;
 	if(start && stop) gtemp = gpx_track_calculate_moving_average(track,start, stop, &temp);
     if (gtemp > 0) {
@@ -180,8 +182,6 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
     /* Max speed */
-	double max_speed = 0;
-	double points = 0;
 	if(track && start && stop)
 	{
 		GList *list ;
@@ -192,9 +192,8 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
 
 	}
     label = (GtkWidget *) gtk_builder_get_object(builder, "max_speed_label");
-    gtemp =  max_speed;//(track != NULL)?track->max_speed:0;
-    if (gtemp > 0) {
-        gchar *string = g_strdup_printf("%.2f km/h", gtemp);
+    if (max_speed > 0) {
+        gchar *string = g_strdup_printf("%.2f km/h", max_speed);
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
     } else {
@@ -203,9 +202,8 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
 
     /* GPS Points */
     label = (GtkWidget *) gtk_builder_get_object(builder, "num_points_label");
-    gtemp = points;// (track != NULL)?(double)g_list_length(track->points):0.0;
-    if (gtemp > 0) {
-        gchar *string = g_strdup_printf("%.0f points", gtemp);
+    if (points > 0) {
+        gchar *string = g_strdup_printf("%.0f points", points);
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
     } else {
