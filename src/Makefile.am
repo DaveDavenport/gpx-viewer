@@ -23,7 +23,7 @@ EXTRA_DIST=\
     config.vapi
 
 gpx-parser.vala.stamp: gpx-parser.vala
-	$(VALAC) -C -H gpx-parser.h $< --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=glib-2.0 --pkg=gio-2.0 --library=gpx-parser --basedir=$(top_builddir)/src
+	$(VALAC) -C -H gpx-parser.h $< --pkg=config --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=glib-2.0 --pkg=gio-2.0 --library=gpx-parser --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/src 
 # Update time stamps, even if vala didn't find need to rebuild them.
 	touch gpx-parser.c gpx-parser.h $@
 

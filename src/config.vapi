@@ -7,3 +7,9 @@ public const string PACKAGE_DATADIR;
 public const string LIB_DIR;
 public const string GETTEXT_PACKAGE;
 }
+
+namespace Hack {
+    [CCode (cname="g_ascii_strtod")]
+	public double to_double (string a, out weak string endptr = null);
+
+}
