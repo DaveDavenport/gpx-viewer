@@ -47,7 +47,7 @@ PKG_PROG_PKG_CONFIG
 
 
 PKG_CHECK_MODULES([modules],[
-        gtk+-2.0 
+        gtk+-2.0  >= 2.16
         champlain-gtk-0.3  >= 0.3.3
         champlain-0.3 >= 0.3.3
         gmodule-2.0 
