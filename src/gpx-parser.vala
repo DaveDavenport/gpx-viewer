@@ -29,7 +29,7 @@ namespace Gpx {
 	 */
 	public class Point {
 		/* Waypoint name */
-		public string name = null; 
+		public string name {get; set; default=null;} 
 		/* Position, in radians and degrees, 1000 means not set */
 		public double lat = 1000;
 		public double lon = 1000;
@@ -75,7 +75,7 @@ namespace Gpx {
 	 */
 	public class Track : GLib.Object {
 		/* make a property */
-		public string name = null;
+		public string name {get; set; default = null;}
 
 		/* usefull info gathered during walking the list */
 		public double total_distance = 0.0;

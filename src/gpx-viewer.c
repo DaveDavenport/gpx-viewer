@@ -229,7 +229,8 @@ static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
 	for(GList *it = g_list_first(file->waypoints); it; it = g_list_next(it))
 	{
 		GpxPoint *p = it->data;
-		ClutterActor *marker = champlain_marker_new_with_text(p->name, "Seric 12", NULL, NULL);
+		const gchar *name = gpx_track_get_name(p);
+		ClutterActor *marker = champlain_marker_new_with_text(name, "Seric 12", NULL, NULL);
 		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), p->lat_dec, p->lon_dec);
 		champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
 		clutter_container_add(CLUTTER_CONTAINER(waypoint_layer), CLUTTER_ACTOR(marker), NULL);
@@ -451,7 +452,7 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 
 	gtk_list_store_append(GTK_LIST_STORE(model), &liter);
 	gtk_list_store_set(GTK_LIST_STORE(model), &liter, 
-			0, (route->track->name) ? route->track->name : "n/a",
+			0, (gpx_track_get_name(route->track)) ? gpx_track_get_name(route->track): "n/a",
 			1, route, -1);
 	/* Pin's */
 	if(route->track)
