@@ -9,6 +9,7 @@ AC_INIT([gpxviewer], [package_version], [qball@sarine.nl])
 
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE
 
 AC_PROG_CC
 AC_PROG_CC_C_O

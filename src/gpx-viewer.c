@@ -516,10 +516,7 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 static void create_interface(void)
 {
     double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
-    time_t temp;
     GError *error = NULL;
-    const gchar *const *dirs = g_get_system_data_dirs();
-    int i = 0;
     GtkWidget *sp = NULL;
     gchar *path = g_build_filename(DATA_DIR, "gpx-viewer.ui", NULL);
     int current;

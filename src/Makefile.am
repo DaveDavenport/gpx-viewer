@@ -16,6 +16,10 @@ AM_CFLAGS=\
 	@modules_CFLAGS@\
 	-DDATA_DIR="\"$(pkgdatadir)\""\
     -std=c99
+
+#ifdef MAINTAINER_MODE
+AM_CFLAGS+=-Wall
+#endif
 	
 EXTRA_DIST=\
 	gpx-parser.vala\
