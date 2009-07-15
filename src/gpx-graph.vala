@@ -80,117 +80,96 @@ namespace Gpx
 		/**
 		 * Private functions
 		 */
-		private bool button_press_event_cb(Gdk.EventButton event)
+		private Gpx.Point? get_point_from_position(double x, double y)
 		{
-			if(this.track == null) return false;
-			if(event.x > LEFT_OFFSET && event.x < (this.allocation.width-10))
+
+			if(this.track == null) return null;
+			if(x > LEFT_OFFSET && x < (this.allocation.width-10))
 			{
 				double elapsed_time = track.get_total_time();
-				time_t time = (time_t)((event.x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
-
-
+				time_t time = (time_t)((x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
 				weak List<Point?> iter = this.track.points.first();
+				/* calculated time is offset from start time,  get real time */
 				time += iter.data.get_time();
 				while(iter.next != null)
 				{
 					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
 								time > iter.data.get_time()))
 					{
-						if(event.button == 1)
-							this.start = iter.data;
-						else{ this.start = null;
-							point_clicked(iter.data);
-						}
-
-						return false;
+						return iter.data;
 					}
-
 					iter = iter.next;
+				}
+			}
+			return null;
+		}
+		private bool button_press_event_cb(Gdk.EventButton event)
+		{
+			if(this.track == null) return false;
+			Gpx.Point *point = this.get_point_from_position(event.x, event.y); 
+			if(point != null) {
+				if(event.button == 1){
+					this.start = point; 
+				}else{ 
+					this.start = null;
+					point_clicked(point);
 				}
 			}
 			return false;
 		}
+
 		private bool motion_notify_event_cb(Gdk.EventMotion event)
 		{
 			if(this.track == null) return false;
-			if(event.x > LEFT_OFFSET && event.x < (this.allocation.width-10))
+			if(this.start == null) return false;
+
+			Gpx.Point *point = this.get_point_from_position(event.x, event.y); 
+			if(point != null)
 			{
-				double elapsed_time = track.get_total_time();
-				time_t time = (time_t)((event.x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
-
-
-				weak List<Point?> iter = this.track.points.first();
-				time += iter.data.get_time();
-				while(iter.next != null)
+				this.stop = point; 
+				/* queue redraw so the selection is updated */
+				this.queue_draw();
+				if(this.start != null && this.stop  != null)
 				{
-					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
-								time > iter.data.get_time()))
+					if(start.get_time() != stop.get_time())
 					{
-						if(this.start != null )
-							this.stop = iter.data;
-						else return false; 
-						this.queue_draw();
-						if(this.start != null && this.stop  != null)
-						{
-							if(start.get_time() != stop.get_time())
-							{
-								if(start.get_time() < stop.get_time()) {
-									selection_changed(this.track, start, stop);
-								} else {
-									selection_changed(this.track, stop, start);
-								}
-								return false;
-							}
+						if(start.get_time() < stop.get_time()) {
+							selection_changed(this.track, start, stop);
+						} else {
+							selection_changed(this.track, stop, start);
 						}
-						selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
 						return false;
 					}
-
-					iter = iter.next;
 				}
+				selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
 			}
 			return false;
 		}
 		private bool button_release_event_cb(Gdk.EventButton event)
 		{
 			if(this.track == null) return false;
-			if(event.x > LEFT_OFFSET && event.x < (this.allocation.width-10))
+			Gpx.Point *point = this.get_point_from_position(event.x, event.y); 
+			if(point != null)
 			{
-				double elapsed_time = track.get_total_time();
-				time_t time = (time_t)((event.x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
-
-
-				weak List<Point?> iter = this.track.points.first();
-				time += iter.data.get_time();
-				while(iter.next != null)
+				if(event.button == 1)
+					this.stop = point; 
+				else this.stop = null;
+				this.queue_draw();
+				if(event.button == 1)
 				{
-					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
-								time > iter.data.get_time()))
+					if(this.start != null && this.stop  != null)
 					{
-						if(event.button == 1)
-							this.stop = iter.data;
-						else this.stop = null;
-						this.queue_draw();
-						if(event.button == 1)
+						if(start.get_time() != stop.get_time())
 						{
-							if(this.start != null && this.stop  != null)
-							{
-								if(start.get_time() != stop.get_time())
-								{
-									if(start.get_time() < stop.get_time()) {
-										selection_changed(this.track, start, stop);
-									} else {
-										selection_changed(this.track, stop, start);
-									}
-									return false;
-								}
+							if(start.get_time() < stop.get_time()) {
+								selection_changed(this.track, start, stop);
+							} else {
+								selection_changed(this.track, stop, start);
 							}
-							selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
+							return false;
 						}
-						return false;
 					}
-
-					iter = iter.next;
+					selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
 				}
 			}
 			return false;
