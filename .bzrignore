@@ -2,3 +2,13 @@ Makefile
 Makefile.in
 Makefile.in
 Makefile
+gpx-graph.vala.stamp
+gpx-parser.vala.stamp
+gpx-graph.c
+gpx-graph.h
+gpx-parser.c
+gpx-parser.h
+gpx-parser.vapi
+src/.libs
+src/.deps
+*.gmo

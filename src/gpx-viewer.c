@@ -594,7 +594,6 @@ static void create_interface(void)
 
 int main(int argc, char **argv)
 {
-
     int i = 0;
     GOptionContext *context = NULL;
     GError *error = NULL;
@@ -604,7 +603,10 @@ int main(int argc, char **argv)
 	bind_textdomain_codeset(PACKAGE, "UTF-8");
 	textdomain(PACKAGE);
 
-    context = g_option_context_new(_("GPX Viewer"));
+    context = g_option_context_new(_("[FILE...] - GPX Viewer"));
+
+	g_option_context_set_summary(context, N_("A simple program to visualize one or more gpx files."));
+	g_option_context_set_description(context, N_("Website: http://blog.sarine.nl/gpx-viewer"));
 
     g_option_context_add_group(context, gtk_get_option_group(TRUE));
     g_option_context_parse(context, &argc, &argv, &error);
