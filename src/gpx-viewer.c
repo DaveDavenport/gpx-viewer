@@ -17,13 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <gtk/gtk.h>
 #include <stdlib.h>
+#include <config.h>
+#include <gtk/gtk.h>
+#include <glib/gi18n.h>
 #include <champlain/champlain.h>
 #include <champlain-gtk/champlain-gtk.h>
 #include <clutter-gtk/gtk-clutter-embed.h>
-#include <config.h>
-#include <glib/gi18n.h>
 #include "gpx-parser.h"
 #include "gpx-graph.h"
 
@@ -304,11 +304,6 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
 
             if (route->visible)
                 champlain_polygon_show(route->polygon);
-/*
-            interface_update_heading(builder, route->track, 
-					(route->track)?g_list_first(route->track->points)->data:NULL,
-					(route->track)?g_list_last(route->track->points)->data:NULL);
-*/
             if (route->track->top && route->track->bottom) {
                 champlain_view_ensure_visible(view,
                         route->track->top->lat_dec, route->track->top->lon_dec,
@@ -439,8 +434,7 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 	GtkIconInfo *ii;
 	struct Route *route = g_new0(Route, 1);
 	/* Route */
-	//route->file = file;
-	route->track = track;//iter->data;
+	route->track = track;
 	route->visible = TRUE;
 
 	/* draw the track */
