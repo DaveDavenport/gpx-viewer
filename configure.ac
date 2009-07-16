@@ -1,7 +1,7 @@
 #Define the version
 m4_define([package_major_version], [0])
 m4_define([package_minor_version], [0])
-m4_define([package_micro_version], [6])
+m4_define([package_micro_version], [7])
 m4_define([package_version], [package_major_version.package_minor_version.package_micro_version])
 
 AC_INIT([gpxviewer], [package_version], [qball@sarine.nl])
@@ -26,22 +26,22 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [GETTEXT Package name])
 AC_DEFINE_UNQUOTED(LOCALEDIR, "${prefix}/${DATADIRNAME}/locale", [Name of gettext locale directory])
 
 
-AC_DEFUN([AM_PROG_VALAC],
- [AC_PATH_PROG([VALAC], [valac], [])
- AS_IF([test -z "$VALAC"],
-   [AC_MSG_WARN([No Vala compiler found.  You will not be able to compile vala source files.])],
-   [AS_IF([test -n "$1"],
-      [AC_MSG_CHECKING([$VALAC is at least version $1])
-       am__vala_version=`$VALAC --version | sed 's/Vala //'` 
-       AS_VERSION_COMPARE([$1],[$am__vala_version], 
-         [AC_MSG_RESULT([yes])],
-         [AC_MSG_RESULT([yes])],
-         [AC_MSG_RESULT([no])
-          AC_MSG_ERROR([Vala $1 not found.])])])])
-])
+#AC_DEFUN([AM_PROG_VALAC],
+# [AC_PATH_PROG([VALAC], [valac], [])
+# AS_IF([test -z "$VALAC"],
+#   [AC_MSG_WARN([No Vala compiler found.  You will not be able to compile vala source files.])],
+#   [AS_IF([test -n "$1"],
+#      [AC_MSG_CHECKING([$VALAC is at least version $1])
+#       am__vala_version=`$VALAC --version | sed 's/Vala //'` 
+#       AS_VERSION_COMPARE([$1],[$am__vala_version], 
+#         [AC_MSG_RESULT([yes])],
+#         [AC_MSG_RESULT([yes])],
+#         [AC_MSG_RESULT([no])
+#          AC_MSG_ERROR([Vala $1 not found.])])])])
+#])
 
 AM_PROG_VALAC([0.7.0])
-AC_SUBST(VALAC)
+#AC_SUBST(VALAC)
 
 
 PKG_PROG_PKG_CONFIG

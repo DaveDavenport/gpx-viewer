@@ -1,1 +1,2 @@
+AUTOMAKE_OPTIONS = 1.11
 SUBDIRS=src data po

@@ -24,8 +24,8 @@
 #include <champlain/champlain.h>
 #include <champlain-gtk/champlain-gtk.h>
 #include <clutter-gtk/gtk-clutter-embed.h>
-#include "gpx-parser.h"
-#include "gpx-graph.h"
+#include "gpx.h"
+//#include "gpx-graph.h"
 
 /* List of gpx files */
 GList *files                        = NULL;
