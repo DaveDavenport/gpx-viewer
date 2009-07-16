@@ -229,7 +229,7 @@ static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
 	for(GList *it = g_list_first(file->waypoints); it; it = g_list_next(it))
 	{
 		GpxPoint *p = it->data;
-		const gchar *name = gpx_track_get_name(p);
+		const gchar *name = gpx_point_get_name(p);
 		ClutterActor *marker = champlain_marker_new_with_text(name, "Seric 12", NULL, NULL);
 		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), p->lat_dec, p->lon_dec);
 		champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
