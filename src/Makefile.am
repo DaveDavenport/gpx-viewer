@@ -8,10 +8,6 @@ gpxviewer_SOURCES=\
 
 gpxviewer_VALAFLAGS= --pkg=config --pkg=gtk+-2.0 --pkg=libxml-2.0 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/src -H gpx.h
 
-#BUILT_SOURCES=\
-#	gpx-parser.vala.stamp\
-#    gpx-graph.vala.stamp
-
 LIBS=\
 	@modules_LIBS@
 
