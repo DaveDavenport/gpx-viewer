@@ -7,26 +7,34 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gpx-viewer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-07-12 14:21+0200\n"
-"PO-Revision-Date: 2009-07-12 12:43+0000\n"
+"POT-Creation-Date: 2009-07-16 17:02+0200\n"
+"PO-Revision-Date: 2009-07-16 12:52+0000\n"
 "Last-Translator: Radek Stastny <Unknown>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2009-07-12 19:40+0000\n"
+"X-Launchpad-Export-Date: 2009-07-16 14:20+0000\n"
 "X-Generator: Launchpad (build Unknown)\n"
 
-#: ../src/gpx-viewer.c:607 ../data/gpx-viewer.ui.h:10
-msgid "GPX Viewer"
-msgstr "Prohlížeč GPX"
+#: ../src/gpx-viewer.c:598
+msgid "[FILE...] - GPX Viewer"
+msgstr "[SOUBOR...] - GPX Viewer"
 
-#: ../src/gpx-graph.c:768
+#: ../src/gpx-viewer.c:600 ../data/gpxviewer.desktop.in.h:1
+msgid "A simple program to visualize one or more gpx files."
+msgstr "Jednoduchý program pro prohlížení gpx souborů"
+
+#: ../src/gpx-viewer.c:601
+msgid "Website: http://blog.sarine.nl/gpx-viewer"
+msgstr "Dom. stránka: http://blog.sarine.nl/gpx-viewer"
+
+#: ../src/gpx-graph.c:714
 #, c-format
 msgid "Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>"
 msgstr "Rychlost (km/h) v čase (HH:MM) <i>( stupeň vyhlazení: %i)</i>"
 
-#: ../src/gpx-graph.c:776
+#: ../src/gpx-graph.c:722
 msgid "Speed (km/h) vs Time (HH:MM)"
 msgstr "Rychlost (km/h) v čase (HH:MM)"
 
@@ -78,6 +86,10 @@ msgstr "Změna vyhlazení grafu rychlosti."
 msgid "Change the zoom level of the map."
 msgstr "Změna měřítka mapy."
 
+#: ../data/gpx-viewer.ui.h:10 ../data/gpxviewer.desktop.in.h:2
+msgid "GPX Viewer"
+msgstr "Prohlížeč GPX"
+
 #: ../data/gpx-viewer.ui.h:11
 msgid "Show"
 msgstr "Zobrazit"
@@ -94,10 +106,5 @@ msgstr "_Soubor"
 msgid "n/a"
 msgstr "není k dispozici"
 
-#: ../data/gpxviewer.desktop.in.h:1
-msgid "A simple program to visualize one or more gpx files."
-msgstr "Jednoduchý program pro prohlížení gpx souborů"
-
-#: ../data/gpxviewer.desktop.in.h:2
-msgid "Gpx Viewer"
-msgstr "Prohlížeč GPX"
+#~ msgid "Gpx Viewer"
+#~ msgstr "Prohlížeč GPX"
