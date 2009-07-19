@@ -284,52 +284,54 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
 {
     GtkTreeModel *model = gtk_combo_box_get_model(box);
     GtkTreeIter iter;
-    if (gtk_combo_box_get_active_iter(box, &iter)) {
-        Route *route = NULL;
-        gtk_tree_model_get(model, &iter, 1, &route, -1);
-        if (active_route) {
-            champlain_polygon_set_stroke_color(active_route->polygon, &normal_track_color);
-            if (active_route->visible)
-                champlain_polygon_show(active_route->polygon);
-
+	if (gtk_combo_box_get_active_iter(box, &iter)) {
+		Route *route = NULL;
+		gtk_tree_model_get(model, &iter, 1, &route, -1);
+		if (active_route) {
+			champlain_polygon_set_stroke_color(active_route->polygon, &normal_track_color);
+/*			if (active_route->visible)
+				champlain_polygon_show(active_route->polygon);
+*/
 			if(active_route->stop) 
 				clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
 
 			if(active_route->start) 
 				clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
-        }
+			printf("hide\n");
+		}
 
-        if (route) {
-            ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
-            champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
+		active_route = route;
+		if (route) {
+			ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+			champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
 
-            if (route->visible)
-                champlain_polygon_show(route->polygon);
-            if (route->track->top && route->track->bottom) {
-                champlain_view_ensure_visible(view,
-                        route->track->top->lat_dec, route->track->top->lon_dec,
-                        route->track->bottom->lat_dec, route->track->bottom->lon_dec, FALSE);
-            }
+			if (route->visible)
+				champlain_polygon_show(route->polygon);
+			if (route->track->top && route->track->bottom) {
+				champlain_view_ensure_visible(view,
+						route->track->top->lat_dec, route->track->top->lon_dec,
+						route->track->bottom->lat_dec, route->track->bottom->lon_dec, FALSE);
+			}
 
-            if (gpx_track_get_total_time(route->track) > 5) {
-                gpx_graph_set_track(gpx_graph, route->track);
-                gtk_widget_show(GTK_WIDGET(gpx_graph));
-            } else {
-                gpx_graph_set_track(gpx_graph, NULL);
-                gtk_widget_hide(GTK_WIDGET(gpx_graph));
-            }
+			if (gpx_track_get_total_time(route->track) > 5) {
+				gpx_graph_set_track(gpx_graph, route->track);
+				gtk_widget_show(GTK_WIDGET(gpx_graph));
+			} else {
+				gpx_graph_set_track(gpx_graph, NULL);
+				gtk_widget_hide(GTK_WIDGET(gpx_graph));
+			}
 
 			if(route->stop) 
 				clutter_actor_show(CLUTTER_ACTOR(route->stop));
 
 			if(route->start) 
 				clutter_actor_show(CLUTTER_ACTOR(route->start));
-        }
-        active_route = route;
+		}
+		active_route = route;
 
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "route_visible_check_button")),
-                active_route->visible);
-    }
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "route_visible_check_button")),
+				active_route->visible);
+	}
 }
 
 /* Smooth factor changed */
@@ -380,12 +382,15 @@ static gboolean graph_point_remove(ClutterActor * marker)
 static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *start, GpxPoint *stop)
 {
 	interface_update_heading(builder, track, start, stop);
-	if(start && active_route) {
-		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->start), start->lat_dec, start->lon_dec);
-	}
+	if(active_route && active_route->track->points != NULL)
+	{
+		if(start) {
+			champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->start), start->lat_dec, start->lon_dec);
+		}
 
-	if(stop && active_route) {
-		champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->stop), stop->lat_dec, stop->lon_dec);
+		if(stop) {
+			champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->stop), stop->lat_dec, stop->lon_dec);
+		}
 	}
 }
 static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)

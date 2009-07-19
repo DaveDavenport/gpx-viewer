@@ -67,6 +67,8 @@ namespace Gpx
 			this.surf = null;
 			/* Force a redraw */
 			this.queue_draw();
+			this.start = null;
+			this.stop = null;
 			/* */
 			if(this.track != null && this.track.points != null)
 				selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
