@@ -16,9 +16,9 @@ AM_CFLAGS=\
 	-DDATA_DIR="\"$(pkgdatadir)\""\
     -std=c99
 
-#ifdef MAINTAINER_MODE
+if MAINTAINER_MODE
 AM_CFLAGS+=-Wall
-#endif
+endif
 	
 EXTRA_DIST=\
     config.vapi
