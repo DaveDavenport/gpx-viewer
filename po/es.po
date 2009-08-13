@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gpx-viewer\n"
-"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2009-07-16 17:02+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-08-13 14:49+0200\n"
 "PO-Revision-Date: 2009-07-31 22:57+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -17,24 +17,24 @@ msgstr ""
 "X-Launchpad-Export-Date: 2009-08-02 19:48+0000\n"
 "X-Generator: Launchpad (build Unknown)\n"
 
-#: ../src/gpx-viewer.c:598
+#: ../src/gpx-viewer.c:603
 msgid "[FILE...] - GPX Viewer"
 msgstr ""
 
-#: ../src/gpx-viewer.c:600 ../data/gpxviewer.desktop.in.h:1
+#: ../src/gpx-viewer.c:605 ../data/gpxviewer.desktop.in.h:1
 msgid "A simple program to visualize one or more gpx files."
 msgstr ""
 
-#: ../src/gpx-viewer.c:601
+#: ../src/gpx-viewer.c:606
 msgid "Website: http://blog.sarine.nl/gpx-viewer"
 msgstr ""
 
-#: ../src/gpx-graph.c:714
+#: ../src/gpx-graph.c:771
 #, c-format
 msgid "Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>"
 msgstr ""
 
-#: ../src/gpx-graph.c:722
+#: ../src/gpx-graph.c:779
 msgid "Speed (km/h) vs Time (HH:MM)"
 msgstr ""
 
