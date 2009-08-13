@@ -1,7 +1,6 @@
 AUTOMAKE_OPTIONS = 1.11
 SUBDIRS=po
 
-
 ##
 # GPX Viewer
 ##
@@ -15,6 +14,14 @@ DISTCLEANFILES=\
 
 EXTRA_DIST=${desktop_in_files}
 
+##
+# Hack to make make distcheck work
+##
+BUILT_SOURCES=test_data_dir
+test_data_dir:
+	@-if test ! -d "$(top_builddir)/data"; then \
+	mkdir "$(top_builddir)/data"; \
+	fi
 
 ##
 # Interface files
