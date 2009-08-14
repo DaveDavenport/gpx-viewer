@@ -8,5 +8,5 @@ src/gpx-graph.c
 [type: gettext/glade]data/gpx-viewer.ui
 
 # Desktop file
-data/gpxviewer.desktop.in
+data/gpx-viewer.desktop.in
 

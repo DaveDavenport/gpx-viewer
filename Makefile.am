@@ -5,7 +5,7 @@ SUBDIRS=po
 # GPX Viewer
 ##
 desktopdir = $(datadir)/applications
-desktop_in_files = data/gpxviewer.desktop.in
+desktop_in_files = data/gpx-viewer.desktop.in
 desktop_DATA=$(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
@@ -67,19 +67,19 @@ EXTRA_DIST+=\
 ##
 iconthemedir = $(datadir)/icons/hicolor
 appicon16dir = $(iconthemedir)/16x16/apps
-dist_appicon16_DATA = data/icons/16x16/apps/gpxviewer.png
+dist_appicon16_DATA = data/icons/16x16/apps/gpx-viewer.png
 
 appicon22dir = $(iconthemedir)/22x22/apps
-dist_appicon22_DATA = data/icons/22x22/apps/gpxviewer.png
+dist_appicon22_DATA = data/icons/22x22/apps/gpx-viewer.png
 
 appicon24dir = $(iconthemedir)/24x24/apps
-dist_appicon24_DATA = data/icons/24x24/apps/gpxviewer.png
+dist_appicon24_DATA = data/icons/24x24/apps/gpx-viewer.png
 
 appicon32dir = $(iconthemedir)/32x32/apps
-dist_appicon32_DATA = data/icons/32x32/apps/gpxviewer.png
+dist_appicon32_DATA = data/icons/32x32/apps/gpx-viewer.png
 
 appiconscalabledir = $(iconthemedir)/scalable/apps
-dist_appiconscalable_DATA = data/icons/scalable/apps/gpxviewer.svg
+dist_appiconscalable_DATA = data/icons/scalable/apps/gpx-viewer.svg
 
 appiconsprivatescalabledir= $(pkgdatadir)/icons/hicolor/scalable/status/
 dist_appiconsprivatescalable_DATA = \
