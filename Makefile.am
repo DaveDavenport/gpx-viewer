@@ -37,15 +37,15 @@ EXTRA_DIST+=${ui_DATA}
 # GPX Viewer program
 ##
 
-bin_PROGRAMS=gpxviewer
+bin_PROGRAMS=gpx-viewer
 
-gpxviewer_SOURCES=\
+gpx_viewer_SOURCES=\
 	src/gpx-parser.vala\
     src/gpx-graph.vala\
 	src/gpx-viewer.c
 
 
-gpxviewer_VALAFLAGS= --pkg=config --pkg=gtk+-2.0 --pkg=libxml-2.0 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/src -H gpx.h
+gpx_viewer_VALAFLAGS= --pkg=config --pkg=gtk+-2.0 --pkg=libxml-2.0 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/src -H gpx.h
 
 LIBS=\
 	@modules_LIBS@
