@@ -34,7 +34,13 @@ namespace Gpx
 		private Cairo.Surface surf = null;
 		private int LEFT_OFFSET=60;
 		private int BOTTOM_OFFSET=30;
+		private time_t highlight = 0;
 
+		public void set_highlight (time_t highlight) {
+			this.highlight = highlight;
+			/* Force a redraw */
+			this.queue_draw();
+		}
 
 		public int smooth_factor {
 			get { return _smooth_factor;}
@@ -62,6 +68,7 @@ namespace Gpx
 
 		public void set_track(Gpx.Track? track)
 		{
+			this.highlight = 0;
 			this.track =track;
 			/* Invalidate the previous plot, so it is redrawn */
 			this.surf = null;
@@ -196,6 +203,24 @@ namespace Gpx
 			Gdk.cairo_region(ctx, event.region);
 			ctx.clip();
 			ctx.paint();
+
+			if(highlight > 0 )
+			{
+				Gpx.Point f = this.track.points.first().data;
+				double elapsed_time = track.get_total_time();
+				double graph_width = this.allocation.width-LEFT_OFFSET-10;
+				double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
+
+				double hl = (highlight-f.get_time())/elapsed_time*graph_width; 
+
+				ctx.translate(LEFT_OFFSET,20);
+				ctx.set_source_rgba(0.8, 0.2, 0.3, 0.8);
+				ctx.move_to(hl, 0);
+				ctx.line_to(hl,graph_height);
+
+				ctx.stroke_preserve();
+				ctx.fill();
+			}
 			/* Draw selection, if available */
 			if(start != null && stop != null)
 			{

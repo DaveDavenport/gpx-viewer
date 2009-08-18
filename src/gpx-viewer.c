@@ -441,10 +441,30 @@ void playback_play_clicked(void)
 			gpx_playback_start(active_route->playback);
 	}
 }
+
+void playback_pause_clicked(void)
+{
+	if(active_route) {
+			gpx_playback_pause(active_route->playback);
+	}
+}
+void playback_stop_clicked(void)
+{
+	if(active_route) {
+			gpx_playback_stop(active_route->playback);
+	}
+}
 static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 {
-	if(current != NULL)
+	if(current != NULL){
+		time_t time = gpx_point_get_time(current);
+		gpx_graph_set_highlight(gpx_graph, &time);
 		graph_point_clicked(gpx_graph, current);
+	}
+	else{
+		time_t time = 0;
+		gpx_graph_set_highlight(gpx_graph, &time);
+	}
 }
 static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
 {

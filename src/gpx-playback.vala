@@ -71,14 +71,24 @@ namespace Gpx
                 this.timer = GLib.Timeout.add(250, timer_callback); 
             }
         }
+        public void pause()
+        {
+            if(this.current == null) return;
+            if(this.timer > 0) {
+                GLib.Source.remove(this.timer);
+                timer = 0;
+            }else{
+                this.timer = GLib.Timeout.add(250, timer_callback); 
+            }
+        }
         public void stop()
         {
             if(this.timer > 0) {
                 GLib.debug("stop playback\n");
                 GLib.Source.remove(this.timer);
                timer = 0;
-               this.tick(null);
             }
+            this.tick(null);
         }
     }
 }
