@@ -51,6 +51,7 @@ typedef struct Route {
 	ChamplainBaseMarker *start;
 	ChamplainBaseMarker *stop;
     gboolean visible;
+	GpxPlayback *playback;
 } Route;
 
 /* The currently active route */
@@ -297,6 +298,8 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
 
 			if(active_route->start) 
 				clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
+
+			gpx_playback_stop(active_route->playback);
 			printf("hide\n");
 		}
 
@@ -379,6 +382,7 @@ static gboolean graph_point_remove(ClutterActor * marker)
     return FALSE;
 }
 
+
 static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *start, GpxPoint *stop)
 {
 	interface_update_heading(builder, track, start, stop);
@@ -427,9 +431,20 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 	}
 
 	marker[0] =(ChamplainBaseMarker *) click_marker;
-	champlain_view_ensure_markers_visible(view, marker, TRUE);
+	champlain_view_ensure_markers_visible(view, marker, FALSE);
 
     click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, click_marker);
+}
+void playback_play_clicked(void)
+{
+	if(active_route) {
+			gpx_playback_start(active_route->playback);
+	}
+}
+static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
+{
+	if(current != NULL)
+		graph_point_clicked(gpx_graph, current);
 }
 static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
 {
@@ -510,6 +525,9 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 		clutter_actor_hide(CLUTTER_ACTOR(route->stop));
 		clutter_actor_hide(CLUTTER_ACTOR(route->start));
 	}
+
+	route->playback = gpx_playback_new(route->track);
+	g_signal_connect(GPX_PLAYBACK(route->playback), "tick", G_CALLBACK(route_playback_tick), NULL);
 	routes = g_list_append(routes, route);
 }
 /* Create the interface */
