@@ -499,7 +499,8 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 	{
 		const GList *start = g_list_first(route->track->points);
 		const GList *stop = g_list_last(route->track->points);
-
+		if(start && stop)
+		{
 		ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
 				"pin-green",
 				100, 0);
@@ -544,6 +545,7 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 
 		clutter_actor_hide(CLUTTER_ACTOR(route->stop));
 		clutter_actor_hide(CLUTTER_ACTOR(route->start));
+		}
 	}
 
 	route->playback = gpx_playback_new(route->track);
