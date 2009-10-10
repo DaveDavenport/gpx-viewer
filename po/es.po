@@ -7,101 +7,102 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gpx-viewer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-08-13 14:49+0200\n"
-"PO-Revision-Date: 2009-07-31 22:57+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2009-07-16 17:02+0200\n"
+"PO-Revision-Date: 2009-10-09 22:35+0000\n"
+"Last-Translator: DiegoJ <diegojromerolopez@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2009-08-02 19:48+0000\n"
+"X-Launchpad-Export-Date: 2009-10-10 12:20+0000\n"
 "X-Generator: Launchpad (build Unknown)\n"
 
-#: ../src/gpx-viewer.c:603
+#: ../src/gpx-viewer.c:598
 msgid "[FILE...] - GPX Viewer"
-msgstr ""
+msgstr "[ARCHIVO...] - GPX Viewer"
 
-#: ../src/gpx-viewer.c:605 ../data/gpxviewer.desktop.in.h:1
+#: ../src/gpx-viewer.c:600 ../data/gpxviewer.desktop.in.h:1
 msgid "A simple program to visualize one or more gpx files."
-msgstr ""
+msgstr "Un sencillo programa para visualizar uno o más archivos gpx."
 
-#: ../src/gpx-viewer.c:606
+#: ../src/gpx-viewer.c:601
 msgid "Website: http://blog.sarine.nl/gpx-viewer"
-msgstr ""
+msgstr "Sitio Web: http://blog.sarine.nl/gpx-viewer"
 
-#: ../src/gpx-graph.c:771
+#: ../src/gpx-graph.c:714
 #, c-format
 msgid "Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>"
-msgstr ""
+msgstr "Velocidad (km/h) vs Tiempo (HH:MM) <i>(ventana suave: %i)</i>"
 
-#: ../src/gpx-graph.c:779
+#: ../src/gpx-graph.c:722
 msgid "Speed (km/h) vs Time (HH:MM)"
-msgstr ""
+msgstr "Velocidad (km/h) vs Tiempo (HH:MM)"
 
 #: ../data/gpx-viewer-file-chooser.ui.h:1
 msgid "Choose gpx file(s)"
-msgstr ""
+msgstr "Elegir archivo(s) gpx"
 
 #: ../data/gpx-viewer-file-chooser.ui.h:2
 msgid "gtk-cancel"
-msgstr ""
+msgstr "gtk-cancel"
 
 #: ../data/gpx-viewer-file-chooser.ui.h:3
 msgid "gtk-open"
-msgstr ""
+msgstr "gtk-open"
 
 #: ../data/gpx-viewer.ui.h:1
 msgid "<b>Average:</b>"
-msgstr ""
+msgstr "<b>Promedio:</b>"
 
 #: ../data/gpx-viewer.ui.h:2
 msgid "<b>Distance:</b>"
-msgstr ""
+msgstr "<b>Distancia:</b>"
 
 #: ../data/gpx-viewer.ui.h:3
 msgid "<b>Duration:</b>"
-msgstr ""
+msgstr "<b>Duración:</b>"
 
 #: ../data/gpx-viewer.ui.h:4
 msgid "<b>Gps points:</b>"
-msgstr ""
+msgstr "<b>Puntos Gps:</b>"
 
 #: ../data/gpx-viewer.ui.h:5
 msgid "<b>Max. speed:</b>"
-msgstr ""
+msgstr "<b>Velocidad Máx. :</b>"
 
 #: ../data/gpx-viewer.ui.h:6
 msgid "<b>Moving average:</b>"
-msgstr ""
+msgstr "<b>Desplazamiento medio:</b>"
 
 #: ../data/gpx-viewer.ui.h:7
 msgid "<b>Moving time:</b>"
-msgstr ""
+msgstr "<b>Duración del desplazamiento:</b>"
 
 #: ../data/gpx-viewer.ui.h:8
 msgid "Change the smoothing factor used when plotting the speed graph."
 msgstr ""
+"Cambiar el factor de suavizado usando al dibujar la gráfica de velocidad."
 
 #: ../data/gpx-viewer.ui.h:9
 msgid "Change the zoom level of the map."
-msgstr ""
+msgstr "Cambiar el nivel de zoom del mapa."
 
 #: ../data/gpx-viewer.ui.h:10 ../data/gpxviewer.desktop.in.h:2
 msgid "GPX Viewer"
-msgstr ""
+msgstr "Visor GPX"
 
 #: ../data/gpx-viewer.ui.h:11
 msgid "Show"
-msgstr ""
+msgstr "Mostrar"
 
 #: ../data/gpx-viewer.ui.h:12
 msgid "Show Waypoints"
-msgstr ""
+msgstr "Mostrar Puntos de Ruta"
 
 #: ../data/gpx-viewer.ui.h:13
 msgid "_File"
-msgstr ""
+msgstr "_Archivo"
 
 #: ../data/gpx-viewer.ui.h:14
 msgid "n/a"
-msgstr ""
+msgstr "n/d"
