@@ -324,6 +324,7 @@ namespace Gpx
 				ctx.move_to(-4, j);
 				ctx.line_to(0, j);
 				ctx.stroke();
+				/* */
 			}
 
 			/* Draw axis */
@@ -341,6 +342,9 @@ namespace Gpx
 			ctx.set_line_width(1);
 			weak List<Point?> iter = track.points.first();
 			ctx.move_to(0.0, graph_height);
+
+
+			double pref_speed = 2f;
 			while(iter.next != null)
 			{
 				double time_offset = (iter.data.get_time()-f.get_time());
@@ -354,9 +358,16 @@ namespace Gpx
 					ii = ii.prev;
 				}
 				speed = speed/i;
+				if(pref_speed < 1) {
+					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+							graph_height*(double)(1.0-0));
+
+				}
 				ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
 						graph_height*(double)(1.0-speed/max_speed));
 				iter = iter.next;
+
+				pref_speed = speed;
 			}
 			ctx.line_to(graph_width, graph_height);
 			ctx.close_path();
@@ -364,6 +375,28 @@ namespace Gpx
 
 			ctx.set_source_rgba(0.1, 0.2, 0.8, 0.5);
 			ctx.fill();
+			/* Draw points */
+			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+			iter = track.points.first();
+			while(iter.next != null)
+			{
+				double time_offset = (iter.data.get_time()-f.get_time());
+				double speed = 0;
+				weak List<Point?> ii = iter.next;
+				int i=0;
+				int sf = this.smooth_factor;
+				for(i=0;i< sf && ii.prev != null; i++)
+				{
+					speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
+					ii = ii.prev;
+				}
+				speed = speed/i;
+				ctx.rectangle(graph_width*(double)(time_offset/(double)elapsed_time)-1,
+						graph_height*(double)(1.0-speed/max_speed)-1,2,2);
+				ctx.stroke();
+
+				iter = iter.next;
+			}
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw graph"); 
 
