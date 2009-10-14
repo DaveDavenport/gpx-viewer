@@ -375,6 +375,8 @@ namespace Gpx
 
 			ctx.set_source_rgba(0.1, 0.2, 0.8, 0.5);
 			ctx.fill();
+
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw data points"); 
 			/* Draw points */
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 			iter = track.points.first();

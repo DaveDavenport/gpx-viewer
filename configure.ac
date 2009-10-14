@@ -1,7 +1,7 @@
 #Define the version
 m4_define([package_major_version], [0])
 m4_define([package_minor_version], [1])
-m4_define([package_micro_version], [0])
+m4_define([package_micro_version], [2])
 m4_define([package_version], [package_major_version.package_minor_version.package_micro_version])
 
 AC_INIT([gpx-viewer], [package_version], [qball@sarine.nl])
