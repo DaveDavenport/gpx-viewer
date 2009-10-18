@@ -653,8 +653,8 @@ int main(int argc, char **argv)
         g_log(NULL, G_LOG_LEVEL_ERROR, "Failed to parse commandline options: %s", error->message);
         g_error_free(error);
     }
-
-    g_thread_init(NULL);
+	if(!g_thread_supported())
+		g_thread_init(NULL);
     gtk_clutter_init(&argc, &argv);
 
 	path = g_build_filename(DATA_DIR, "icons", NULL);
