@@ -25,7 +25,9 @@
 #include <champlain-gtk/champlain-gtk.h>
 #include <clutter-gtk/gtk-clutter-embed.h>
 #include "gpx.h"
-//#include "gpx-graph.h"
+
+
+static GKeyFile *config_file		= NULL;
 
 /* List of gpx files */
 GList *files                        = NULL;
@@ -56,6 +58,25 @@ typedef struct Route {
 
 /* The currently active route */
 Route *active_route                 = NULL;
+
+
+
+int config_get_integer(const char *a, const char *b, int def)
+{
+	GError *error = NULL;
+	int retv = g_key_file_get_integer(config_file,a,b, &error);
+	if(error) {
+		g_debug("Failed to get value: %s", error->message);
+		g_error_free(error); error = NULL;
+		return def;
+	}
+	return retv;
+}
+
+
+
+
+
 
 static void free_Route(Route *route)
 {
@@ -281,18 +302,17 @@ void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
     }
 }
 
-void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
+void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 {
-    GtkTreeModel *model = gtk_combo_box_get_model(box);
-    GtkTreeIter iter;
-	if (gtk_combo_box_get_active_iter(box, &iter)) {
+	GtkTreeView *tree = gtk_tree_selection_get_tree_view(sel);
+	GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree));
+	GtkTreeIter iter;
+	if(gtk_tree_selection_get_selected(sel, &model, &iter))
+	{
 		Route *route = NULL;
 		gtk_tree_model_get(model, &iter, 1, &route, -1);
 		if (active_route) {
 			champlain_polygon_set_stroke_color(active_route->polygon, &normal_track_color);
-/*			if (active_route->visible)
-				champlain_polygon_show(active_route->polygon);
-*/
 			if(active_route->stop) 
 				clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
 
@@ -301,6 +321,8 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
 
 			gpx_playback_stop(active_route->playback);
 			printf("hide\n");
+			gpx_graph_set_track(gpx_graph, NULL);
+			gtk_widget_hide(GTK_WIDGET(gpx_graph));
 		}
 
 		active_route = route;
@@ -330,10 +352,10 @@ void routes_combo_changed_cb(GtkComboBox * box, gpointer user_data)
 			if(route->start) 
 				clutter_actor_show(CLUTTER_ACTOR(route->start));
 		}
-		active_route = route;
-
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "route_visible_check_button")),
+		if(active_route)
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "route_visible_check_button")),
 				active_route->visible);
+
 	}
 }
 
@@ -343,6 +365,7 @@ static void smooth_factor_changed(GpxGraph * graph, GParamSpec * gobject, GtkSpi
     gint zoom;
     g_object_get(G_OBJECT(graph), "smooth-factor", &zoom, NULL);
     gtk_spin_button_set_value(spinbutton, zoom);
+	g_key_file_set_integer(config_file, "Window", "smooth-factor", zoom);
 }
 
 void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
@@ -351,7 +374,8 @@ void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
     int new = gtk_spin_button_get_value_as_int(spin);
     if (current != new) {
         gpx_graph_set_smooth_factor(gpx_graph, new);
-    }
+		g_key_file_set_integer(config_file, "Window", "smooth-factor", new);
+	}
 }
 
 /* Zoom level changed */
@@ -466,7 +490,7 @@ static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 		gpx_graph_set_highlight(gpx_graph, &time);
 	}
 }
-static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
+static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
 {
 	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 	/* Plot all tracks, and get total bounding box */
@@ -490,10 +514,12 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 	if (track->bottom && track->bottom->lon_dec > *lon2)
 		*lon2 = track->bottom->lon_dec;
 
-	gtk_list_store_append(GTK_LIST_STORE(model), &liter);
-	gtk_list_store_set(GTK_LIST_STORE(model), &liter, 
+	gtk_tree_store_append(GTK_TREE_STORE(model), &liter,parent);
+	gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
 			0, (gpx_track_get_name(route->track)) ? gpx_track_get_name(route->track): "n/a",
-			1, route, -1);
+			1, route,
+			2, TRUE,
+			-1);
 	/* Pin's */
 	if(route->track)
 	{
@@ -552,6 +578,34 @@ static void interface_plot_add_track(GpxTrack *track, double *lat1, double *lon1
 	g_signal_connect(GPX_PLAYBACK(route->playback), "tick", G_CALLBACK(route_playback_tick), NULL);
 	routes = g_list_append(routes, route);
 }
+
+static void main_window_pane_pos_changed(GtkWidget * panel, GParamSpec * arg1, gpointer data)
+{
+	gint position = 0;
+	g_object_get(G_OBJECT(panel), "position", &position, NULL);
+	g_key_file_set_integer(config_file, "Window", "main_view_pane_pos", position);
+	g_debug("Position: %i\n", position);
+}
+
+
+static void main_window_pane2_pos_changed(GtkWidget * panel, GParamSpec * arg1, gpointer data)
+{
+	gint position = 0;
+	g_object_get(G_OBJECT(panel), "position", &position, NULL);
+	g_key_file_set_integer(config_file, "Window", "main_view_pane2_pos", position);
+	g_debug("Position2: %i\n", position);
+}
+
+void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer data)
+{
+	if(alloc)
+	{
+		g_key_file_set_integer(config_file, "Window", "width", alloc->width);
+		g_key_file_set_integer(config_file, "Window", "height", alloc->height);
+		g_debug("size: %i - %i\n", alloc->width, alloc->height);
+	}
+
+}
 /* Create the interface */
 static void create_interface(void)
 {
@@ -559,7 +613,10 @@ static void create_interface(void)
     GError *error = NULL;
     GtkWidget *sp = NULL;
     gchar *path = g_build_filename(DATA_DIR, "gpx-viewer.ui", NULL);
+	GtkTreeSelection *selection;
     int current;
+	int pos;
+	gint w,h;
 
 	/* Open UI description file */
     builder = gtk_builder_new();
@@ -567,7 +624,14 @@ static void create_interface(void)
         g_error("Failed to create ui: %s\n", error->message);
     }
     g_free(path);
+	
+	w =config_get_integer("Window", "width", 400); 
+	h =config_get_integer("Window", "height", 300); 
+	gtk_window_resize(GTK_WINDOW(gtk_builder_get_object(builder,"gpx_viewer_window")), w,h); 
 
+
+	selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")));
+	g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(routes_list_changed_cb), NULL);
     /* Create map view */
     champlain_view = gtk_champlain_embed_new();
     gtk_widget_set_size_request(champlain_view, 640, 280);
@@ -575,11 +639,23 @@ static void create_interface(void)
     /* graph */
     gpx_graph = gpx_graph_new();
     gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(gpx_graph), FALSE, TRUE);
-    gtk_paned_set_position(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), 200);
+	gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph), TRUE);
 
     /* show the interface */
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
 
+	/* Set position */
+	pos = config_get_integer("Window", "main_view_pane_pos", 200); 
+	gtk_paned_set_position(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), pos);
+	g_signal_connect( gtk_builder_get_object(builder, "main_view_pane"), "notify::position",
+			G_CALLBACK(main_window_pane_pos_changed), NULL);
+	/* Set position */
+	pos = config_get_integer("Window", "main_view_pane2_pos", 100); 
+	gtk_paned_set_position(GTK_PANED(gtk_builder_get_object(builder, "main_view_hpane")), pos);
+
+
+	g_signal_connect( gtk_builder_get_object(builder, "main_view_hpane"), "notify::position",
+			G_CALLBACK(main_window_pane2_pos_changed), NULL);
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     g_object_set(G_OBJECT(view), "scroll-mode", CHAMPLAIN_SCROLL_MODE_KINETIC, "zoom-level", 5, NULL);
 
@@ -592,14 +668,24 @@ static void create_interface(void)
 
     for (GList *fiter = g_list_first(files); fiter; fiter = g_list_next(fiter)) {
         GpxFile *file = fiter->data;
+		GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+		GtkTreeIter liter;
+		gchar *basename = g_path_get_basename(file->filename);
+		gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+		gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
+			0, basename, 
+			1, NULL,
+			2, TRUE,
+			-1);
+		g_free(basename);
         if (file->tracks) {
 			for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
-				interface_plot_add_track(iter->data, &lat1, &lon1, &lat2, &lon2);
+				interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
 			}
 		}
 		if(file->routes) {
 			for (GList *iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
-				interface_plot_add_track(iter->data, &lat1, &lon1, &lat2, &lon2);
+				interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
 			}
 		}
 	}
@@ -615,18 +701,23 @@ static void create_interface(void)
     /* Set up the smooth widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "smooth_factor"));
     current = gpx_graph_get_smooth_factor(gpx_graph);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
+	pos = config_get_integer("Window", "smooth-factor", current);
+	if(pos != current) gpx_graph_set_smooth_factor(gpx_graph, pos);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)pos);
 
     g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
     g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
     g_signal_connect(gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), NULL);
+
+
+
+
     gtk_builder_connect_signals(builder, NULL);
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0) {
         champlain_view_set_zoom_level(view, 8);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
-    gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "routes_combo")), 0);
 }
 
 int main(int argc, char **argv)
@@ -635,6 +726,8 @@ int main(int argc, char **argv)
     GOptionContext *context = NULL;
     GError *error = NULL;
 	gchar *path;
+	const gchar *config_dir;
+	gchar *config_path = NULL;
 
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(PACKAGE, "UTF-8");
@@ -652,9 +745,35 @@ int main(int argc, char **argv)
     if (error) {
         g_log(NULL, G_LOG_LEVEL_ERROR, "Failed to parse commandline options: %s", error->message);
         g_error_free(error);
+		error = NULL;
     }
 	if(!g_thread_supported())
 		g_thread_init(NULL);
+
+
+	config_dir = g_get_user_config_dir();
+	g_assert(config_dir != NULL);
+	g_debug("Config dir is: %s", config_dir);
+
+
+	config_path = g_build_filename(config_dir, "gpx-viewer", NULL);
+	if(!g_file_test(config_path, G_FILE_TEST_IS_DIR))
+	{
+		g_mkdir_with_parents(config_path, 0700);
+	}
+	g_free(config_path);
+
+	config_path = g_build_filename(config_dir, "gpx-viewer", "config.ini", NULL);
+	config_file = g_key_file_new();
+	g_key_file_load_from_file(config_file, config_path, G_KEY_FILE_NONE, &error);
+
+    if (error) {
+        g_debug("Failed to open config file %s: %s",config_path, error->message);
+        g_error_free(error);
+		error = NULL;
+    }
+
+
     gtk_clutter_init(&argc, &argv);
 
 	path = g_build_filename(DATA_DIR, "icons", NULL);
@@ -715,7 +834,27 @@ int main(int argc, char **argv)
     g_list_foreach(files, (GFunc) g_object_unref, NULL);
     g_list_free(files);
 
-    return EXIT_SUCCESS;
+	if(config_path) {
+		gssize length=0;
+		gchar *data = g_key_file_to_data(config_file, &length,&error);
+		if(error) {
+			g_error("Faield to write config file: %s", error->message);
+			g_error_free(error);
+			error = NULL;
+		}
+		if(data)
+		{
+			g_file_set_contents(config_path, data, length, &error);
+			if(error) {
+				g_error("Faield to write config file: %s", error->message);
+				g_error_free(error);
+				error = NULL;
+			}
+		}
+		g_free(data);
+	}
+	g_free(config_path);
+	return EXIT_SUCCESS;
 }
 
 /* vim: set noexpandtab ts=4 sw=4 sts=4 tw=120: */
