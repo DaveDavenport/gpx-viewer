@@ -204,24 +204,7 @@ namespace Gpx
 			ctx.clip();
 			ctx.paint();
 
-			if(highlight > 0 )
-			{
-				Gpx.Point f = this.track.points.first().data;
-				double elapsed_time = track.get_total_time();
-				double graph_width = this.allocation.width-LEFT_OFFSET-10;
-				double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
-
-				double hl = (highlight-f.get_time())/elapsed_time*graph_width; 
-
-				ctx.translate(LEFT_OFFSET,20);
-				ctx.set_source_rgba(0.8, 0.2, 0.3, 0.8);
-				ctx.move_to(hl, 0);
-				ctx.line_to(hl,graph_height);
-
-				ctx.stroke_preserve();
-				ctx.fill();
-			}
-			/* Draw selection, if available */
+					/* Draw selection, if available */
 			if(start != null && stop != null)
 			{
 				if(start.get_time() != stop.get_time())
@@ -240,6 +223,24 @@ namespace Gpx
 				}
 
 			}
+			if(highlight > 0 )
+			{
+				Gpx.Point f = this.track.points.first().data;
+				double elapsed_time = track.get_total_time();
+				double graph_width = this.allocation.width-LEFT_OFFSET-10;
+				double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
+
+				double hl = (highlight-f.get_time())/elapsed_time*graph_width; 
+
+				ctx.translate(LEFT_OFFSET,20);
+				ctx.set_source_rgba(0.8, 0.2, 0.3, 0.8);
+				ctx.move_to(hl, 0);
+				ctx.line_to(hl,graph_height);
+
+				ctx.stroke_preserve();
+				ctx.fill();
+			}
+
 			return false;
 		}
 		private void update_surface(Gtk.Widget win)
