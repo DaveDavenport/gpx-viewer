@@ -98,10 +98,8 @@ namespace Gpx {
 
 				if(last.time != null && point.time != null) {
 					point.speed = calculate_point_to_point_speed(last, point);
-					if((calculate_point_to_point_speed(this.points.first().data, point)*4) < point.speed) 
-						point.speed = last.speed;
-					var avg = point.speed; 
-					if(avg > this.max_speed) this.max_speed = avg;
+					var temp = GLib.Math.fabs(last.speed-point.speed)/((long)(point.get_time()-last.get_time())).abs();
+					if(point.speed > this.max_speed) this.max_speed = point.speed;
 				}
 
 				/* Update the 2 bounding box points */
