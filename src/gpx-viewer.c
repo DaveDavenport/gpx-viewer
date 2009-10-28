@@ -34,6 +34,7 @@ GList *files                        = NULL;
 GtkWidget *champlain_view           = NULL;
 GtkBuilder *builder                 = NULL;
 GpxGraph *gpx_graph                 = NULL;
+GtkWidget *gpx_graph_container		= NULL;
 ChamplainLayer *waypoint_layer		= NULL;
 ChamplainLayer *marker_layer        = NULL;
 
@@ -304,7 +305,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 			gpx_playback_stop(active_route->playback);
 			printf("hide\n");
 			gpx_graph_set_track(gpx_graph, NULL);
-			gtk_widget_hide(GTK_WIDGET(gpx_graph));
+			gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 		}
 
 		active_route = route;
@@ -322,10 +323,10 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 
 			if (gpx_track_get_total_time(route->track) > 5) {
 				gpx_graph_set_track(gpx_graph, route->track);
-				gtk_widget_show(GTK_WIDGET(gpx_graph));
+				gtk_widget_show(GTK_WIDGET(gpx_graph_container));
 			} else {
 				gpx_graph_set_track(gpx_graph, NULL);
-				gtk_widget_hide(GTK_WIDGET(gpx_graph));
+				gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 			}
 
 			if(route->stop) 
@@ -643,14 +644,15 @@ static void create_interface(void)
 	gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
 	gtk_container_add(GTK_CONTAINER(sw), champlain_view);
     gtk_paned_pack1(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), sw, TRUE, TRUE);
+
     /* graph */
     gpx_graph = gpx_graph_new();
-	sw = gtk_frame_new(NULL); 
-	gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
-	gtk_container_add(GTK_CONTAINER(sw), gpx_graph);
-	gtk_widget_show_all(sw); 
-	gtk_widget_set_no_show_all(GTK_WIDGET(sw), TRUE);
-    gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(sw), FALSE, TRUE);
+	gpx_graph_container = gtk_frame_new(NULL); 
+	gtk_frame_set_shadow_type(GTK_FRAME(gpx_graph_container), GTK_SHADOW_IN);
+	gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(gpx_graph));
+	gtk_widget_show(gpx_graph);
+	gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
+    gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(gpx_graph_container), FALSE, TRUE);
 
     /* show the interface */
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
@@ -727,7 +729,8 @@ static void create_interface(void)
     gtk_builder_connect_signals(builder, NULL);
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0) {
-        champlain_view_set_zoom_level(view, 8);
+		printf("zoom\n");
+        champlain_view_set_zoom_level(view, 9);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
 }
