@@ -80,6 +80,8 @@ int config_get_integer(const char *a, const char *b, int def)
 
 static void free_Route(Route *route)
 {
+	if(route->polygon) g_object_unref(route->polygon);
+	if(route->playback) g_object_unref(route->playback);
     g_free(route);
 }
 
@@ -91,7 +93,7 @@ void on_destroy(void)
     gtk_widget_destroy(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
     g_object_unref(builder);
 
-    g_list_foreach(routes, (GFunc)free_Route, NULL);
+    g_list_foreach(g_list_first(routes), (GFunc)free_Route, NULL);
     g_list_free(routes); routes = NULL;
 }
 
@@ -487,7 +489,7 @@ static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 	}
 	else{
 		time_t time = 0;
-		gpx_graph_set_highlight(gpx_graph, &time);
+		gpx_graph_set_highlight(gpx_graph, time);
 	}
 }
 static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
@@ -823,17 +825,20 @@ int main(int argc, char **argv)
     for (i = 1; i < argc; i++) {
         /* Try to open the gpx file */
         GpxFile *file = gpx_file_new(argv[i]);
-        files = g_list_append(files, file);
+        files = g_list_prepend(files, file);
     }
+	files = g_list_reverse(files);
 
     create_interface();
 
     gtk_main();
+
     /* Cleanup office */
     /* Destroy the files */
-    g_list_foreach(files, (GFunc) g_object_unref, NULL);
+    g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
     g_list_free(files);
 
+	/* Save config file. */
 	if(config_path) {
 		gssize length=0;
 		gchar *data = g_key_file_to_data(config_file, &length,&error);
@@ -854,6 +859,7 @@ int main(int argc, char **argv)
 		g_free(data);
 	}
 	g_free(config_path);
+
 	return EXIT_SUCCESS;
 }
 
