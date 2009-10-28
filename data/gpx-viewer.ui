@@ -10,6 +10,8 @@
       <column type="gpointer"/>
       <!-- column-name Selectable -->
       <column type="gboolean"/>
+      <!-- column-name Visible -->
+      <column type="gboolean"/>
     </columns>
   </object>
   <object class="GtkWindow" id="gpx_viewer_window">
@@ -291,20 +293,6 @@
                 <property name="n_rows">2</property>
                 <property name="n_columns">2</property>
                 <child>
-                  <object class="GtkCheckButton" id="route_visible_check_button">
-                    <property name="label" translatable="yes">Show</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
-                    <property name="draw_indicator">True</property>
-                    <signal name="toggled" handler="route_set_visible"/>
-                  </object>
-                  <packing>
-                    <property name="top_attach">1</property>
-                    <property name="bottom_attach">2</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkAlignment" id="alignment2">
                     <property name="visible">True</property>
                     <property name="xalign">1</property>
@@ -363,6 +351,9 @@
                     <property name="bottom_attach">2</property>
                   </packing>
                 </child>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -394,11 +385,23 @@
                     <property name="rules_hint">True</property>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                        <child>
+                          <object class="GtkCellRendererToggle" id="cellrenderertoggle1">
+                            <signal name="toggled" handler="row_visible_toggled"/>
+                          </object>
+                          <attributes>
+                            <attribute name="visible">2</attribute>
+                            <attribute name="active">3</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                         <property name="title">Track</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext2"/>
                           <attributes>
-                            <attribute name="sensitive">2</attribute>
                             <attribute name="text">0</attribute>
                           </attributes>
                         </child>
@@ -507,13 +510,13 @@
   <object class="GtkAccelGroup" id="accelgroup1"/>
   <object class="GtkSizeGroup" id="heading_label_sizegroup">
     <widgets>
-      <widget name="num_points_label"/>
-      <widget name="max_speed_label"/>
-      <widget name="moving_average_time_label"/>
-      <widget name="moving_average_label"/>
-      <widget name="average_label"/>
-      <widget name="duration_label"/>
       <widget name="distance_label"/>
+      <widget name="duration_label"/>
+      <widget name="average_label"/>
+      <widget name="moving_average_label"/>
+      <widget name="moving_average_time_label"/>
+      <widget name="max_speed_label"/>
+      <widget name="num_points_label"/>
     </widgets>
   </object>
   <object class="GtkAdjustment" id="map_zoom_level_adjustment">

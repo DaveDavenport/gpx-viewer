@@ -73,11 +73,6 @@ int config_get_integer(const char *a, const char *b, int def)
 	return retv;
 }
 
-
-
-
-
-
 static void free_Route(Route *route)
 {
 	if(route->polygon) g_object_unref(route->polygon);
@@ -246,6 +241,7 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
     champlain_polygon_set_stroke_width(route->polygon, 5.0);
     champlain_polygon_set_stroke_color(route->polygon, &normal_track_color);
     champlain_view_add_polygon(CHAMPLAIN_VIEW(view), route->polygon);
+	if(!route->visible) champlain_polygon_hide(route->polygon);
 }
 
 static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
@@ -273,22 +269,6 @@ static void interface_map_make_waypoints(ChamplainView * view)
 		interface_map_file_waypoints(view, file);
 	}
 	clutter_actor_show(CLUTTER_ACTOR(waypoint_layer));
-}
-
-/* UI functions */
-void route_set_visible(GtkCheckButton * button, gpointer user_data)
-{
-    gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
-    if (active_route) {
-        if (active_route->visible != active) {
-            active_route->visible = active;
-            if (active) {
-                champlain_polygon_show(active_route->polygon);
-            } else {
-                champlain_polygon_hide(active_route->polygon);
-            }
-        }
-    }
 }
 
 /* Show and hide waypoint layer */
@@ -354,10 +334,6 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 			if(route->start) 
 				clutter_actor_show(CLUTTER_ACTOR(route->start));
 		}
-		if(active_route)
-			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "route_visible_check_button")),
-				active_route->visible);
-
 	}
 }
 
@@ -521,6 +497,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 			0, (gpx_track_get_name(route->track)) ? gpx_track_get_name(route->track): "n/a",
 			1, route,
 			2, TRUE,
+			3, route->visible,
 			-1);
 	/* Pin's */
 	if(route->track)
@@ -608,6 +585,30 @@ void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer dat
 	}
 
 }
+
+void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpointer data)
+{
+	GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+	GtkTreeIter iter;
+	struct Route *route;
+
+	if(gtk_tree_model_get_iter_from_string(model, &iter, path))
+	{
+		gtk_tree_model_get(model, &iter, 1, &route, -1);
+		if(route)
+		{
+			gboolean active = !gtk_cell_renderer_toggle_get_active(toggle);
+			gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 3, active, -1);
+			route->visible = active;
+            if (active) {
+                champlain_polygon_show(route->polygon);
+            } else {
+                champlain_polygon_hide(route->polygon);
+            }
+		}
+	}
+}
+
 /* Create the interface */
 static void create_interface(void)
 {
@@ -677,7 +678,8 @@ static void create_interface(void)
 		gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
 			0, basename, 
 			1, NULL,
-			2, TRUE,
+			2, FALSE,
+			3, FALSE,
 			-1);
 		g_free(basename);
         if (file->tracks) {
