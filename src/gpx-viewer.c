@@ -617,6 +617,7 @@ static void create_interface(void)
     GtkWidget *sp = NULL;
     gchar *path = g_build_filename(DATA_DIR, "gpx-viewer.ui", NULL);
 	GtkTreeSelection *selection;
+	GtkWidget *sw;
     int current;
 	int pos;
 	gint w,h;
@@ -638,11 +639,18 @@ static void create_interface(void)
     /* Create map view */
     champlain_view = gtk_champlain_embed_new();
     gtk_widget_set_size_request(champlain_view, 640, 280);
-    gtk_paned_pack1(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), champlain_view, TRUE, TRUE);
+	sw = gtk_frame_new(NULL); 
+	gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
+	gtk_container_add(GTK_CONTAINER(sw), champlain_view);
+    gtk_paned_pack1(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), sw, TRUE, TRUE);
     /* graph */
     gpx_graph = gpx_graph_new();
-    gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(gpx_graph), FALSE, TRUE);
-	gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph), TRUE);
+	sw = gtk_frame_new(NULL); 
+	gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
+	gtk_container_add(GTK_CONTAINER(sw), gpx_graph);
+	gtk_widget_show_all(sw); 
+	gtk_widget_set_no_show_all(GTK_WIDGET(sw), TRUE);
+    gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(sw), FALSE, TRUE);
 
     /* show the interface */
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
