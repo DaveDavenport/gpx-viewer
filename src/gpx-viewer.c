@@ -499,6 +499,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 			1, route,
 			2, TRUE,
 			3, route->visible,
+			4, g_list_length(route->track->points),
 			-1);
 	/* Pin's */
 	if(route->track)

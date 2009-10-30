@@ -12,6 +12,8 @@
       <column type="gboolean"/>
       <!-- column-name Visible -->
       <column type="gboolean"/>
+      <!-- column-name Points -->
+      <column type="guint"/>
     </columns>
   </object>
   <object class="GtkWindow" id="gpx_viewer_window">
@@ -399,11 +401,25 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                        <property name="spacing">6</property>
+                        <property name="sizing">autosize</property>
                         <property name="title">Track</property>
+                        <property name="expand">True</property>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext2"/>
+                          <object class="GtkCellRendererText" id="cellrenderertext2">
+                            <property name="xalign">0</property>
+                          </object>
                           <attributes>
                             <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext1">
+                            <property name="xalign">1</property>
+                          </object>
+                          <attributes>
+                            <attribute name="visible">3</attribute>
+                            <attribute name="text">4</attribute>
                           </attributes>
                         </child>
                       </object>
