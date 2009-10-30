@@ -77,7 +77,7 @@
                   <object class="GtkTable" id="table1">
                     <property name="visible">True</property>
                     <property name="n_rows">2</property>
-                    <property name="n_columns">8</property>
+                    <property name="n_columns">6</property>
                     <property name="column_spacing">6</property>
                     <property name="row_spacing">6</property>
                     <child>
@@ -263,24 +263,6 @@
                         <property name="x_options">GTK_FILL</property>
                         <property name="y_options">GTK_FILL</property>
                       </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="num_points_label">
-                        <property name="visible">True</property>
-                        <property name="xalign">0</property>
-                        <property name="label" translatable="yes">n/a</property>
-                        <property name="ellipsize">end</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">7</property>
-                        <property name="right_attach">8</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
                     </child>
                   </object>
                 </child>

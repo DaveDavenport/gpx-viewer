@@ -221,15 +221,6 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
 
-    /* GPS Points */
-    label = (GtkWidget *) gtk_builder_get_object(builder, "num_points_label");
-    if (points > 0) {
-        gchar *string = g_strdup_printf("%.0f points", points);
-        gtk_label_set_text(GTK_LABEL(label), string);
-        g_free(string);
-    } else {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
-    }
 }
 
 static void interface_map_plot_route(ChamplainView * view, struct Route *route)
