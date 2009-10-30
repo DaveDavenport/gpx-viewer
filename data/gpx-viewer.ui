@@ -57,6 +57,35 @@
                 </child>
               </object>
             </child>
+            <child>
+              <object class="GtkMenuItem" id="view_menuitem">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_View</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu2">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_speed">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Speed</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="show_speed"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_elevation">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Elevation</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_elevation"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -263,6 +292,9 @@
                         <property name="x_options">GTK_FILL</property>
                         <property name="y_options">GTK_FILL</property>
                       </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                   </object>
                 </child>
@@ -515,7 +547,6 @@
       <widget name="moving_average_label"/>
       <widget name="moving_average_time_label"/>
       <widget name="max_speed_label"/>
-      <widget name="num_points_label"/>
     </widgets>
   </object>
   <object class="GtkAdjustment" id="map_zoom_level_adjustment">

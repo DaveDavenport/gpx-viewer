@@ -602,6 +602,18 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
 	}
 }
 
+void show_elevation(GtkMenuItem item, gpointer user_data)
+{
+	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
+	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_ELEVATION);
+}
+void show_speed(GtkMenuItem item, gpointer user_data)
+{
+	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
+	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_SPEED);
+}
+
+
 /* Create the interface */
 static void create_interface(void)
 {
@@ -715,9 +727,22 @@ static void create_interface(void)
     g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
     g_signal_connect(gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), NULL);
 
+	/** 
+	 * Restore/Set graph mode 
+	 */
+	pos = config_get_integer("Graph", "GraphMode", 0);
+	gpx_graph_switch_mode(gpx_graph, pos);
+	switch(pos){
+		case GPX_GRAPH_GRAPH_MODE_ELEVATION:
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+					gtk_builder_get_object(builder, "view_menu_elevation")), TRUE);
+			break;
+		default:
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+					gtk_builder_get_object(builder, "view_menu_speed")), TRUE);
+	}
 
-
-
+	/* Connect signals */
     gtk_builder_connect_signals(builder, NULL);
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0) {

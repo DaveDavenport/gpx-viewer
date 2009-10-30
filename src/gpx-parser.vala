@@ -86,6 +86,9 @@ namespace Gpx {
 		/* To get bounding box for view */
 		public Point top = null;
 		public Point bottom = null;
+		
+		public double max_elevation = 0.0;
+		public double min_elevation = 5000.0;
 
 		public void add_point (Point point)
 		{
@@ -100,6 +103,8 @@ namespace Gpx {
 					point.speed = calculate_point_to_point_speed(last, point);
 					var temp = GLib.Math.fabs(last.speed-point.speed)/((long)(point.get_time()-last.get_time())).abs();
 					if(point.speed > this.max_speed) this.max_speed = point.speed;
+					if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
+					if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
 				}
 
 				/* Update the 2 bounding box points */

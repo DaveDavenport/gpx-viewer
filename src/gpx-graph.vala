@@ -28,6 +28,11 @@ namespace Gpx
 {
 	public class Graph: Gtk.EventBox
 	{
+		public enum  GraphMode {
+			SPEED,
+			ELEVATION
+		}
+		private GraphMode mode = GraphMode.ELEVATION;
 		private int _smooth_factor =4;
 		public Gpx.Track track = null;
 		private Pango.FontDescription fd = null; 
@@ -35,6 +40,14 @@ namespace Gpx
 		private int LEFT_OFFSET=60;
 		private int BOTTOM_OFFSET=30;
 		private time_t highlight = 0;
+
+		public void switch_mode(GraphMode mode)
+		{
+			this.mode= mode;
+			this.surf = null;
+			/* Force a redraw */
+			this.queue_draw();
+		}
 
 		public void set_highlight (time_t highlight) {
 			this.highlight = highlight;
@@ -256,33 +269,42 @@ namespace Gpx
 			ctx.set_source_rgba(1,1,1,1);
 			ctx.paint();
 			if(this.track == null) return;
-			double max_speed = 0;
-			if(this.smooth_factor != 1)
+			double max_value = 0;
+			double min_value = 0;
+			double range = 0;
+			if(this.mode == GraphMode.SPEED)
 			{
-				weak List<Point?> iter = this.track.points.first();
-				while(iter.next != null)
+				if(this.smooth_factor != 1)
 				{
-					weak List<Point?> ii = iter.next;
-					double speed = 0;
-					int i=0;
-					int sf = this.smooth_factor;
-					for(i=0;i<sf && ii.prev != null; i++)
+					weak List<Point?> iter = this.track.points.first();
+					while(iter.next != null)
 					{
-						speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
-						ii = ii.prev;
+						weak List<Point?> ii = iter.next;
+						double speed = 0;
+						int i=0;
+						int sf = this.smooth_factor;
+						for(i=0;i<sf && ii.prev != null; i++)
+						{
+							speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
+							ii = ii.prev;
+						}
+						speed = speed/i;
+						max_value = (speed > max_value )?speed:max_value;
+						iter = iter.next;
 					}
-					speed = speed/i;
-					max_speed = (speed > max_speed)?speed:max_speed;
-					iter = iter.next;
 				}
+				else 
+					max_value = track.max_speed;
+			}else if (this.mode == GraphMode.ELEVATION){
+				max_value = track.max_elevation;
+				min_value = track.min_elevation;
 			}
-			else 
-				max_speed = track.max_speed;
+			range = max_value-min_value;
 			double elapsed_time = track.get_total_time();
 
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Max speed: %f, elapsed_time: %f",
-					max_speed,
+					max_value,
 					elapsed_time);
 
 			ctx.translate(LEFT_OFFSET,20);
@@ -305,12 +327,12 @@ namespace Gpx
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw grid lines");
 			/* Draw speed and ticks */
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-			double size = LEFT_OFFSET/("%.1f".printf(max_speed).length);
+			double size = LEFT_OFFSET/("%.1f".printf(max_value).length);
 			if(size > step_size) size = step_size;
 			fd.set_absolute_size(size*1024);
 			layout.set_font_description(fd);
 			for(j=0;j<graph_height;j+=step_size){
-				double speed = max_speed*((graph_height-j)/graph_height);
+				double speed = min_value + (range)*((graph_height-j)/graph_height);
 				var text = "%.1f".printf(speed);
 				int w,h;
 				layout.set_text(text,-1);
@@ -329,11 +351,14 @@ namespace Gpx
 			}
 
 			/* Draw axis */
-			ctx.move_to(0.0,0.0);
-			ctx.set_source_rgba(0.0, 0.0, 0.0, 1);
 			ctx.set_line_width(1.5);
-			ctx.line_to(0.0, graph_height);
-			ctx.line_to(graph_width, graph_height);
+			ctx.set_source_rgba(0.0, 0.0, 0.0, 1);
+			ctx.move_to(0.0, 0.0);
+			ctx.line_to(0.0,graph_height);
+			ctx.stroke();
+
+			ctx.line_to(0.0, graph_height+(graph_height/range)*(min_value));
+			ctx.line_to(graph_width, graph_height+(graph_height/range)*(min_value));
 			ctx.stroke();
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis"); 
@@ -342,7 +367,7 @@ namespace Gpx
 			ctx.set_source_rgba(0.1, 0.2, 0.3, 1);
 			ctx.set_line_width(1);
 			weak List<Point?> iter = track.points.first();
-			ctx.move_to(0.0, graph_height);
+			ctx.move_to(0.0, graph_height*(1+min_value/range));
 
 
 			double pref_speed = 2f;
@@ -355,7 +380,11 @@ namespace Gpx
 				int sf = this.smooth_factor;
 				for(i=0;i< sf && ii.prev != null; i++)
 				{
-					speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
+					if(this.mode == GraphMode.SPEED) {
+						speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
+					}else if(this.mode == GraphMode.ELEVATION){
+						speed += ii.data.elevation-min_value;
+					}
 					ii = ii.prev;
 				}
 				speed = speed/i;
@@ -365,12 +394,13 @@ namespace Gpx
 
 				}
 				ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-						graph_height*(double)(1.0-speed/max_speed));
+						graph_height*(double)(1.0-speed/(range)));
 				iter = iter.next;
 
 				pref_speed = speed;
 			}
-			ctx.line_to(graph_width, graph_height);
+//			ctx.line_to(graph_width, graph_height);
+			ctx.line_to(graph_width, graph_height*(1+min_value/range));
 			ctx.close_path();
 			ctx.stroke_preserve();
 
@@ -390,12 +420,17 @@ namespace Gpx
 				int sf = this.smooth_factor;
 				for(i=0;i< sf && ii.prev != null; i++)
 				{
-					speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
+					if(this.mode == GraphMode.SPEED) {
+						speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data)-min_value;
+					}else if(this.mode == GraphMode.ELEVATION){
+						speed += ii.data.elevation-min_value;
+					}
+//					speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
 					ii = ii.prev;
 				}
 				speed = speed/i;
 				ctx.rectangle(graph_width*(double)(time_offset/(double)elapsed_time)-1,
-						graph_height*(double)(1.0-speed/max_speed)-1,2,2);
+						graph_height*(double)(1.0-speed/(range))-1,2,2);
 				ctx.stroke();
 
 				iter = iter.next;
@@ -433,41 +468,49 @@ namespace Gpx
 			}
 
 			/* Draw average speed */
-			var avg = track.get_track_average();
-			ctx.set_source_rgba(0.0, 0.7, 0.0, 0.7);
-			ctx.move_to(0.0, graph_height*(1-avg/max_speed));
-			ctx.line_to(graph_width, graph_height*(1-avg/max_speed));
-			ctx.stroke();
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw average speed line @ %.02f km/h", avg);
+			if(this.mode == GraphMode.SPEED)
+			{
+				var avg = track.get_track_average();
+				ctx.set_source_rgba(0.0, 0.7, 0.0, 0.7);
+				ctx.move_to(0.0, graph_height*(1-avg/max_value));
+				ctx.line_to(graph_width, graph_height*(1-avg/max_value));
+				ctx.stroke();
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw average speed line @ %.02f km/h", avg);
 
-			/* Draw moving speed */
-			time_t moving_time;
-			avg = track.calculate_moving_average(this.track.points.first().data, this.track.points.last().data,out moving_time);
-			ctx.set_source_rgba(0.7, 0.0, 0.0, 0.7);
-			ctx.move_to(0.0, graph_height*(1-avg/max_speed));
-			ctx.line_to(graph_width, graph_height*(1-avg/max_speed));
-			ctx.stroke();
+				/* Draw moving speed */
+				time_t moving_time;
+				avg = track.calculate_moving_average(this.track.points.first().data, this.track.points.last().data,out moving_time);
+				ctx.set_source_rgba(0.7, 0.0, 0.0, 0.7);
+				ctx.move_to(0.0, graph_height*(1-avg/max_value));
+				ctx.line_to(graph_width, graph_height*(1-avg/max_value));
+				ctx.stroke();
 
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw moving average speed line @ %.02f km/h", avg);
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw moving average speed line @ %.02f km/h", avg);
+			}
 
 			/* Draw the title */
 			int w,h;
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 			fd.set_absolute_size(12*1024);
 			layout.set_font_description(fd);
+			string mtext = "";
+			if(this.mode == GraphMode.SPEED) {
+				mtext = "Speed (km/h) vs Time (HH:MM)";
+			}else if (this.mode == GraphMode.ELEVATION) {
+				mtext = "Elevation (m) vs Time (HH:MM)";
+			}
 			if(this.smooth_factor != 1)
 			{
-				var markup = _("Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>").printf(this.smooth_factor);
+				var markup = _("%s <i>(smooth window: %i)</i>").printf(mtext,this.smooth_factor);
 				layout.set_markup(markup,-1);
 				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set graph title: %s",
 						markup);
 			}
 			else
 			{
-				var text = _("Speed (km/h) vs Time (HH:MM)");
-				layout.set_text(text,-1);
+				layout.set_text(mtext,-1);
 				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set graph title: %s",
-						text);
+						mtext);
 			}
 			layout.get_pixel_size(out w, out h);
 			ctx.move_to(graph_width/2-w/2, -20);
