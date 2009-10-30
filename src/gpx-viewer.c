@@ -604,11 +604,13 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
 
 void show_elevation(GtkMenuItem item, gpointer user_data)
 {
+	printf("switch to elevation\n");
 	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
 	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_ELEVATION);
 }
 void show_speed(GtkMenuItem item, gpointer user_data)
 {
+	printf("switch to speed\n");
 	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
 	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_SPEED);
 }
