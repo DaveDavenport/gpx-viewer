@@ -88,7 +88,7 @@ namespace Gpx {
 		public Point bottom = null;
 		
 		public double max_elevation = 0.0;
-		public double min_elevation = 5000.0;
+		public double min_elevation = 0.0;
 
 		public void add_point (Point point)
 		{
