@@ -460,6 +460,8 @@ static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 		gpx_graph_set_highlight(gpx_graph, time);
 	}
 }
+
+static gboolean first = TRUE;
 static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
 {
 	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
@@ -470,7 +472,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 	struct Route *route = g_new0(Route, 1);
 	/* Route */
 	route->track = track;
-	route->visible = TRUE;
+	route->visible = first;
 
 	/* draw the track */
 	interface_map_plot_route(view, route);
@@ -492,6 +494,20 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 			3, route->visible,
 			4, g_list_length(route->track->points),
 			-1);
+
+	if(first){
+		GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")));
+		GtkTreeIter iter;
+		GtkTreePath *path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &liter);
+		if(path != NULL){
+			gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")), path);
+			gtk_tree_selection_select_iter(selection, &liter);
+
+			gtk_tree_path_free(path);
+		}
+
+	}
+	first = FALSE;
 	/* Pin's */
 	if(route->track)
 	{
