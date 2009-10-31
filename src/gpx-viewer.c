@@ -501,8 +501,6 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 		GtkTreePath *path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &liter);
 		if(path != NULL){
 			gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")), path);
-			gtk_tree_selection_select_iter(selection, &liter);
-
 			gtk_tree_path_free(path);
 		}
 
