@@ -700,29 +700,29 @@ static void create_interface(void)
     interface_map_make_waypoints(view);
 
     for (GList *fiter = g_list_first(files); fiter; fiter = g_list_next(fiter)) {
-        GpxFile *file = fiter->data;
-		GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
-		GtkTreeIter liter;
-		gchar *basename = g_path_get_basename(file->filename);
-		gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
-		gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
-			0, basename, 
-			1, NULL,
-			2, FALSE,
-			3, FALSE,
-			-1);
-		g_free(basename);
-        if (file->tracks) {
-			for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
-				interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
-			}
-		}
-		if(file->routes) {
-			for (GList *iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
-				interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
-			}
-		}
-	}
+	    GpxFile *file = fiter->data;
+	    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+	    GtkTreeIter liter;
+	    gchar *basename = g_path_get_basename(file->filename);
+	    gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+	    gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
+			    0, basename, 
+			    1, NULL,
+			    2, FALSE,
+			    3, FALSE,
+			    -1);
+	    g_free(basename);
+	    if (file->tracks) {
+		    for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
+			    interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+		    }
+	    }
+	    if(file->routes) {
+		    for (GList *iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
+			    interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+		    }
+	    }
+    }
 	/* Set up the zoom widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
     champlain_view_set_min_zoom_level(view, 1);
@@ -766,6 +766,80 @@ static void create_interface(void)
         champlain_view_set_zoom_level(view, 9);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
+}
+
+void open_gpx_file(GtkMenu *item)
+{
+	GtkWidget *dialog;
+	GtkBuilder *fbuilder = gtk_builder_new();
+	/* Show dialog */
+	gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-file-chooser.ui", NULL);
+	if (!gtk_builder_add_from_file(fbuilder, path, NULL)) {
+		g_error("Failed to load gpx-viewer.ui");
+	}
+	g_free(path);
+
+	dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser"));
+
+	path = g_key_file_get_string(config_file, "open-dialog", "last-dir", NULL);
+	if(path) {
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),path);
+		g_free(path); path = NULL;
+	}
+	/* update filter */
+	{
+		GtkFileFilter *filter =
+			(GtkFileFilter *) gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser_filter");
+		gtk_file_filter_add_pattern(filter, "*.gpx");
+
+	}
+	switch (gtk_dialog_run(GTK_DIALOG(dialog))) {
+		case 1:
+			{
+				GSList *iter, *choosen_files = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+				for (iter = choosen_files; iter; iter = g_slist_next(iter)) {
+					double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
+					/* Try to open the gpx file */
+					GpxFile *file = gpx_file_new((gchar *) iter->data);
+					files = g_list_append(files, file);
+
+					GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+					GtkTreeIter liter;
+					gchar *basename = g_path_get_basename(file->filename);
+					gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+					gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
+							0, basename, 
+							1, NULL,
+							2, FALSE,
+							3, FALSE,
+							-1);
+					g_free(basename);
+					if (file->tracks) {
+						for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
+							interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+						}
+					}
+					if(file->routes) {
+						for (GList *iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
+							interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+						}
+					}
+				}
+				g_slist_foreach(choosen_files, (GFunc) g_free, NULL);
+				g_slist_free(choosen_files);
+			}
+			break;
+	}
+	path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(dialog));
+	if(path) {
+		g_key_file_set_string(config_file, "open-dialog" , "last-dir" , path);	
+		g_free(path);
+	}
+	gtk_widget_destroy(dialog);
+	g_object_unref(fbuilder);
+	if (files == NULL)
+		return EXIT_SUCCESS;
+
 }
 
 int main(int argc, char **argv)
@@ -829,44 +903,6 @@ int main(int argc, char **argv)
 			path);
 	g_free(path);
 
-	/* If no file(s) given, ask for it */
-    if (argc < 2) {
-        GtkWidget *dialog;
-        GtkBuilder *fbuilder = gtk_builder_new();
-        /* Show dialog */
-        gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-file-chooser.ui", NULL);
-        if (!gtk_builder_add_from_file(fbuilder, path, NULL)) {
-            g_error("Failed to load gpx-viewer.ui");
-        }
-        g_free(path);
-        /* update filter */
-        {
-            GtkFileFilter *filter =
-                (GtkFileFilter *) gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser_filter");
-            gtk_file_filter_add_pattern(filter, "*.gpx");
-
-        }
-        dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser"));
-        switch (gtk_dialog_run(GTK_DIALOG(dialog))) {
-            case 1:
-                {
-                    GSList *iter, *choosen_files = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
-                    for (iter = choosen_files; iter; iter = g_slist_next(iter)) {
-                        /* Try to open the gpx file */
-                        GpxFile *file = gpx_file_new((gchar *) iter->data);
-                        files = g_list_append(files, file);
-                    }
-                    g_slist_foreach(choosen_files, (GFunc) g_free, NULL);
-                    g_slist_free(choosen_files);
-                }
-                break;
-        }
-        gtk_widget_destroy(dialog);
-        g_object_unref(fbuilder);
-        if (files == NULL)
-            return EXIT_SUCCESS;
-
-    }
     /* Open all the files given on the command line */
     for (i = 1; i < argc; i++) {
         /* Try to open the gpx file */
