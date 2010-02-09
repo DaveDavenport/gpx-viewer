@@ -64,7 +64,7 @@ namespace Gpx
 				/* Force a redraw */
 				this.queue_draw();
 			}
-			default = 4;
+			//default = 4;
 		}
 
 		public Graph ()
