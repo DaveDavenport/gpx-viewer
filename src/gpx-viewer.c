@@ -37,6 +37,7 @@ GpxGraph *gpx_graph                 = NULL;
 GtkWidget *gpx_graph_container		= NULL;
 ChamplainLayer *waypoint_layer		= NULL;
 ChamplainLayer *marker_layer        = NULL;
+GtkRecentManager *recent_man		= NULL;
 
 
 /* List of routes */
@@ -629,6 +630,39 @@ void show_speed(GtkMenuItem item, gpointer user_data)
 	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_SPEED);
 }
 
+static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
+{
+	gchar *uri = gtk_recent_chooser_get_current_uri(grc);
+	printf("uri: %s\n", uri);
+
+	double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
+	/* Try to open the gpx file */
+	GpxFile *file = gpx_file_new((gchar *) uri);
+	files = g_list_append(files, file);
+
+	GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+	GtkTreeIter liter;
+	gchar *basename = g_path_get_basename(file->filename);
+	gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+	gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
+			0, basename, 
+			1, NULL,
+			2, FALSE,
+			3, FALSE,
+			-1);
+	g_free(basename);
+	if (file->tracks) {
+		for (GList *iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
+			interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+		}
+	}
+	if(file->routes) {
+		for (GList *iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
+			interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+		}
+	}
+	g_free(uri);
+}
 
 /* Create the interface */
 static void create_interface(void)
@@ -638,10 +672,11 @@ static void create_interface(void)
     GtkWidget *sp = NULL;
     gchar *path = g_build_filename(DATA_DIR, "gpx-viewer.ui", NULL);
 	GtkTreeSelection *selection;
-	GtkWidget *sw;
+	GtkWidget *sw,*item,*rc;
     int current;
 	int pos;
 	gint w,h;
+	GtkRecentFilter *grf;
 
 	/* Open UI description file */
     builder = gtk_builder_new();
@@ -649,7 +684,21 @@ static void create_interface(void)
         g_error("Failed to create ui: %s\n", error->message);
     }
     g_free(path);
-	
+
+
+
+	item = gtk_menu_item_new_with_mnemonic(_("_Recent file"));
+    gtk_menu_shell_insert(GTK_MENU(gtk_builder_get_object(builder, "menu1")), 
+			item,1);
+	rc = gtk_recent_chooser_menu_new();
+	g_signal_connect(G_OBJECT(rc), "item-activated", G_CALLBACK(recent_chooser_file_picked), NULL);
+	grf = gtk_recent_filter_new();
+	gtk_recent_filter_add_pattern(GTK_RECENT_FILTER(grf), "*.gpx");
+	gtk_recent_chooser_add_filter(GTK_RECENT_CHOOSER(rc),grf); 
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), rc);
+
+
+
 	w =config_get_integer("Window", "width", 400); 
 	h =config_get_integer("Window", "height", 300); 
 	gtk_window_resize(GTK_WINDOW(gtk_builder_get_object(builder,"gpx_viewer_window")), w,h); 
@@ -799,10 +848,11 @@ void open_gpx_file(GtkMenu *item)
 	switch (gtk_dialog_run(GTK_DIALOG(dialog))) {
 		case 1:
 			{
-				GSList *iter, *choosen_files = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dialog));
+				GSList *iter, *choosen_files = gtk_file_chooser_get_uris(GTK_FILE_CHOOSER(dialog));
 				for (iter = choosen_files; iter; iter = g_slist_next(iter)) {
 					double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
 					/* Try to open the gpx file */
+					gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)iter->data);
 					GpxFile *file = gpx_file_new((gchar *) iter->data);
 					files = g_list_append(files, file);
 
@@ -901,6 +951,10 @@ int main(int argc, char **argv)
 
     gtk_clutter_init(&argc, &argv);
 
+
+	/* REcent manager */
+	recent_man = gtk_recent_manager_get_default();
+
 	path = g_build_filename(DATA_DIR, "icons", NULL);
 	gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
 			path);
@@ -909,6 +963,7 @@ int main(int argc, char **argv)
     /* Open all the files given on the command line */
     for (i = 1; i < argc; i++) {
         /* Try to open the gpx file */
+		gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), argv[i]);
         GpxFile *file = gpx_file_new(argv[i]);
         files = g_list_prepend(files, file);
     }
