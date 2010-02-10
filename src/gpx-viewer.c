@@ -692,6 +692,9 @@ static void create_interface(void)
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     g_object_set(G_OBJECT(view), "scroll-mode", CHAMPLAIN_SCROLL_MODE_KINETIC, "zoom-level", 5, NULL);
 
+
+	champlain_view_set_show_scale(CHAMPLAIN_VIEW(view), TRUE);
+
 	if (marker_layer == NULL) {
 		marker_layer = champlain_layer_new();
 		champlain_view_add_layer(view, marker_layer);
