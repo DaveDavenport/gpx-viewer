@@ -248,8 +248,8 @@ namespace Gpx {
 							if(lat != null && lon != null)
 							{
 								Point p = new Point();
-								double flat = Hack.to_double(lat);
-								double flon = Hack.to_double(lon);
+								double flat = lat.to_double();
+								double flon = lon.to_double();
 								p.set_position(flat, flon);
 								var info = point->children;
 								while(info != null) {
@@ -257,7 +257,7 @@ namespace Gpx {
 									if(info->name == "ele") {
 										var content = info->get_content();
 										if(content != null)
-											p.elevation = Hack.to_double(content);
+											p.elevation = content.to_double();
 									}else if (info->name == "time") {
 										p.time = info->get_content();
 									}
@@ -293,8 +293,8 @@ namespace Gpx {
 			if(lat != null && lon != null)
 			{
 				Point p = new Point();
-				double flat = Hack.to_double(lat);
-				double flon = Hack.to_double(lon);
+				double flat = lat.to_double();
+				double flon = lon.to_double();
 				p.set_position(flat, flon);
 				var info = node->children;
 				while(info != null) {
@@ -326,8 +326,8 @@ namespace Gpx {
 					if(lat != null && lon != null)
 					{
 						Point p = new Point();
-						double flat = Hack.to_double(lat);
-						double flon = Hack.to_double(lon);
+						double flat = lat.to_double();
+						double flon = lon.to_double();
 						p.set_position(flat, flon);
 						var info = trkseg->children;
 						while(info != null) {
@@ -335,7 +335,7 @@ namespace Gpx {
 							if(info->name == "ele") {
 								var content = info->get_content();
 								if(content != null)
-									p.elevation = Hack.to_double(content);
+									p.elevation = content.to_double();
 							}else if (info->name == "time") {
 								p.time = info->get_content();
 							}
