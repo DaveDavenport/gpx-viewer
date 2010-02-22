@@ -473,7 +473,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 	struct Route *route = g_new0(Route, 1);
 	/* Route */
 	route->track = track;
-	route->visible = first;
+	route->visible = TRUE;
 
 	/* draw the track */
 	interface_map_plot_route(view, route);
@@ -497,8 +497,6 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 			-1);
 
 	if(first){
-		GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")));
-		GtkTreeIter iter;
 		GtkTreePath *path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &liter);
 		if(path != NULL){
 			gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")), path);
@@ -688,7 +686,7 @@ static void create_interface(void)
 
 
 	item = gtk_menu_item_new_with_mnemonic(_("_Recent file"));
-    gtk_menu_shell_insert(GTK_MENU(gtk_builder_get_object(builder, "menu1")), 
+    gtk_menu_shell_insert(GTK_MENU_SHELL(gtk_builder_get_object(builder, "menu1")), 
 			item,1);
 	rc = gtk_recent_chooser_menu_new();
 	g_signal_connect(G_OBJECT(rc), "item-activated", G_CALLBACK(recent_chooser_file_picked), NULL);
@@ -719,7 +717,7 @@ static void create_interface(void)
 	gpx_graph_container = gtk_frame_new(NULL); 
 	gtk_frame_set_shadow_type(GTK_FRAME(gpx_graph_container), GTK_SHADOW_IN);
 	gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(gpx_graph));
-	gtk_widget_show(gpx_graph);
+	gtk_widget_show(GTK_WIDGET(gpx_graph));
 	gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
     gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(gpx_graph_container), FALSE, TRUE);
 
@@ -740,6 +738,8 @@ static void create_interface(void)
 			G_CALLBACK(main_window_pane2_pos_changed), NULL);
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     g_object_set(G_OBJECT(view), "scroll-mode", CHAMPLAIN_SCROLL_MODE_KINETIC, "zoom-level", 5, NULL);
+
+	//champlain_view_set_map_source ( CHAMPLAIN_VIEW(view), champlain_map_source_factory_create(champlain_map_source_factory_dup_default(), CHAMPLAIN_MAP_SOURCE_OSM_OSMARENDER));
 
 
 	champlain_view_set_show_scale(CHAMPLAIN_VIEW(view), TRUE);
@@ -815,7 +815,7 @@ static void create_interface(void)
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0) {
 		printf("zoom\n");
-        champlain_view_set_zoom_level(view, 9);
+        champlain_view_set_zoom_level(view, 15);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
 }
@@ -890,9 +890,6 @@ void open_gpx_file(GtkMenu *item)
 	}
 	gtk_widget_destroy(dialog);
 	g_object_unref(fbuilder);
-	if (files == NULL)
-		return EXIT_SUCCESS;
-
 }
 
 int main(int argc, char **argv)
@@ -980,7 +977,7 @@ int main(int argc, char **argv)
 
 	/* Save config file. */
 	if(config_path) {
-		gssize length=0;
+		gsize length=0;
 		gchar *data = g_key_file_to_data(config_file, &length,&error);
 		if(error) {
 			g_error("Faield to write config file: %s", error->message);
