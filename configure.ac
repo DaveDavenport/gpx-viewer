@@ -17,7 +17,7 @@ AC_PROG_LIBTOOL
 
 #intltool, libtool. Check for CC compiler
 AC_PROG_INTLTOOL([0.21])
-ALL_LINGUAS="ar cs de es it ru zh_CN"
+ALL_LINGUAS="ar cs de es hu it ru uk zh_CN"
 AM_GNU_GETTEXT_VERSION(0.11.5)
 AM_GLIB_GNU_GETTEXT
 GETTEXT_PACKAGE=gpx-viewer
