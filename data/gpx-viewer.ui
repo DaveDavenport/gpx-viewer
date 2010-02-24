@@ -16,6 +16,14 @@
       <column type="guint"/>
     </columns>
   </object>
+  <object class="GtkListStore" id="map_selection_store">
+    <columns>
+      <!-- column-name Map -->
+      <column type="gchararray"/>
+      <!-- column-name MapId -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="gpx_viewer_window">
     <property name="title" translatable="yes">GPX Viewer</property>
     <property name="default_width">680</property>
@@ -53,10 +61,12 @@
                         <signal name="activate" handler="open_gpx_file"/>
                       </object>
                     </child>
-		    <child>
+                    <child>
                       <object class="GtkImageMenuItem" id="menu_sep">
-		      </object>
-		    </child>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_quit">
                         <property name="label">gtk-quit</property>
@@ -104,7 +114,7 @@
                         <property name="group">view_menu_speed</property>
                         <signal name="activate" handler="show_distance"/>
                       </object>
-                    </child>      
+                    </child>
                   </object>
                 </child>
               </object>
@@ -394,57 +404,85 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow1">
+              <object class="GtkVBox" id="vbox1">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="hscrollbar_policy">automatic</property>
-                <property name="vscrollbar_policy">automatic</property>
-                <property name="shadow_type">in</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkTreeView" id="TracksTreeView">
+                  <object class="GtkScrolledWindow" id="scrolledwindow1">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="model">routes_store</property>
-                    <property name="rules_hint">True</property>
+                    <property name="hscrollbar_policy">automatic</property>
+                    <property name="vscrollbar_policy">automatic</property>
+                    <property name="shadow_type">in</property>
                     <child>
-                      <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                      <object class="GtkTreeView" id="TracksTreeView">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="model">routes_store</property>
+                        <property name="headers_clickable">False</property>
+                        <property name="rules_hint">True</property>
+                        <property name="search_column">0</property>
                         <child>
-                          <object class="GtkCellRendererToggle" id="cellrenderertoggle1">
-                            <signal name="toggled" handler="row_visible_toggled"/>
+                          <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                            <child>
+                              <object class="GtkCellRendererToggle" id="cellrenderertoggle1">
+                                <signal name="toggled" handler="row_visible_toggled"/>
+                              </object>
+                              <attributes>
+                                <attribute name="visible">2</attribute>
+                                <attribute name="active">3</attribute>
+                              </attributes>
+                            </child>
                           </object>
-                          <attributes>
-                            <attribute name="visible">2</attribute>
-                            <attribute name="active">3</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn" id="treeviewcolumn2">
-                        <property name="spacing">6</property>
-                        <property name="sizing">autosize</property>
-                        <property name="title">Track</property>
-                        <property name="expand">True</property>
-                        <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext2">
-                            <property name="xalign">0</property>
-                          </object>
-                          <attributes>
-                            <attribute name="text">0</attribute>
-                          </attributes>
                         </child>
                         <child>
-                          <object class="GtkCellRendererText" id="cellrenderertext1">
-                            <property name="xalign">1</property>
+                          <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                            <property name="spacing">6</property>
+                            <property name="sizing">autosize</property>
+                            <property name="title">Track</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="cellrenderertext2">
+                                <property name="xalign">0</property>
+                              </object>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                            <child>
+                              <object class="GtkCellRendererText" id="cellrenderertext1">
+                                <property name="xalign">1</property>
+                              </object>
+                              <attributes>
+                                <attribute name="visible">2</attribute>
+                                <attribute name="text">4</attribute>
+                              </attributes>
+                            </child>
                           </object>
-                          <attributes>
-                            <attribute name="visible">2</attribute>
-                            <attribute name="text">4</attribute>
-                          </attributes>
                         </child>
                       </object>
                     </child>
                   </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBox" id="map_selection_combo">
+                    <property name="visible">True</property>
+                    <property name="model">map_selection_store</property>
+                    <signal name="changed" handler="map_selection_combo_changed_cb"/>
+                    <child>
+                      <object class="GtkCellRendererText" id="cellrenderertext3"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
               </object>
               <packing>

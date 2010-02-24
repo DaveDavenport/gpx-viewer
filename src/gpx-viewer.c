@@ -669,6 +669,25 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 	g_free(uri);
 }
 
+void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
+{
+    GtkTreeIter iter;
+    GtkTreeModel *model = gtk_combo_box_get_model(box);
+    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+
+    if(gtk_combo_box_get_active_iter(box, &iter))  {
+        gchar *id;
+        ChamplainMapSource *cms;
+        ChamplainMapSourceFactory *cmsf = champlain_map_source_factory_dup_default(); 
+        gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, 1, &id, -1);
+        printf("%s\n", id);
+        cms = champlain_map_source_factory_create(cmsf, id);
+        printf("%s\n", champlain_map_source_get_name(cms));
+        champlain_view_set_map_source ( CHAMPLAIN_VIEW(view),cms);
+        g_object_unref(cmsf);
+    }
+}
+
 /* Create the interface */
 static void create_interface(void)
 {
@@ -820,7 +839,24 @@ static void create_interface(void)
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
 					gtk_builder_get_object(builder, "view_menu_distance")), TRUE);
 	}
+    {
+        GtkTreeIter titer;
+        GtkTreeModel *model = GTK_TREE_MODEL(gtk_builder_get_object(builder, "map_selection_store"));
+        ChamplainMapSourceFactory *cmsf = champlain_map_source_factory_dup_default(); 
+        GSList *iter, *list = champlain_map_source_factory_dup_list (cmsf);
+        for(iter = (list); iter; iter = g_slist_next(iter)) {
+            ChamplainMapSourceDesc *cms = iter->data;
+            gtk_list_store_append(GTK_LIST_STORE(model), &titer);
+            gtk_list_store_set(GTK_LIST_STORE(model), &titer,
+                    0, cms->name, 
+                    1, cms->id,
+                    -1);
+        }
 
+        g_slist_free(list);
+        g_object_unref(cmsf);
+        gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), 0);
+    }
 	/* Connect signals */
     gtk_builder_connect_signals(builder, NULL);
     /* Try to center the track on map correctly */
@@ -828,6 +864,8 @@ static void create_interface(void)
         champlain_view_set_zoom_level(view, 15);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
+
+    
 }
 
 void open_gpx_file(GtkMenu *item)
