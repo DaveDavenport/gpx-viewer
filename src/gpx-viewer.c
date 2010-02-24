@@ -77,19 +77,22 @@ int config_get_integer(const char *a, const char *b, int def)
 
 static void free_Route(Route *route)
 {
-	if(route->polygon) g_object_unref(route->polygon);
+    /* Do not free these. The are (now) automagically cleanup 
+       when main widget is destroyed*/
+    //	if(route->polygon) g_object_unref(route->polygon);
 	if(route->playback) g_object_unref(route->playback);
     g_free(route);
 }
 
 void on_destroy(void)
 {
-    printf("Quit...\n");
+    g_debug("Quit...");
     gtk_main_quit();
 
     gtk_widget_destroy(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
     g_object_unref(builder);
 
+    g_debug("Cleanup routes");
     g_list_foreach(g_list_first(routes), (GFunc)free_Route, NULL);
     g_list_free(routes); routes = NULL;
 }
@@ -982,9 +985,11 @@ int main(int argc, char **argv)
 
     /* Cleanup office */
     /* Destroy the files */
+    g_debug("Cleaning up files");
     g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
     g_list_free(files);
 
+    g_debug("Save config file");
 	/* Save config file. */
 	if(config_path) {
 		gsize length=0;

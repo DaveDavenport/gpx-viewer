@@ -28,14 +28,27 @@ namespace Gpx
 {
 	public class Graph: Gtk.EventBox
 	{
+        /* Public */
+        /* Holds the track */
+		public Gpx.Track track = null;
 		public enum  GraphMode {
 			SPEED,
 			ELEVATION,
-			DISTANCE
+			DISTANCE,
+            NUM_GRAPH_MODES
 		}
+        
+        /* Privates */
+        private string[] GraphModeName = {
+            N_("Speed (km/h) vs Time (HH:MM)"),
+            N_("Elevation (m) vs Time (HH:MM)"),
+            N_("Distance (km) vs Time (HH:MM)")
+        };
+        /* By default elevation is shown */
 		private GraphMode mode = GraphMode.ELEVATION;
-		private int _smooth_factor =4;
-		public Gpx.Track track = null;
+        /* By default no smoothing is applied */
+		private int _smooth_factor =1;
+        
 		private Pango.FontDescription fd = null; 
 		private Cairo.Surface surf = null;
 		private int LEFT_OFFSET=60;
@@ -70,10 +83,13 @@ namespace Gpx
 
 		public Graph ()
 		{
+            /* Create and setup font description */
 			this.fd = new Pango.FontDescription();
 			fd.set_family("sans mono");
+            /* make the event box paintable and give it an own window to paint on */
 			this.app_paintable = true;
 			this.visible_window = true;
+            /* signals */
 			this.size_allocate.connect(size_allocate_cb);
 			this.button_press_event.connect(button_press_event_cb);
 			this.motion_notify_event.connect(motion_notify_event_cb);
@@ -375,6 +391,16 @@ namespace Gpx
 
 
 			double pref_speed = 2f;
+            double pref_speed_threshold = 1f;
+            // If pref_speed drops below this threshold we drop a 0 speed 
+            // point. 1/20 of average atm.
+            // This is used below to make sure that when there was motion (and therefor no new points)
+            // the start/stop point are not connect with a straight line, but actually a 0 speed line is drawn.
+
+            if(this.mode == GraphMode.SPEED) {
+				var avg = track.get_track_average();
+                pref_speed_threshold = avg/20;
+            }
 			while(iter.next != null)
 			{
 				double time_offset = (iter.data.get_time()-f.get_time());
@@ -394,18 +420,27 @@ namespace Gpx
 					ii = ii.prev;
 				}
 				speed = speed/i;
-				if(pref_speed < 1) {
+
+                // if speed on previous point lower then pref_speed, start at 0.
+				if(this.mode == GraphMode.SPEED && pref_speed < pref_speed_threshold) {
 					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
 							graph_height*(double)(1.0-0));
 
 				}
+
 				ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
 						graph_height*(double)(1.0-speed/(range)));
+
+                // if speed on current point was very low, end at 0
+				if(this.mode == GraphMode.SPEED && speed < pref_speed_threshold) {
+					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+							graph_height*(double)(1.0-0));
+
+				}
 				iter = iter.next;
 
 				pref_speed = speed;
 			}
-//			ctx.line_to(graph_width, graph_height);
 			ctx.line_to(graph_width, graph_height*(1+min_value/range));
 			ctx.close_path();
 			ctx.stroke_preserve();
@@ -433,7 +468,6 @@ namespace Gpx
 					}else if(this.mode == GraphMode.DISTANCE){
 						speed += ii.data.distance;
 					}
-//					speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
 					ii = ii.prev;
 				}
 				speed = speed/i;
@@ -501,14 +535,7 @@ namespace Gpx
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 			fd.set_absolute_size(12*1024);
 			layout.set_font_description(fd);
-			string mtext = "";
-			if(this.mode == GraphMode.SPEED) {
-				mtext = "Speed (km/h) vs Time (HH:MM)";
-			}else if (this.mode == GraphMode.ELEVATION) {
-				mtext = "Elevation (m) vs Time (HH:MM)";
-			}else if (this.mode == GraphMode.DISTANCE) {
-				mtext = "Distance (km) vs Time (HH:MM)";
-			}
+			string mtext = _(this.GraphModeName[this.mode]);
 			if(this.smooth_factor != 1)
 			{
 				var markup = _("%s <i>(smooth window: %i)</i>").printf(mtext,this.smooth_factor);
