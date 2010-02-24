@@ -298,7 +298,6 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 				clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
 
 			gpx_playback_stop(active_route->playback);
-			printf("hide\n");
 			gpx_graph_set_track(gpx_graph, NULL);
 			gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 		}
@@ -620,19 +619,19 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
 
 void show_elevation(GtkMenuItem item, gpointer user_data)
 {
-	printf("switch to elevation\n");
+	g_debug("switch to elevation\n");
 	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
 	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_ELEVATION);
 }
 void show_speed(GtkMenuItem item, gpointer user_data)
 {
-	printf("switch to speed\n");
+    g_debug("switch to speed\n");
 	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
 	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_SPEED);
 }
 void show_distance(GtkMenuItem item, gpointer user_data)
 {
-	printf("switch to distance\n");
+	g_debug("switch to distance\n");
 	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
 	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_DISTANCE);
 }
@@ -640,7 +639,6 @@ void show_distance(GtkMenuItem item, gpointer user_data)
 static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 {
 	gchar *uri = gtk_recent_chooser_get_current_uri(grc);
-	printf("uri: %s\n", uri);
 
 	double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
 	/* Try to open the gpx file */
@@ -827,7 +825,6 @@ static void create_interface(void)
     gtk_builder_connect_signals(builder, NULL);
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0) {
-		printf("zoom\n");
         champlain_view_set_zoom_level(view, 15);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
