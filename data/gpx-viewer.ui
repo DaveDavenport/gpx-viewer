@@ -20,7 +20,7 @@
     <property name="title" translatable="yes">GPX Viewer</property>
     <property name="default_width">680</property>
     <property name="default_height">480</property>
-    <property name="icon_name">gpxviewer</property>
+    <property name="icon_name">gpx-viewer</property>
     <accel-groups>
       <group name="accelgroup1"/>
     </accel-groups>
