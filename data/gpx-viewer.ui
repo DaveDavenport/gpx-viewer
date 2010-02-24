@@ -96,6 +96,15 @@
                         <signal name="activate" handler="show_elevation"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_distance">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Distance</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_distance"/>
+                      </object>
+                    </child>      
                   </object>
                 </child>
               </object>

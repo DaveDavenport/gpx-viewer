@@ -627,6 +627,12 @@ void show_speed(GtkMenuItem item, gpointer user_data)
 	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
 	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_SPEED);
 }
+void show_distance(GtkMenuItem item, gpointer user_data)
+{
+	printf("switch to distance\n");
+	gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
+	g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_DISTANCE);
+}
 
 static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 {
@@ -805,9 +811,13 @@ static void create_interface(void)
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
 					gtk_builder_get_object(builder, "view_menu_elevation")), TRUE);
 			break;
-		default:
+		case GPX_GRAPH_GRAPH_MODE_SPEED:
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
 					gtk_builder_get_object(builder, "view_menu_speed")), TRUE);
+			break;
+		default:
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+					gtk_builder_get_object(builder, "view_menu_distance")), TRUE);
 	}
 
 	/* Connect signals */

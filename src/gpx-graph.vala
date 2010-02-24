@@ -30,7 +30,8 @@ namespace Gpx
 	{
 		public enum  GraphMode {
 			SPEED,
-			ELEVATION
+			ELEVATION,
+			DISTANCE
 		}
 		private GraphMode mode = GraphMode.ELEVATION;
 		private int _smooth_factor =4;
@@ -298,6 +299,9 @@ namespace Gpx
 			}else if (this.mode == GraphMode.ELEVATION){
 				max_value = track.max_elevation;
 				min_value = track.min_elevation;
+			}else if (this.mode == GraphMode.DISTANCE){
+				max_value = track.total_distance;
+				min_value = 0;
 			}
 			range = max_value-min_value;
 			double elapsed_time = track.get_total_time();
@@ -384,6 +388,8 @@ namespace Gpx
 						speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
 					}else if(this.mode == GraphMode.ELEVATION){
 						speed += ii.data.elevation-min_value;
+					}else if(this.mode == GraphMode.DISTANCE){
+						speed += ii.data.distance;
 					}
 					ii = ii.prev;
 				}
@@ -424,6 +430,8 @@ namespace Gpx
 						speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data)-min_value;
 					}else if(this.mode == GraphMode.ELEVATION){
 						speed += ii.data.elevation-min_value;
+					}else if(this.mode == GraphMode.DISTANCE){
+						speed += ii.data.distance;
 					}
 //					speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
 					ii = ii.prev;
@@ -498,6 +506,8 @@ namespace Gpx
 				mtext = "Speed (km/h) vs Time (HH:MM)";
 			}else if (this.mode == GraphMode.ELEVATION) {
 				mtext = "Elevation (m) vs Time (HH:MM)";
+			}else if (this.mode == GraphMode.DISTANCE) {
+				mtext = "Distance (km) vs Time (HH:MM)";
 			}
 			if(this.smooth_factor != 1)
 			{
