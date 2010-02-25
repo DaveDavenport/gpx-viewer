@@ -468,19 +468,40 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBox" id="map_selection_combo">
+                  <object class="GtkHBox" id="hbox3">
                     <property name="visible">True</property>
-                    <property name="model">map_selection_store</property>
-                    <signal name="changed" handler="map_selection_combo_changed_cb"/>
                     <child>
-                      <object class="GtkCellRendererText" id="cellrenderertext3"/>
-                      <attributes>
-                        <attribute name="text">0</attribute>
-                      </attributes>
+                      <object class="GtkLabel" id="map_selection_label">
+                        <property name="visible">True</property>
+                        <property name="xalign">1</property>
+                        <property name="xpad">6</property>
+                        <property name="label" translatable="yes">Map:</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="map_selection_combo">
+                        <property name="visible">True</property>
+                        <property name="model">map_selection_store</property>
+                        <signal name="changed" handler="map_selection_combo_changed_cb"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext3"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
+                    <property name="padding">6</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -585,12 +606,12 @@
   <object class="GtkAccelGroup" id="accelgroup1"/>
   <object class="GtkSizeGroup" id="heading_label_sizegroup">
     <widgets>
-      <widget name="distance_label"/>
-      <widget name="duration_label"/>
-      <widget name="average_label"/>
-      <widget name="moving_average_label"/>
-      <widget name="moving_average_time_label"/>
       <widget name="max_speed_label"/>
+      <widget name="moving_average_time_label"/>
+      <widget name="moving_average_label"/>
+      <widget name="average_label"/>
+      <widget name="duration_label"/>
+      <widget name="distance_label"/>
     </widgets>
   </object>
   <object class="GtkAdjustment" id="map_zoom_level_adjustment">

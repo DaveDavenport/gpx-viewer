@@ -686,6 +686,12 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
         champlain_view_set_map_source ( CHAMPLAIN_VIEW(view),cms);
         g_object_unref(cmsf);
     }
+
+	g_key_file_set_integer(config_file, 
+            "Map", 
+            "Source",
+            gtk_combo_box_get_active(box)
+            );
 }
 
 /* Create the interface */
@@ -839,6 +845,8 @@ static void create_interface(void)
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
 					gtk_builder_get_object(builder, "view_menu_distance")), TRUE);
 	}
+
+    /* Setup the map selector widget */
     {
         GtkTreeIter titer;
         GtkTreeModel *model = GTK_TREE_MODEL(gtk_builder_get_object(builder, "map_selection_store"));
@@ -859,6 +867,11 @@ static void create_interface(void)
     }
 	/* Connect signals */
     gtk_builder_connect_signals(builder, NULL);
+
+    /* Select previously stored map */
+    pos = config_get_integer("Map", "Source", 0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), pos);
+
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0) {
         champlain_view_set_zoom_level(view, 15);
