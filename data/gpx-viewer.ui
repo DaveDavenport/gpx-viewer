@@ -135,6 +135,7 @@
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
                 <property name="yscale">0</property>
+                <property name="left_padding">6</property>
                 <child>
                   <object class="GtkTable" id="table1">
                     <property name="visible">True</property>
@@ -606,12 +607,12 @@
   <object class="GtkAccelGroup" id="accelgroup1"/>
   <object class="GtkSizeGroup" id="heading_label_sizegroup">
     <widgets>
-      <widget name="max_speed_label"/>
-      <widget name="moving_average_time_label"/>
-      <widget name="moving_average_label"/>
-      <widget name="average_label"/>
-      <widget name="duration_label"/>
       <widget name="distance_label"/>
+      <widget name="duration_label"/>
+      <widget name="average_label"/>
+      <widget name="moving_average_label"/>
+      <widget name="moving_average_time_label"/>
+      <widget name="max_speed_label"/>
     </widgets>
   </object>
   <object class="GtkAdjustment" id="map_zoom_level_adjustment">
