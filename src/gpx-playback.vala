@@ -28,9 +28,10 @@ namespace Gpx
 {
     public class Playback : GLib.Object
     {
+        private Timer progress = new Timer(); 
         private Gpx.Track track =null;
         private uint timer = 0;
-        private time_t progress = 0;
+//        private time_t progress = 0;
         private weak List <weak Gpx.Point> current;
         private Gpx.Point first = null;
 
@@ -46,18 +47,21 @@ namespace Gpx
         }
         public bool timer_callback()
         {
-            this.progress+=30;
-            GLib.debug("Tick\n");
-            while(this.current != null && this.current.data.get_time() < this.progress) this.current = this.current.next;
+            //this.progress+=30;
+            GLib.debug("Tick: %f\n", 20*this.progress.elapsed());
+//            while(this.current != null && this.current.data.get_time() < 20*this.progress.elapsed()) this.current = this.current.next;
             if(this.current == null) {
-                this.timer = 0;
+                this.progress.stop();
+                this.progress.reset();
                 tick(null);
                 GLib.debug("stopping\n");
                 return false;
             }
-            /* make larger steps */
+            if(this.current.data.get_time() > (this.first.get_time()+20*this.progress.elapsed())) return true;
             tick(this.current.data);
-            this.current = this.current.next;
+            /* keep up with the timer.. */
+            while(this.current != null && this.current.data.get_time() < (this.first.get_time()+20*this.progress.elapsed())) this.current = this.current.next;
+//            this.current = this.current.next;
             return true;
         }
         public void start()
@@ -65,10 +69,10 @@ namespace Gpx
             this.stop();
             if(this.first != null)
             {
-                this.progress  = this.first.get_time();
+                this.progress.start(); //this.first.get_time();
                 GLib.debug("start playback\n");
                 this.current = this.track.points.first();
-                this.timer = GLib.Timeout.add(250, timer_callback); 
+                this.timer = GLib.Timeout.add(100, timer_callback); 
             }
         }
         public void pause()
@@ -77,8 +81,10 @@ namespace Gpx
             if(this.timer > 0) {
                 GLib.Source.remove(this.timer);
                 timer = 0;
+                this.progress.stop();
             }else{
                 this.timer = GLib.Timeout.add(250, timer_callback); 
+                this.progress.continue();
             }
         }
         public void stop()
@@ -87,6 +93,8 @@ namespace Gpx
                 GLib.debug("stop playback\n");
                 GLib.Source.remove(this.timer);
                timer = 0;
+                this.progress.stop();
+                this.progress.reset();
             }
             this.tick(null);
         }
