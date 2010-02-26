@@ -536,6 +536,7 @@
         <child>
           <object class="GtkHBox" id="hbox2">
             <property name="visible">True</property>
+            <property name="spacing">6</property>
             <child>
               <object class="GtkSpinButton" id="map_zoom_level">
                 <property name="visible">True</property>
@@ -571,10 +572,10 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="show_marker_layer">
-                <property name="label" translatable="yes">Show Waypoints</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Show Waypoints</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
                 <signal name="toggled" handler="show_marker_layer_toggled_cb"/>
