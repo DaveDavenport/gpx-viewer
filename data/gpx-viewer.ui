@@ -349,6 +349,7 @@
                 <child>
                   <object class="GtkEventBox" id="eventbox1">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="visible_window">False</property>
                     <signal name="button_press_event" handler="playback_pause_clicked"/>
                     <child>
@@ -367,6 +368,7 @@
                 <child>
                   <object class="GtkEventBox" id="eventbox2">
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="visible_window">False</property>
                     <signal name="button_press_event" handler="playback_stop_clicked"/>
                     <child>

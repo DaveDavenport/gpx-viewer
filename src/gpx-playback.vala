@@ -28,6 +28,11 @@ namespace Gpx
 {
     public class Playback : GLib.Object
     {
+        public enum State {
+            STOPPED,
+            PAUSED,
+            PLAY
+        }
         private Timer progress = new Timer(); 
         private Gpx.Track track =null;
         private uint timer = 0;
@@ -36,6 +41,7 @@ namespace Gpx
         private Gpx.Point first = null;
 
         public signal void tick(Gpx.Point? point);
+        public signal void state_changed(Gpx.Playback.State state);
 
         public Playback(Gpx.Track track)
         {
@@ -47,12 +53,11 @@ namespace Gpx
         }
         public bool timer_callback()
         {
-            //this.progress+=30;
             GLib.debug("Tick: %f\n", 20*this.progress.elapsed());
-//            while(this.current != null && this.current.data.get_time() < 20*this.progress.elapsed()) this.current = this.current.next;
             if(this.current == null) {
                 this.progress.stop();
                 this.progress.reset();
+                this.state_changed(Gpx.Playback.State.STOPPED);
                 tick(null);
                 GLib.debug("stopping\n");
                 return false;
@@ -70,6 +75,7 @@ namespace Gpx
             if(this.first != null)
             {
                 this.progress.start(); //this.first.get_time();
+                this.state_changed(Gpx.Playback.State.PLAY);
                 GLib.debug("start playback\n");
                 this.current = this.track.points.first();
                 this.timer = GLib.Timeout.add(100, timer_callback); 
@@ -82,9 +88,11 @@ namespace Gpx
                 GLib.Source.remove(this.timer);
                 timer = 0;
                 this.progress.stop();
+                this.state_changed(Gpx.Playback.State.PAUSED);
             }else{
                 this.timer = GLib.Timeout.add(250, timer_callback); 
                 this.progress.continue();
+                this.state_changed(Gpx.Playback.State.PLAY);
             }
         }
         public void stop()
@@ -95,6 +103,7 @@ namespace Gpx
                timer = 0;
                 this.progress.stop();
                 this.progress.reset();
+                this.state_changed(Gpx.Playback.State.STOPPED);
             }
             this.tick(null);
         }

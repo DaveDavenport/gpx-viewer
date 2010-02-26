@@ -463,7 +463,29 @@ static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 		gpx_graph_set_highlight(gpx_graph, time);
 	}
 }
+static void route_playback_state_changed(GpxPlayback *playback, GpxPlaybackState state)
+{
+    GtkWidget *w_stopped = gtk_builder_get_object(builder, "eventbox2");
+    GtkWidget *w_play = gtk_builder_get_object(builder, "eventbox3");
+    GtkWidget *w_paused = gtk_builder_get_object(builder, "eventbox1");
+    if(state == GPX_PLAYBACK_STATE_STOPPED) {
+        g_debug("playback stopped");
+        gtk_widget_set_sensitive(w_stopped, FALSE);
+        gtk_widget_set_sensitive(w_play, TRUE);
+        gtk_widget_set_sensitive(w_paused, FALSE);
+    }else if (state == GPX_PLAYBACK_STATE_PAUSED) {
+        g_debug("playback paused");
+        gtk_widget_set_sensitive(w_stopped, TRUE);
+        gtk_widget_set_sensitive(w_play, TRUE);
+        gtk_widget_set_sensitive(w_paused, TRUE);
+    }else if  (state == GPX_PLAYBACK_STATE_PLAY) {
+        g_debug("playback started");
+        gtk_widget_set_sensitive(w_stopped, TRUE);
+        gtk_widget_set_sensitive(w_play, FALSE);
+        gtk_widget_set_sensitive(w_paused, TRUE);
+    }
 
+}
 static gboolean first = TRUE;
 static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
 {
@@ -563,6 +585,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 
 	route->playback = gpx_playback_new(route->track);
 	g_signal_connect(GPX_PLAYBACK(route->playback), "tick", G_CALLBACK(route_playback_tick), NULL);
+    g_signal_connect(GPX_PLAYBACK(route->playback), "state-changed", G_CALLBACK(route_playback_state_changed), NULL);
 	routes = g_list_append(routes, route);
 }
 
