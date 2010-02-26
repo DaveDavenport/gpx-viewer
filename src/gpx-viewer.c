@@ -224,6 +224,43 @@ static void interface_update_heading(GtkBuilder * builder, GpxTrack * track, Gpx
     } else {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
+    
+    /* Gradient */
+    label = (GtkWidget *) gtk_builder_get_object(builder, "gradient_label");
+
+    gdouble elevation_diff = 0;
+    gdouble distance_diff = 0;
+    if (start && stop) {
+        elevation_diff = stop->elevation - start->elevation;
+        distance_diff = stop->distance - start->distance;
+    }
+    if (distance_diff > 0) {
+	    /* The gradient here is a percentage, using the start and end point only.
+	       distance_diff is in km so we *1000 to change to m first as elevation_diff 
+	       is in the same units as supplied in the GPX file which as per the GPX 
+	       schema is meters. */
+        gchar *string = g_strdup_printf("%.2f %%", (elevation_diff / (distance_diff*1000)) * 100);
+        gtk_label_set_text(GTK_LABEL(label), string);
+        g_free(string);
+    } else {
+        gtk_label_set_text(GTK_LABEL(label), "n/a");
+    }
+
+    /* Elevation Difference */
+    label = (GtkWidget *) gtk_builder_get_object(builder, "elevation_difference_label");
+
+    elevation_diff = 0;
+    if (start && stop) {
+        elevation_diff = stop->elevation - start->elevation;
+        distance_diff = stop->distance - start->distance;
+    }
+    if (distance_diff > 0) {
+        gchar *string = g_strdup_printf("%.2f m", elevation_diff);
+        gtk_label_set_text(GTK_LABEL(label), string);
+        g_free(string);
+    } else {
+        gtk_label_set_text(GTK_LABEL(label), "n/a");
+    }
 
 }
 
