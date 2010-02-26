@@ -62,10 +62,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="menu_sep">
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                      </object>
+                      <object class="GtkSeparatorMenuItem" id="menu_sep"/>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_quit">
