@@ -38,6 +38,7 @@ PKG_CHECK_MODULES([modules],[
         champlain-0.5 >= 0.5.0
         gmodule-2.0 
         libxml-2.0
+        gdl-1.0
         ])
 
 AC_OUTPUT([

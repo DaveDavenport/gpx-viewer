@@ -24,6 +24,7 @@
 #include <champlain/champlain.h>
 #include <champlain-gtk/champlain-gtk.h>
 #include <clutter-gtk/clutter-gtk.h>
+#include <gdl/gdl.h>
 #include "gpx.h"
 
 
@@ -805,7 +806,7 @@ static void create_interface(void)
 
     /* Open UI description file */
     builder = gtk_builder_new();
-    if (!gtk_builder_add_from_file(builder, path, NULL)) {
+    if (!gtk_builder_add_from_file(builder, path, &error)) {
         g_error("Failed to create ui: %s\n", error->message);
     }
     g_free(path);
@@ -960,6 +961,51 @@ static void create_interface(void)
         g_slist_free(list);
         g_object_unref(cmsf);
         gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), 0);
+    }
+    
+    {
+   		GtkWidget *dock = gdl_dock_new();
+		GtkWidget *flw = (GtkWidget *)gtk_builder_get_object(builder, "FileListWidget");
+		GtkWidget *tiw = (GtkWidget *)gtk_builder_get_object(builder, "TrackInfoWidget");
+		GtkWidget *sw = (GtkWidget *)gtk_builder_get_object(builder, "SettingWidget");
+
+		/* For minimized items */
+		GtkWidget *dockbar = gdl_dock_bar_new(GDL_DOCK(dock));
+		gdl_dock_bar_set_orientation(GDL_DOCK_BAR(dockbar), GTK_ORIENTATION_VERTICAL);
+		gtk_box_pack_start(GTK_BOX(gtk_builder_get_object(builder, "vbox1")), dockbar, FALSE, TRUE, 0);
+		gtk_widget_show(dockbar);		
+				
+		
+		/* Dock item */
+		item = gdl_dock_item_new(
+					"Files",
+					"File and track list",
+					GDL_DOCK_ITEM_BEH_CANT_CLOSE);
+		gtk_container_add(GTK_CONTAINER(item), flw);
+		gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_TOP);
+		gtk_widget_show(item);
+
+		/* Dock item */
+		item = gdl_dock_item_new(
+					"Information",
+					"Detailed track information",
+					GDL_DOCK_ITEM_BEH_CANT_CLOSE);
+		gtk_container_add(GTK_CONTAINER(item), tiw);
+		gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_BOTTOM);
+		gtk_widget_show(item);
+		
+		/* Dock item */
+		item = gdl_dock_item_new(
+						"Settings",
+						"Map and graph settings",
+						GDL_DOCK_ITEM_BEH_CANT_CLOSE);
+		gtk_container_add(GTK_CONTAINER(item), sw);
+		gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_BOTTOM);
+		gtk_widget_show(item);
+
+		gtk_widget_show_all(dock);
+		gtk_box_pack_end(GTK_BOX(gtk_builder_get_object(builder, "vbox1")), dock, TRUE, TRUE, 0);
+
     }
     /* Connect signals */
     gtk_builder_connect_signals(builder, NULL);
