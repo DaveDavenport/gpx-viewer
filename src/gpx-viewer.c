@@ -899,6 +899,7 @@ static void create_interface(void)
 
     g_signal_connect( gtk_builder_get_object(builder, "main_view_hpane"), "notify::position",
             G_CALLBACK(main_window_pane2_pos_changed), NULL);
+
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     g_object_set(G_OBJECT(view), "scroll-mode", CHAMPLAIN_SCROLL_MODE_KINETIC, "zoom-level", 5, NULL);
     g_signal_connect (view, "notify::state", G_CALLBACK (view_state_changed),

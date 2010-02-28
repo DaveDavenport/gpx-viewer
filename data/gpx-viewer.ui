@@ -144,7 +144,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHPaned" id="hpaned1">
+          <object class="GtkHPaned" id="main_view_hpane">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
