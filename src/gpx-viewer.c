@@ -528,12 +528,16 @@ static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 {
 	if(current != NULL){
 		time_t time = gpx_point_get_time(current);
+
+		gpx_graph_show_info(gpx_graph, current);
 		gpx_graph_set_highlight(gpx_graph, time);
+
 		graph_point_clicked(gpx_graph, current);
 	}
 	else{
 		time_t time = 0;
 		gpx_graph_set_highlight(gpx_graph, time);
+		gpx_graph_hide_info(gpx_graph);
 	}
 }
 static void route_playback_state_changed(GpxPlayback *playback, GpxPlaybackState state)

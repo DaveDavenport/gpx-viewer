@@ -55,6 +55,20 @@ namespace Gpx
 		private int BOTTOM_OFFSET=30;
 		private time_t highlight = 0;
 
+		private weak Gpx.Point? draw_current = null;
+
+
+		public void hide_info()
+		{
+			draw_current = null; 
+			this.queue_draw();
+		}
+		public void show_info(Gpx.Point? cur_point)
+		{
+			this.draw_current = cur_point;
+			this.queue_draw();
+		}
+
 		public void switch_mode(GraphMode mode)
 		{
 			this.mode= mode;
@@ -234,7 +248,8 @@ namespace Gpx
 			ctx.clip();
 			ctx.paint();
 
-					/* Draw selection, if available */
+			ctx.translate(LEFT_OFFSET,20);
+			/* Draw selection, if available */
 			if(start != null && stop != null)
 			{
 				if(start.get_time() != stop.get_time())
@@ -244,7 +259,6 @@ namespace Gpx
 					double graph_width = this.allocation.width-LEFT_OFFSET-10;
 					double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
 
-					ctx.translate(LEFT_OFFSET,20);
 					ctx.set_source_rgba(0.3, 0.2, 0.3, 0.8);
 					ctx.rectangle((start.get_time()-f.get_time())/elapsed_time*graph_width, 0, 
 							(stop.get_time()-start.get_time())/elapsed_time*graph_width, graph_height);
@@ -262,15 +276,57 @@ namespace Gpx
 
 				double hl = (highlight-f.get_time())/elapsed_time*graph_width; 
 
-				ctx.translate(LEFT_OFFSET,20);
 				ctx.set_source_rgba(0.8, 0.2, 0.3, 0.8);
 				ctx.move_to(hl, 0);
 				ctx.line_to(hl,graph_height);
 
 				ctx.stroke_preserve();
 				ctx.fill();
-			}
+				/* Draw the speed/elavation/distance 
+				 * in the upper top corner 
+				 */
+				if(this.draw_current != null)
+				{
+					var layout = Pango.cairo_create_layout(ctx);
+					int w,h;
+					var text = "";
+					var x_pos =0.0;
 
+					if(this.mode == GraphMode.SPEED) {
+						text = "%.1f km/h".printf(this.draw_current.speed);
+					}else if (this.mode == GraphMode.ELEVATION) {
+						text = "%.1f m".printf(this.draw_current.elevation);
+					}else if (this.mode == GraphMode.DISTANCE) {
+						text = "%.1f km".printf(this.draw_current.distance);
+					}
+
+					fd.set_absolute_size(12*1024);
+					layout.set_font_description(fd);
+					layout.set_text(text,-1);
+					layout.get_pixel_size(out w, out h);
+
+
+					x_pos = (hl-(w+8)/2.0);
+					if(x_pos < -LEFT_OFFSET) x_pos = 0.0;
+					else if(hl+(w+8)/2.0 >= graph_width) x_pos = (double)graph_width - (double)(w+8.0);
+
+					ctx.rectangle(x_pos, -h-2, w+8, h+4);
+					ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+					ctx.stroke_preserve();
+					ctx.set_source_rgba(0.8, 0.8, 0.8, 0.8);
+					ctx.fill();
+
+					ctx.move_to(x_pos+4,-h);
+
+
+					Pango.cairo_layout_path(ctx, layout);
+
+					ctx.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+					ctx.stroke_preserve();
+					ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+					ctx.fill();
+				}
+			}
 			return false;
 		}
 		private void update_surface(Gtk.Widget win)
