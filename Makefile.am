@@ -49,7 +49,8 @@ gpx_viewer_SOURCES=\
 gpx_viewer_VALAFLAGS= --pkg=config --pkg=gtk+-2.0 --pkg=libxml-2.0 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/src -H gpx.h
 
 LIBS=\
-	@modules_LIBS@
+	@modules_LIBS@\
+    -lm
 
 AM_CFLAGS=\
 	@modules_CFLAGS@\
