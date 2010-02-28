@@ -299,7 +299,6 @@
         <signal name="changed" handler="map_selection_combo_changed_cb"/>
         <child>
           <object class="GtkCellRendererText" id="cellrenderertext3">
-            <property name="width">120</property>
             <property name="ellipsize">end</property>
           </object>
           <attributes>
@@ -338,7 +337,6 @@
         <property name="max_length">2</property>
         <property name="invisible_char">&#x2022;</property>
         <property name="width_chars">5</property>
-        <property name="primary_icon_stock">gtk-zoom-in</property>
         <property name="adjustment">map_zoom_level_adjustment</property>
         <property name="climb_rate">1</property>
         <signal name="value_changed" handler="map_zoom_level_change_value_cb"/>
@@ -361,6 +359,7 @@
       <packing>
         <property name="top_attach">1</property>
         <property name="bottom_attach">2</property>
+        <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
@@ -374,6 +373,7 @@
       <packing>
         <property name="top_attach">2</property>
         <property name="bottom_attach">3</property>
+        <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
@@ -645,30 +645,39 @@
       </packing>
     </child>
     <child>
-      <object class="GtkTable" id="table2">
+      <object class="GtkLabel" id="label4">
         <property name="visible">True</property>
-        <property name="n_rows">2</property>
-        <property name="n_columns">2</property>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Playback:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="top_attach">8</property>
+        <property name="bottom_attach">9</property>
+        <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkHBox" id="hbox1">
+        <property name="visible">True</property>
         <child>
-          <object class="GtkAlignment" id="alignment2">
+          <object class="GtkEventBox" id="eventbox3">
             <property name="visible">True</property>
-            <property name="xalign">1</property>
-            <property name="xscale">0</property>
+            <property name="visible_window">False</property>
+            <signal name="button_press_event" handler="playback_play_clicked"/>
             <child>
-              <object class="GtkEventBox" id="eventbox3">
+              <object class="GtkImage" id="play_button">
                 <property name="visible">True</property>
-                <property name="visible_window">False</property>
-                <signal name="button_press_event" handler="playback_play_clicked"/>
-                <child>
-                  <object class="GtkImage" id="play_button">
-                    <property name="visible">True</property>
-                    <property name="stock">gtk-media-play</property>
-                    <property name="icon-size">1</property>
-                  </object>
-                </child>
+                <property name="stock">gtk-media-play</property>
+                <property name="icon-size">1</property>
               </object>
             </child>
           </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">0</property>
+          </packing>
         </child>
         <child>
           <object class="GtkEventBox" id="eventbox1">
@@ -685,8 +694,8 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="right_attach">2</property>
+            <property name="expand">False</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -704,14 +713,9 @@
             </child>
           </object>
           <packing>
-            <property name="left_attach">1</property>
-            <property name="right_attach">2</property>
-            <property name="top_attach">1</property>
-            <property name="bottom_attach">2</property>
+            <property name="expand">False</property>
+            <property name="position">2</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
       <packing>
@@ -722,9 +726,6 @@
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
-    </child>
-    <child>
-      <placeholder/>
     </child>
   </object>
   <object class="GtkSizeGroup" id="heading_label_sizegroup"/>
