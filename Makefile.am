@@ -80,6 +80,12 @@ dist_appicon24_DATA = data/icons/24x24/apps/gpx-viewer.png
 appicon32dir = $(iconthemedir)/32x32/apps
 dist_appicon32_DATA = data/icons/32x32/apps/gpx-viewer.png
 
+appicon48dir = $(iconthemedir)/48x48/apps
+dist_appicon48_DATA = data/icons/48x48/apps/gpx-viewer.png
+
+appicon256dir = $(iconthemedir)/256x256/apps
+dist_appicon256_DATA = data/icons/256x256/apps/gpx-viewer.png
+
 appiconscalabledir = $(iconthemedir)/scalable/apps
 dist_appiconscalable_DATA = data/icons/scalable/apps/gpx-viewer.svg
 
