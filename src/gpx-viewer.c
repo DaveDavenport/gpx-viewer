@@ -98,6 +98,41 @@ void on_destroy(void)
     g_list_free(routes); routes = NULL;
 }
 
+void about_menuitem_activate_cb(void)
+{
+    //const gchar *authors[] = {
+    //    "Qball Cow <email>",    
+	//    NULL
+    //};
+	
+    char *gpl_short_version = 
+"This program is free software; you can redistribute it and/or modify\n\
+it under the terms of the GNU General Public License as published by\n\
+the Free Software Foundation; either version 2 of the License, or\n\
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,\n\
+but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+GNU General Public License for more details.\n\
+\n\
+You should have received a copy of the GNU General Public License along\n\
+with this program; if not, write to the Free Software Foundation, Inc.,\n\
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.";
+
+    gtk_show_about_dialog (NULL,
+            "program-name", PACKAGE_NAME,
+            "logo-icon-name", "gpx-viewer",
+            "website", PACKAGE_URL,
+            "website-label", PACKAGE_URL,
+            "license", gpl_short_version,
+            "version", VERSION,
+            //"authors", authors,
+            "comments", _("A simple program to visualize one or more gpx files."),
+            "title", _("About GPX Viewer"),
+            NULL);
+}
+
 /**
  * Update on track changes
  */
@@ -1111,7 +1146,11 @@ int main(int argc, char **argv)
     context = g_option_context_new(_("[FILE...] - GPX Viewer"));
 
     g_option_context_set_summary(context, N_("A simple program to visualize one or more gpx files."));
-    g_option_context_set_description(context, N_("Website: http://blog.sarine.nl/gpx-viewer"));
+	
+	gchar *website_url = PACKAGE_URL;
+	gchar *website = g_strconcat(N_("Website: "), website_url, NULL);
+    g_option_context_set_description(context, website);
+	g_free(website);
 
     g_option_context_add_group(context, gtk_get_option_group(TRUE));
     g_option_context_parse(context, &argc, &argv, &error);

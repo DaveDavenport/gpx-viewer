@@ -4,7 +4,7 @@ m4_define([package_minor_version], [1])
 m4_define([package_micro_version], [2])
 m4_define([package_version], [package_major_version.package_minor_version.package_micro_version])
 
-AC_INIT([gpx-viewer], [package_version], [qball@sarine.nl])
+AC_INIT([GPX Viewer], [package_version], [qball@sarine.nl], [gpx-viewer], [http://blog.sarine.nl/gpx-viewer/])
 
 
 AC_CONFIG_HEADER([config.h])
