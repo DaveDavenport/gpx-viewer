@@ -28,6 +28,8 @@
 #include "gpx.h"
 
 
+static GtkWidget		*dock_items[3];
+static GdlDockLayout    *dock_layout = NULL;
 static GKeyFile *config_file		= NULL;
 
 /* List of gpx files */
@@ -59,6 +61,11 @@ typedef struct Route {
 	GpxPlayback *playback;
 } Route;
 
+/* Make gtkbuilder happy */
+void on_view_menu_files_dock_toggled(GtkCheckMenuItem *item, gpointer data);
+void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data);
+void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data);
+
 /* The currently active route */
 Route *active_route                 = NULL;
 
@@ -84,11 +91,51 @@ static void free_Route(Route *route)
 	if(route->playback) g_object_unref(route->playback);
     g_free(route);
 }
+static void restore_layout(void)
+{
+    const gchar *config_dir = g_get_user_config_dir();
+    gchar *layout_path = NULL;
+    g_assert(config_dir != NULL);
+
+
+    layout_path = g_build_filename(config_dir, "gpx-viewer", "dock-layout.xml",NULL);
+    if(g_file_test(layout_path, G_FILE_TEST_EXISTS))
+    {
+        gdl_dock_layout_load_from_file(dock_layout, layout_path);
+        gdl_dock_layout_load_layout(dock_layout, "my_layout");
+    }
+    g_free(layout_path);
+
+}
+static void save_layout(void)
+{
+    gchar *layout_path = NULL;
+    const gchar *config_dir = g_get_user_config_dir();
+    g_assert(config_dir != NULL);
+    g_debug("Config dir is: %s", config_dir);
+
+
+    layout_path = g_build_filename(config_dir, "gpx-viewer", NULL);
+    if(!g_file_test(layout_path, G_FILE_TEST_IS_DIR))
+    {
+        g_mkdir_with_parents(layout_path, 0700);
+    }
+    g_free(layout_path);
+    layout_path = g_build_filename(config_dir, "gpx-viewer", "dock-layout.xml",NULL);
+    if(dock_layout) {
+        g_debug("Saving layout: %s", layout_path);
+        gdl_dock_layout_save_layout(dock_layout, "my_layout");
+        gdl_dock_layout_save_to_file(dock_layout, layout_path);
+    }
+    g_free(layout_path);
+}
 
 void on_destroy(void)
 {
     g_debug("Quit...");
     gtk_main_quit();
+
+    save_layout();
 
     gtk_widget_destroy(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
     g_object_unref(builder);
@@ -542,9 +589,9 @@ static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 }
 static void route_playback_state_changed(GpxPlayback *playback, GpxPlaybackState state)
 {
-    GtkWidget *w_stopped = gtk_builder_get_object(builder, "eventbox2");
-    GtkWidget *w_play = gtk_builder_get_object(builder, "eventbox3");
-    GtkWidget *w_paused = gtk_builder_get_object(builder, "eventbox1");
+    GtkWidget *w_stopped =(GtkWidget *) gtk_builder_get_object(builder, "eventbox2");
+    GtkWidget *w_play = (GtkWidget *)gtk_builder_get_object(builder, "eventbox3");
+    GtkWidget *w_paused = (GtkWidget *)gtk_builder_get_object(builder, "eventbox1");
     if(state == GPX_PLAYBACK_STATE_STOPPED) {
         g_debug("playback stopped");
         gtk_widget_set_sensitive(w_stopped, FALSE);
@@ -829,6 +876,63 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
             );
 }
 
+void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data)
+{
+	gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
+	if(GDL_DOCK_OBJECT_ATTACHED(dock_items[2]) != active){
+		if(active) {
+			gdl_dock_item_show_item(GDL_DOCK_ITEM(dock_items[2]));
+		}else {
+			gdl_dock_item_hide_item(GDL_DOCK_ITEM(dock_items[2]));
+		}
+	}
+}
+void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data)
+{
+	gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
+	if(GDL_DOCK_OBJECT_ATTACHED(dock_items[1]) != active){
+		if(active) {
+			gdl_dock_item_show_item(GDL_DOCK_ITEM(dock_items[1]));
+		}else {
+			gdl_dock_item_hide_item(GDL_DOCK_ITEM(dock_items[1]));
+		}
+	}
+}
+void on_view_menu_files_dock_toggled(GtkCheckMenuItem *item, gpointer data)
+{
+	gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
+	if(GDL_DOCK_OBJECT_ATTACHED(dock_items[0]) != active){
+		if(active) {
+			gdl_dock_item_show_item(GDL_DOCK_ITEM(dock_items[0]));
+		}else {
+			gdl_dock_item_hide_item(GDL_DOCK_ITEM(dock_items[0]));
+		}
+	}
+}
+static void dock_layout_changed(GdlDock *dock, gpointer data)
+{
+	GtkWidget *item;
+	
+	item = (GtkWidget *)gtk_builder_get_object(builder, "view_menu_settings_dock");
+	if(GDL_DOCK_OBJECT_ATTACHED(dock_items[2])){
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+	}else{
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
+	}
+	item = (GtkWidget *)gtk_builder_get_object(builder, "view_menu_track_info_dock");
+	if(GDL_DOCK_OBJECT_ATTACHED(dock_items[1])){
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+	}else{
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
+	}
+	item = (GtkWidget *)gtk_builder_get_object(builder, "view_menu_files_dock");
+	if(GDL_DOCK_OBJECT_ATTACHED(dock_items[0])){
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
+	}else{
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
+	}
+}
+
 /* Create the interface */
 static void create_interface(void)
 {
@@ -1004,20 +1108,17 @@ static void create_interface(void)
     }
     
     {
+		GtkWidget *item;
    		GtkWidget *dock = gdl_dock_new();
+
 		GtkWidget *flw = (GtkWidget *)gtk_builder_get_object(builder, "FileListWidget");
 		GtkWidget *tiw = (GtkWidget *)gtk_builder_get_object(builder, "TrackInfoWidget");
 		GtkWidget *sw = (GtkWidget *)gtk_builder_get_object(builder, "SettingWidget");
 
-		/* For minimized items */
-		GtkWidget *dockbar = gdl_dock_bar_new(GDL_DOCK(dock));
-		gdl_dock_bar_set_orientation(GDL_DOCK_BAR(dockbar), GTK_ORIENTATION_VERTICAL);
-		gtk_box_pack_start(GTK_BOX(gtk_builder_get_object(builder, "vbox1")), dockbar, FALSE, TRUE, 0);
-		gtk_widget_show(dockbar);		
+
 				
-		
 		/* Dock item */
-		item = gdl_dock_item_new(
+		dock_items[0] = item = gdl_dock_item_new(
 					"Files",
 					"File and track list",
 					GDL_DOCK_ITEM_BEH_CANT_CLOSE);
@@ -1025,17 +1126,18 @@ static void create_interface(void)
 		gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_TOP);
 		gtk_widget_show(item);
 
+
 		/* Dock item */
-		item = gdl_dock_item_new(
-					"Information",
-					"Detailed track information",
-					GDL_DOCK_ITEM_BEH_CANT_CLOSE);
+		dock_items[1] = 	item = gdl_dock_item_new(
+				"Information",
+				"Detailed track information",
+				GDL_DOCK_ITEM_BEH_CANT_CLOSE);
 		gtk_container_add(GTK_CONTAINER(item), tiw);
 		gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_BOTTOM);
 		gtk_widget_show(item);
 		
 		/* Dock item */
-		item = gdl_dock_item_new(
+		dock_items[2] =item = gdl_dock_item_new(
 						"Settings",
 						"Map and graph settings",
 						GDL_DOCK_ITEM_BEH_CANT_CLOSE);
@@ -1043,8 +1145,14 @@ static void create_interface(void)
 		gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_BOTTOM);
 		gtk_widget_show(item);
 
+
+		g_signal_connect(G_OBJECT(dock), "layout-changed", G_CALLBACK(dock_layout_changed), NULL);
+
 		gtk_widget_show_all(dock);
 		gtk_box_pack_end(GTK_BOX(gtk_builder_get_object(builder, "vbox1")), dock, TRUE, TRUE, 0);
+
+        dock_layout = gdl_dock_layout_new(GDL_DOCK(dock));
+        restore_layout();
 
     }
     /* Connect signals */

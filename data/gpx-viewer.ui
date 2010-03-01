@@ -117,6 +117,42 @@
               </object>
             </child>
             <child>
+              <object class="GtkMenuItem" id="view_menu">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_View</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu4">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_settings_dock">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Setings dock</property>
+                        <property name="use_underline">True</property>
+                        <signal name="toggled" handler="on_view_menu_settings_dock_toggled"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_files_dock">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Files dock</property>
+                        <property name="use_underline">True</property>
+                        <signal name="toggled" handler="on_view_menu_files_dock_toggled"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_track_info_dock">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Track information dock</property>
+                        <property name="use_underline">True</property>
+                        <signal name="toggled" handler="on_view_menu_track_info_dock_toggled"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="GtkMenuItem" id="help_menuitem">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Help</property>
