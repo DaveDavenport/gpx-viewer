@@ -311,7 +311,7 @@
   <object class="GtkTable" id="SettingWidget">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
-    <property name="n_rows">4</property>
+    <property name="n_rows">5</property>
     <property name="n_columns">2</property>
     <property name="column_spacing">6</property>
     <property name="row_spacing">6</property>
@@ -350,20 +350,16 @@
       </packing>
     </child>
     <child>
-      <object class="GtkSpinButton" id="smooth_factor">
+      <object class="GtkLabel" id="map_zoom_level_label">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="invisible_char">&#x2022;</property>
-        <property name="adjustment">smooth_factor_adjustment</property>
-        <property name="climb_rate">1</property>
-        <property name="numeric">True</property>
-        <signal name="value_changed" handler="smooth_factor_change_value_cb"/>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Zoom level:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="left_attach">1</property>
-        <property name="right_attach">2</property>
         <property name="top_attach">1</property>
         <property name="bottom_attach">2</property>
+        <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
@@ -381,30 +377,16 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
-        <property name="top_attach">2</property>
-        <property name="bottom_attach">3</property>
-        <property name="y_options">GTK_FILL</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel" id="label1">
-        <property name="visible">True</property>
-        <property name="xalign">1</property>
-        <property name="label" translatable="yes">&lt;b&gt;Smooth factor:&lt;/b&gt;</property>
-        <property name="use_markup">True</property>
-      </object>
-      <packing>
         <property name="top_attach">1</property>
         <property name="bottom_attach">2</property>
-        <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="label2">
+      <object class="GtkLabel" id="map_show_waypoints_label">
         <property name="visible">True</property>
         <property name="xalign">1</property>
-        <property name="label" translatable="yes">&lt;b&gt;Zoom level:&lt;/b&gt;</property>
+        <property name="label" translatable="yes">&lt;b&gt;Show waypoints:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
@@ -426,6 +408,20 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
+        <property name="top_attach">2</property>
+        <property name="bottom_attach">3</property>
+        <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="graph_smooth_factor_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Smooth factor:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
         <property name="top_attach">3</property>
         <property name="bottom_attach">4</property>
         <property name="x_options">GTK_FILL</property>
@@ -433,15 +429,51 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="label3">
+      <object class="GtkSpinButton" id="smooth_factor">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="invisible_char">&#x2022;</property>
+        <property name="adjustment">smooth_factor_adjustment</property>
+        <property name="climb_rate">1</property>
+        <property name="numeric">True</property>
+        <signal name="value_changed" handler="smooth_factor_change_value_cb"/>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">3</property>
+        <property name="bottom_attach">4</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="graph_show_points_label">
         <property name="visible">True</property>
         <property name="xalign">1</property>
-        <property name="label" translatable="yes">&lt;b&gt;Show waypoints:&lt;/b&gt;</property>
+        <property name="label" translatable="yes">&lt;b&gt;Show points:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">3</property>
-        <property name="bottom_attach">4</property>
+        <property name="top_attach">4</property>
+        <property name="bottom_attach">5</property>
+        <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkCheckButton" id="graph_show_points">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">False</property>
+        <property name="active">True</property>
+        <property name="draw_indicator">True</property>
+        <signal name="toggled" handler="graph_show_points_toggled_cb"/>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">4</property>
+        <property name="bottom_attach">5</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>

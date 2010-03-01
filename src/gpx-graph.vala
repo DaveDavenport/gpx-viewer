@@ -28,31 +28,36 @@ namespace Gpx
 {
 	public class Graph: Gtk.EventBox
 	{
-        /* Public */
-        /* Holds the track */
+		/* Public */
+		/* Holds the track */
 		public Gpx.Track track = null;
 		public enum  GraphMode {
 			SPEED,
 			ELEVATION,
 			DISTANCE,
-            NUM_GRAPH_MODES
+			NUM_GRAPH_MODES
 		}
         
-        /* Privates */
-        private string[] GraphModeName = {
-            N_("Speed (km/h) vs Time (HH:MM)"),
-            N_("Elevation (m) vs Time (HH:MM)"),
-            N_("Distance (km) vs Time (HH:MM)")
-        };
-        /* By default elevation is shown */
+		/* Privates */
+		private string[] GraphModeName = {
+			N_("Speed (km/h) vs Time (HH:MM)"),
+			N_("Elevation (m) vs Time (HH:MM)"),
+			N_("Distance (km) vs Time (HH:MM)")
+		};
+		
+		/* By default elevation is shown */
 		private GraphMode mode = GraphMode.ELEVATION;
-        /* By default no smoothing is applied */
-		private int _smooth_factor =1;
+		
+		/* By default no smoothing is applied */
+		private int _smooth_factor = 1;
+
+		/* By default points are shown on graph */
+		private bool _show_points = true;
         
 		private Pango.FontDescription fd = null; 
 		private Cairo.Surface surf = null;
-		private int LEFT_OFFSET=60;
-		private int BOTTOM_OFFSET=30;
+		private int LEFT_OFFSET = 60;
+		private int BOTTOM_OFFSET = 30;
 		private time_t highlight = 0;
 
 		private weak Gpx.Point? draw_current = null;
@@ -95,15 +100,26 @@ namespace Gpx
 			//default = 4;
 		}
 
+		public bool show_points {
+			get { return _show_points;}
+			set {
+				_show_points = value;
+				/* Invalidate the previous plot, so it is redrawn */
+				this.surf = null;
+				/* Force a redraw */
+				this.queue_draw();
+			}
+		}
+
 		public Graph ()
 		{
-            /* Create and setup font description */
+			/* Create and setup font description */
 			this.fd = new Pango.FontDescription();
 			fd.set_family("sans mono");
-            /* make the event box paintable and give it an own window to paint on */
+			/* make the event box paintable and give it an own window to paint on */
 			this.app_paintable = true;
 			this.visible_window = true;
-            /* signals */
+			/* signals */
 			this.size_allocate.connect(size_allocate_cb);
 			this.button_press_event.connect(button_press_event_cb);
 			this.motion_notify_event.connect(motion_notify_event_cb);
@@ -504,34 +520,36 @@ namespace Gpx
 			ctx.set_source_rgba(0.1, 0.2, 0.8, 0.5);
 			ctx.fill();
 
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw data points"); 
-			/* Draw points */
-			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-			iter = track.points.first();
-			while(iter.next != null)
-			{
-				double time_offset = (iter.data.get_time()-f.get_time());
-				double speed = 0;
-				weak List<Point?> ii = iter.next;
-				int i=0;
-				int sf = this.smooth_factor;
-				for(i=0;i< sf && ii.prev != null; i++)
+			if (this.show_points) {
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw data points"); 
+				/* Draw points */
+				ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+				iter = track.points.first();
+				while(iter.next != null)
 				{
-					if(this.mode == GraphMode.SPEED) {
-						speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data)-min_value;
-					}else if(this.mode == GraphMode.ELEVATION){
-						speed += ii.data.elevation-min_value;
-					}else if(this.mode == GraphMode.DISTANCE){
-						speed += ii.data.distance;
+					double time_offset = (iter.data.get_time()-f.get_time());
+					double speed = 0;
+					weak List<Point?> ii = iter.next;
+					int i=0;
+					int sf = this.smooth_factor;
+					for(i=0;i< sf && ii.prev != null; i++)
+					{
+						if(this.mode == GraphMode.SPEED) {
+							speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data)-min_value;
+						}else if(this.mode == GraphMode.ELEVATION){
+							speed += ii.data.elevation-min_value;
+						}else if(this.mode == GraphMode.DISTANCE){
+							speed += ii.data.distance;
+						}
+						ii = ii.prev;
 					}
-					ii = ii.prev;
-				}
-				speed = speed/i;
-				ctx.rectangle(graph_width*(double)(time_offset/(double)elapsed_time)-1,
-						graph_height*(double)(1.0-speed/(range))-1,2,2);
-				ctx.stroke();
+					speed = speed/i;
+					ctx.rectangle(graph_width*(double)(time_offset/(double)elapsed_time)-1,
+							graph_height*(double)(1.0-speed/(range))-1,2,2);
+					ctx.stroke();
 
-				iter = iter.next;
+					iter = iter.next;
+				}
 			}
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw graph"); 

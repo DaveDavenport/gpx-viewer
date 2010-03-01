@@ -83,6 +83,18 @@ int config_get_integer(const char *a, const char *b, int def)
 	return retv;
 }
 
+int config_get_boolean(const char *a, const char *b, gboolean def)
+{
+	GError *error = NULL;
+	int retv = g_key_file_get_boolean(config_file,a,b, &error);
+	if(error) {
+		g_debug("Failed to get value: %s", error->message);
+		g_error_free(error); error = NULL;
+		return def;
+	}
+	return retv;
+}
+
 static void free_Route(Route *route)
 {
     /* Do not free these. The are (now) automagically cleanup 
@@ -469,6 +481,14 @@ void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
         gpx_graph_set_smooth_factor(gpx_graph, new);
 		g_key_file_set_integer(config_file, "Window", "smooth-factor", new);
 	}
+}
+
+/* Show and hide points on graph */
+void graph_show_points_toggled_cb(GtkToggleButton * button, gpointer user_data)
+{
+    gboolean new = gtk_toggle_button_get_active(button);
+    gpx_graph_set_show_points(gpx_graph, new);
+    g_key_file_set_boolean(config_file, "Window", "show-points", new);
 }
 
 /* Zoom level changed */
@@ -1067,6 +1087,13 @@ static void create_interface(void)
     g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
     g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
     g_signal_connect(gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), NULL);
+
+    /* Set up show points checkbox. Load state from config */
+    sp = GTK_WIDGET(gtk_builder_get_object(builder, "graph_show_points"));
+    current = gpx_graph_get_show_points(gpx_graph);
+    gpx_graph_set_show_points(gpx_graph, config_get_boolean("Window", "show-points", current));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sp), config_get_boolean("Window", "show-points", current));
+
 
     /** 
      * Restore/Set graph mode 
