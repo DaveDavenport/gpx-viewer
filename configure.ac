@@ -4,7 +4,7 @@ m4_define([package_minor_version], [1])
 m4_define([package_micro_version], [2])
 m4_define([package_version], [package_major_version.package_minor_version.package_micro_version])
 
-AC_INIT([GPX Viewer], [package_version], [qball@sarine.nl], [gpx-viewer], [http://blog.sarine.nl/gpx-viewer/])
+AC_INIT([GPX Viewer],[package_version],[qball@sarine.nl],[gpx-viewer],[http://blog.sarine.nl/gpx-viewer/])
 
 
 AC_CONFIG_HEADER([config.h])
@@ -13,10 +13,10 @@ AM_MAINTAINER_MODE
 
 AC_PROG_CC
 AC_PROG_CC_C_O
-AC_PROG_LIBTOOL
+LT_INIT
 
 #intltool, libtool. Check for CC compiler
-AC_PROG_INTLTOOL([0.21])
+IT_PROG_INTLTOOL([0.21])
 ALL_LINGUAS="ar cs de es hu it ru uk zh_CN"
 AM_GNU_GETTEXT_VERSION(0.11.5)
 AM_GLIB_GNU_GETTEXT
@@ -41,7 +41,8 @@ PKG_CHECK_MODULES([modules],[
         gdl-1.0
         ])
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 	Makefile
 	po/Makefile.in
 ])
+AC_OUTPUT
