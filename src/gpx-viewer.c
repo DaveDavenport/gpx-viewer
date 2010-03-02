@@ -868,7 +868,7 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 
 	GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
 	GtkTreeIter liter;
-	gchar *basename = g_path_get_basename(file->filename);
+	gchar *basename = g_file_get_basename(file->file); 
 	gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
 	gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
 			0, basename, 
@@ -1086,8 +1086,6 @@ static void create_interface(void)
     g_object_set(G_OBJECT(view), "scroll-mode", CHAMPLAIN_SCROLL_MODE_KINETIC, "zoom-level", 5, NULL);
     g_signal_connect (view, "notify::state", G_CALLBACK (view_state_changed),
             NULL);
-    //champlain_view_set_map_source ( CHAMPLAIN_VIEW(view), champlain_map_source_factory_create(champlain_map_source_factory_dup_default(), CHAMPLAIN_MAP_SOURCE_OSM_OSMARENDER));
-
 
     champlain_view_set_show_scale(CHAMPLAIN_VIEW(view), TRUE);
 
@@ -1102,7 +1100,7 @@ static void create_interface(void)
         GpxFile *file = fiter->data;
         GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
         GtkTreeIter liter;
-        gchar *basename = g_path_get_basename(file->filename);
+        gchar *basename = g_file_get_basename(file->file); 
         gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
         gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
                 0, basename, 
@@ -1292,7 +1290,7 @@ void open_gpx_file(GtkMenu *item)
 
                     GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
                     GtkTreeIter liter;
-                    gchar *basename = g_path_get_basename(file->filename);
+                    gchar *basename = g_file_get_basename(file->file); 
                     gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
                     gtk_tree_store_set(GTK_TREE_STORE(model), &liter, 
                             0, basename, 

@@ -219,8 +219,6 @@ namespace Gpx {
 	 */
 	public class File : GLib.Object 
 	{
-		/* The filename */
-		public string filename = null;
 		/* A gpx file can contain multiple tracks, this supports it */
 		public GLib.List<Gpx.Track> tracks = null;
 		/* A gpx file can also contains a list of waypoints */
@@ -363,7 +361,7 @@ namespace Gpx {
 
 		 /* IO Functions */
 		 /* Used for paring */
-		 private GLib.File file = null;
+		 public GLib.File file = null;
 		 private GLib.FileInputStream stream = null;
 		 private int read_file(char[] buffer)
 		 {
@@ -384,14 +382,13 @@ namespace Gpx {
 
 		 public File (GLib.File file)
 		 {
-			 this.file = file;//GLib.File.new_for_commandline_arg(this.filename);
-			 this.filename = this.file.get_uri();
+			 this.file = file;
 			 try {
 				 this.stream = file.read(null);
 				 Xml.TextReader reader = new Xml.TextReader.for_io(
 						 (Xml.InputReadCallback)read_file,
 						 (Xml.InputCloseCallback) close_file,this,
-						 this.filename, "", 0);
+						 this.file.get_uri(), "", 0);
 				 if(reader != null)
 				 {
 					 /* Start parsing the xml file */
@@ -431,7 +428,7 @@ namespace Gpx {
 				 }
 				 reader.close();
 			 }catch (GLib.Error e){
-				 GLib.critical("failed to open file: '%s' error: %s",filename, e.message);
+				 GLib.critical("failed to open file: '%s' error: %s",this.file.get_uri(), e.message);
 			 }
 
 		 }
