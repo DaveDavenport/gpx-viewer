@@ -44,10 +44,20 @@ namespace Gpx
         public signal void tick(Gpx.Point? point);
         public signal void state_changed(Gpx.Playback.State state);
 
-        public Playback(Gpx.Track track)
+
+        public void set_track(Gpx.Track? track)
+        {
+            this.stop();
+            this.track = track;
+            if(this.track != null && this.track.points != null)
+            {
+                this.first = this.track.points.first().data;
+            }
+        }
+        public Playback(Gpx.Track? track)
         {
             this.track = track;
-            if(this.track.points != null)
+            if(this.track != null && this.track.points != null)
             {
                 this.first = this.track.points.first().data;
             }

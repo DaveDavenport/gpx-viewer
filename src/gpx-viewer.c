@@ -42,7 +42,7 @@ ChamplainLayer *waypoint_layer		= NULL;
 ChamplainLayer *marker_layer        = NULL;
 GtkRecentManager *recent_man		= NULL;
 
-
+GpxPlayback *playback               = NULL;
 /* List of routes */
 GList *routes                       = NULL;
 
@@ -58,7 +58,6 @@ typedef struct Route {
 	ChamplainBaseMarker *start;
 	ChamplainBaseMarker *stop;
     gboolean visible;
-	GpxPlayback *playback;
 } Route;
 
 
@@ -200,7 +199,6 @@ static void free_Route(Route *route)
     /* Do not free these. The are (now) automagically cleanup 
        when main widget is destroyed*/
     /*	if(route->polygon) g_object_unref(route->polygon); */
-	if(route->playback) g_object_unref(route->playback);
     g_free(route);
 }
 void on_destroy(void)
@@ -494,12 +492,13 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 			if(active_route->start) 
 				clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
 
-			gpx_playback_stop(active_route->playback);
+			gpx_playback_stop(playback);
 			gpx_graph_set_track(gpx_graph, NULL);
 			gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 		}
 
 		active_route = route;
+        gpx_playback_set_track(playback, active_route->track);
 		if (route) {
 			ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 			champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
@@ -640,23 +639,23 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 void playback_play_clicked(void)
 {
 	if(active_route) {
-			gpx_playback_start(active_route->playback);
+			gpx_playback_start(playback);
 	}
 }
 
 void playback_pause_clicked(void)
 {
 	if(active_route) {
-			gpx_playback_pause(active_route->playback);
+			gpx_playback_pause(playback);
 	}
 }
 void playback_stop_clicked(void)
 {
 	if(active_route) {
-			gpx_playback_stop(active_route->playback);
+			gpx_playback_stop(playback);
 	}
 }
-static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
+static void route_playback_tick(GpxPlayback *route_playback, GpxPoint *current)
 {
 	if(current != NULL){
 		time_t ptime = gpx_point_get_time(current);
@@ -671,7 +670,7 @@ static void route_playback_tick(GpxPlayback *playback, GpxPoint *current)
 		gpx_graph_hide_info(gpx_graph);
 	}
 }
-static void route_playback_state_changed(GpxPlayback *playback, GpxPlaybackState state)
+static void route_playback_state_changed(GpxPlayback *route_playback, GpxPlaybackState state)
 {
     GtkWidget *w_stopped =(GtkWidget *) gtk_builder_get_object(builder, "eventbox2");
     GtkWidget *w_play = (GtkWidget *)gtk_builder_get_object(builder, "eventbox3");
@@ -791,9 +790,6 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 		}
 	}
 
-	route->playback = gpx_playback_new(route->track);
-	g_signal_connect(GPX_PLAYBACK(route->playback), "tick", G_CALLBACK(route_playback_tick), NULL);
-    g_signal_connect(GPX_PLAYBACK(route->playback), "state-changed", G_CALLBACK(route_playback_state_changed), NULL);
 	routes = g_list_append(routes, route);
 }
 
@@ -1418,9 +1414,16 @@ int main(int argc, char **argv)
     }
     files = g_list_reverse(files);
 
+    playback = gpx_playback_new(NULL);
+	g_signal_connect(GPX_PLAYBACK(playback), "tick", G_CALLBACK(route_playback_tick), NULL);
+    g_signal_connect(GPX_PLAYBACK(playback), "state-changed", G_CALLBACK(route_playback_state_changed), NULL);
+
     create_interface();
 
+
     gtk_main();
+
+    g_object_unref(playback);
 
     /* Destroy the files */
     g_debug("Cleaning up files");
