@@ -1182,6 +1182,8 @@ static void create_interface(void)
 
     /* Setup the map selector widget */
     {
+        GtkWidget *combo = GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo"));
+        GtkCellRenderer *renderer = gtk_builder_get_object(builder, "cellrenderertext3");
         GtkTreeIter titer;
         GtkTreeModel *model = GTK_TREE_MODEL(gtk_builder_get_object(builder, "map_selection_store"));
         ChamplainMapSourceFactory *cmsf = champlain_map_source_factory_dup_default(); 
@@ -1197,6 +1199,15 @@ static void create_interface(void)
 
         g_slist_free(list);
         g_object_unref(cmsf);
+
+        /* hack to work around GtkBuilder limitation that it cannot set expand
+            on packing a cell renderer */
+        g_object_ref(renderer);
+        gtk_cell_layout_clear(GTK_CONTAINER(combo));
+        gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo), renderer, TRUE);
+        gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo), renderer, "text", 0,NULL);
+        g_object_unref(renderer);
+
         gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), 0);
     }
     

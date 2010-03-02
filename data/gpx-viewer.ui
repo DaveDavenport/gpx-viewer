@@ -336,7 +336,6 @@
         <child>
           <object class="GtkCellRendererText" id="cellrenderertext3">
             <property name="ellipsize">end</property>
-            <property name="width_chars">25</property>
           </object>
           <attributes>
             <attribute name="text">0</attribute>
