@@ -808,9 +808,11 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 	gchar *uri = gtk_recent_chooser_get_current_uri(grc);
 
 	double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
+    GFile *afile = g_file_new_for_uri(uri);
 	/* Try to open the gpx file */
-	GpxFile *file = gpx_file_new((gchar *) uri);
-	files = g_list_append(files, file);
+	GpxFile *file = gpx_file_new(afile);
+    g_object_unref(afile);
+    files = g_list_append(files, file);
 
 	GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
 	GtkTreeIter liter;
@@ -1229,10 +1231,12 @@ void open_gpx_file(GtkMenu *item)
                 GSList *iter, *choosen_files = gtk_file_chooser_get_uris(GTK_FILE_CHOOSER(dialog));
                 for (iter = choosen_files; iter; iter = g_slist_next(iter)) {
                     double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
+                    GFile *afile = g_file_new_for_uri((gchar*)iter->data);
                     /* Try to open the gpx file */
                     gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)iter->data);
-                    GpxFile *file = gpx_file_new((gchar *) iter->data);
+                    GpxFile *file = gpx_file_new(afile);
                     files = g_list_append(files, file);
+                    g_object_unref(afile);
 
                     GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
                     GtkTreeIter liter;
@@ -1341,10 +1345,16 @@ int main(int argc, char **argv)
 
     /* Open all the files given on the command line */
     for (i = 1; i < argc; i++) {
+        GFile *afile = g_file_new_for_commandline_arg(argv[i]);
+        gchar *uri = g_file_get_uri(afile);
+
         /* Try to open the gpx file */
-        gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), argv[i]);
-        GpxFile *file = gpx_file_new(argv[i]);
+        gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), uri);
+        GpxFile *file = gpx_file_new(afile);
         files = g_list_prepend(files, file);
+
+        g_free(uri);
+        g_object_unref(afile);
     }
     files = g_list_reverse(files);
 

@@ -382,10 +382,10 @@ namespace Gpx {
 			return 0;
 		 }
 
-		 public File (string filename)
+		 public File (GLib.File file)
 		 {
-			 this.filename = filename;
-			 this.file = GLib.File.new_for_commandline_arg(this.filename);
+			 this.file = file;//GLib.File.new_for_commandline_arg(this.filename);
+			 this.filename = this.file.get_uri();
 			 try {
 				 this.stream = file.read(null);
 				 Xml.TextReader reader = new Xml.TextReader.for_io(
@@ -431,7 +431,7 @@ namespace Gpx {
 				 }
 				 reader.close();
 			 }catch (GLib.Error e){
-				 GLib.critical("failed to open file: %s", e.message);
+				 GLib.critical("failed to open file: '%s' error: %s",filename, e.message);
 			 }
 
 		 }
