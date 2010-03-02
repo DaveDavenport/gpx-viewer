@@ -33,7 +33,6 @@ namespace Gpx
             PAUSED,
             PLAY
         }
-        private int speedup = 50;
         private Timer progress = new Timer(); 
         private Gpx.Track track =null;
         private uint timer = 0;
@@ -44,6 +43,12 @@ namespace Gpx
         public signal void tick(Gpx.Point? point);
         public signal void state_changed(Gpx.Playback.State state);
 
+        /* Accessor to the speedup */
+        public int speedup {
+            get;
+            set;
+            default = 50;
+        }
 
         public void set_track(Gpx.Track? track)
         {
@@ -71,10 +76,10 @@ namespace Gpx
                 tick(null);
                 return false;
             }
-            if(this.current.data.get_time() > (this.first.get_time()+speedup*this.progress.elapsed())) return true;
+            if(this.current.data.get_time() > (this.first.get_time()+_speedup*this.progress.elapsed())) return true;
             tick(this.current.data);
             /* keep up with the timer.. */
-            while(this.current != null && this.current.data.get_time() < (this.first.get_time()+speedup*this.progress.elapsed())) this.current = this.current.next;
+            while(this.current != null && this.current.data.get_time() < (this.first.get_time()+_speedup*this.progress.elapsed())) this.current = this.current.next;
 //            this.current = this.current.next;
             return true;
         }
