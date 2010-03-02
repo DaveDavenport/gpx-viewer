@@ -69,9 +69,61 @@ void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data);
 /* The currently active route */
 Route *active_route                 = NULL;
 
+/* Config */
+static void config_load(void)
+{
+    GError *error = NULL;
+    const gchar *config_dir = g_get_user_config_dir();
+    g_assert(config_dir != NULL);
+    gchar *config_path = NULL; 
+    config_path = g_build_filename(config_dir, "gpx-viewer", NULL);
+    if(!g_file_test(config_path, G_FILE_TEST_IS_DIR))
+    {
+        g_mkdir_with_parents(config_path, 0700);
+    }
+    g_free(config_path);
 
+    config_path = g_build_filename(config_dir, "gpx-viewer", "config.ini", NULL);
+    config_file = g_key_file_new();
+    g_key_file_load_from_file(config_file, config_path, G_KEY_FILE_NONE, &error);
 
-int config_get_integer(const char *a, const char *b, int def)
+    if (error) {
+        g_debug("Failed to open config file %s: %s",config_path, error->message);
+        g_error_free(error);
+        error = NULL;
+    }
+    g_free(config_path);
+}
+static void config_save(void)
+{
+    GError *error = NULL;
+    const gchar *config_dir = g_get_user_config_dir();
+    g_assert(config_dir != NULL);
+    gchar *config_path = g_build_filename(config_dir, "gpx-viewer", "config.ini", NULL);
+    g_debug("Save config file");
+    /* Save config file. */
+    if(config_path) {
+        gsize length=0;
+        gchar *data = g_key_file_to_data(config_file, &length,&error);
+        if(error) {
+            g_error("Failed to write config file: %s", error->message);
+            g_error_free(error);
+            error = NULL;
+        }
+        if(data)
+        {
+            g_file_set_contents(config_path, data, length, &error);
+            if(error) {
+                g_error("Failed to write config file: %s", error->message);
+                g_error_free(error);
+                error = NULL;
+            }
+        }
+        g_free(data);
+        g_free(config_path);
+    }
+}
+static int config_get_integer(const char *a, const char *b, int def)
 {
 	GError *error = NULL;
 	int retv = g_key_file_get_integer(config_file,a,b, &error);
@@ -83,7 +135,7 @@ int config_get_integer(const char *a, const char *b, int def)
 	return retv;
 }
 
-int config_get_boolean(const char *a, const char *b, gboolean def)
+static int config_get_boolean(const char *a, const char *b, gboolean def)
 {
 	GError *error = NULL;
 	int retv = g_key_file_get_boolean(config_file,a,b, &error);
@@ -1277,11 +1329,10 @@ void open_gpx_file(GtkMenu *item)
 int main(int argc, char **argv)
 {
     int i = 0;
+    gchar *website; 
     GOptionContext *context = NULL;
     GError *error = NULL;
     gchar *path;
-    const gchar *config_dir;
-    gchar *config_path = NULL;
 
     bindtextdomain(PACKAGE, LOCALEDIR);
     bind_textdomain_codeset(PACKAGE, "UTF-8");
@@ -1291,8 +1342,7 @@ int main(int argc, char **argv)
 
     g_option_context_set_summary(context, N_("A simple program to visualize one or more gpx files."));
 	
-	gchar *website_url = PACKAGE_URL;
-	gchar *website = g_strconcat(N_("Website: "), website_url, NULL);
+	website = g_strconcat(N_("Website: "), PACKAGE_URL, NULL);
     g_option_context_set_description(context, website);
 	g_free(website);
 
@@ -1305,32 +1355,11 @@ int main(int argc, char **argv)
         g_error_free(error);
         error = NULL;
     }
-    if(!g_thread_supported())
+    if(!g_thread_supported())  {
         g_thread_init(NULL);
-
-
-    config_dir = g_get_user_config_dir();
-    g_assert(config_dir != NULL);
-    g_debug("Config dir is: %s", config_dir);
-
-
-    config_path = g_build_filename(config_dir, "gpx-viewer", NULL);
-    if(!g_file_test(config_path, G_FILE_TEST_IS_DIR))
-    {
-        g_mkdir_with_parents(config_path, 0700);
-    }
-    g_free(config_path);
-
-    config_path = g_build_filename(config_dir, "gpx-viewer", "config.ini", NULL);
-    config_file = g_key_file_new();
-    g_key_file_load_from_file(config_file, config_path, G_KEY_FILE_NONE, &error);
-
-    if (error) {
-        g_debug("Failed to open config file %s: %s",config_path, error->message);
-        g_error_free(error);
-        error = NULL;
     }
 
+    config_load();
 
     gtk_clutter_init(&argc, &argv);
 
@@ -1338,6 +1367,7 @@ int main(int argc, char **argv)
     /* REcent manager */
     recent_man = gtk_recent_manager_get_default();
 
+    /* Add own icon strucutre to the theme engine search */
     path = g_build_filename(DATA_DIR, "icons", NULL);
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
             path);
@@ -1362,34 +1392,12 @@ int main(int argc, char **argv)
 
     gtk_main();
 
-    /* Cleanup office */
     /* Destroy the files */
     g_debug("Cleaning up files");
     g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
     g_list_free(files);
 
-    g_debug("Save config file");
-    /* Save config file. */
-    if(config_path) {
-        gsize length=0;
-        gchar *data = g_key_file_to_data(config_file, &length,&error);
-        if(error) {
-            g_error("Faield to write config file: %s", error->message);
-            g_error_free(error);
-            error = NULL;
-        }
-        if(data)
-        {
-            g_file_set_contents(config_path, data, length, &error);
-            if(error) {
-                g_error("Faield to write config file: %s", error->message);
-                g_error_free(error);
-                error = NULL;
-            }
-        }
-        g_free(data);
-    }
-    g_free(config_path);
+    config_save();
 
     return EXIT_SUCCESS;
 }
