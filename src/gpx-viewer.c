@@ -498,9 +498,11 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 		}
 
 		active_route = route;
-        gpx_playback_set_track(playback, active_route->track);
 		if (route) {
 			ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+
+			gpx_playback_set_track(playback, active_route->track);
+
 			champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
 
 			if (route->visible)
