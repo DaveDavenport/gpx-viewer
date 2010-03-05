@@ -1,5 +1,5 @@
 /* Gpx Viewer
- * Copyright (C) 2009-2009 Qball Cow <qball@sarine.nl>
+ * Copyright (C) 2009-2010 Qball Cow <qball@sarine.nl>
  * Project homepage: http://blog.sarine.nl/
 
  * This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,8 @@ ChamplainLayer *marker_layer        = NULL;
 GtkRecentManager *recent_man        = NULL;
 
 GpxPlayback *playback               = NULL;
+ClutterActor *click_marker          = NULL;
+guint click_marker_source           = 0;
 /* List of routes */
 GList *routes                       = NULL;
 
@@ -50,6 +52,12 @@ ClutterColor waypoint               = { 0xf3, 0x94, 0x07, 0xff };
 ClutterColor highlight_track_color  = { 0xf3, 0x94, 0x07, 0xff };
 ClutterColor normal_track_color     = { 0x00, 0x00, 0xff, 0x66 };
 
+/**
+ * This structure holds all information related to
+ * a track.
+ * The file the track belongs to, the polygon on the map start/stop marker
+ * and the visible state.
+ */
 typedef struct Route
 {
     GpxFile *file;
@@ -60,13 +68,17 @@ typedef struct Route
     gboolean visible;
 } Route;
 
-/* The currently active route */
+/**
+ * This points to the currently active Route.
+ */
 Route *active_route                 = NULL;
 
 /**
  * Config abstraction
  */
+/* The keyfile holding the values */
 static GKeyFile *config_file        = NULL;
+/* Load the config from harddisk */
 static void config_load(void)
 {
     gchar *config_path = NULL;
@@ -94,6 +106,7 @@ static void config_load(void)
 }
 
 
+/* Save the config to harddisk. */
 static void config_save(void)
 {
     gchar *config_path;
@@ -217,6 +230,9 @@ static void free_Route(Route *route)
 }
 
 
+/**
+ * This is called when the main window is destroyed
+ */
 void on_destroy(void)
 {
     g_debug("Quit...");
@@ -233,6 +249,9 @@ void on_destroy(void)
 }
 
 
+/**
+ * The about dialog
+ */
 void about_menuitem_activate_cb(void)
 {
     const gchar *authors[] =
@@ -257,63 +276,73 @@ void about_menuitem_activate_cb(void)
         with this program; if not, write to the Free Software Foundation, Inc.,\n\
         51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.";
 
+    /* TODO: Add translators here */
     gtk_show_about_dialog (NULL,
-        "program-name", PACKAGE_NAME,
-        "logo-icon-name", "gpx-viewer",
-        "website", PACKAGE_URL,
-        "website-label", PACKAGE_URL,
-        "license", gpl_short_version,
-        "version", VERSION,
-        "authors", authors,
-        "comments", _("A simple program to visualize one or more gpx files."),
-        "title", _("About GPX Viewer"),
+        "program-name",     PACKAGE_NAME,
+        "logo-icon-name",   "gpx-viewer",
+        "website",          PACKAGE_URL,
+        "website-label",    PACKAGE_URL,
+        "license",          gpl_short_version,
+        "version",          VERSION,
+        "authors",          authors,
+        "comments",         _("A simple program to visualize one or more gpx files."),
+        "title",            _("About GPX Viewer"),
         NULL);
 }
 
 
 /**
+ * Tool function for readability
+ */
+
+static GString *misc_get_time(time_t temp)
+{
+    GString *string = g_string_new("");
+    int hour = temp / 3600;
+    int minutes = ((temp % 3600) / 60);
+    int seconds = (temp % 60);
+    if (hour > 0)
+    {
+        g_string_append_printf(string, "%i %s", hour, (hour == 1) ? "hour" : "hours");
+    }
+
+    if (minutes > 0)
+    {
+        if (hour > 0)
+            g_string_append(string, ", ");
+        g_string_append_printf(string, "%i %s", minutes, (minutes == 1) ? "minute" : "minutes");
+    }
+
+    if (seconds > 0)
+    {
+        if (minutes > 0)
+            g_string_append(string, ", ");
+        g_string_append_printf(string, "%i %s", seconds, (seconds == 1) ? "second" : "seconds");
+    }
+    return string;
+}
+
+
+/**
  * Update on track changes
+ * TODO: This function is _way_ to long.
  */
 static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, GpxPoint *start, GpxPoint *stop)
 {
-    time_t temp;
-    gdouble gtemp;
+    time_t temp = 0;
+    gdouble gtemp = 0;
     double max_speed = 0;
     double points = 0;
     GtkWidget *label = NULL;
     /* Duration */
     label = (GtkWidget *) gtk_builder_get_object(builder, "duration_label");
-
-    temp = 0;
     if(start && stop)
     {
         temp = gpx_point_get_time(stop) - gpx_point_get_time(start);
     }
     if (temp > 0)
     {
-        int hour = temp / 3600;
-        int minutes = ((temp % 3600) / 60);
-        int seconds = (temp % 60);
-        GString *string = g_string_new("");
-        if (hour > 0)
-        {
-            g_string_append_printf(string, "%i %s", hour, (hour == 1) ? "hour" : "hours");
-        }
-
-        if (minutes > 0)
-        {
-            if (hour > 0)
-                g_string_append(string, ", ");
-            g_string_append_printf(string, "%i %s", minutes, (minutes == 1) ? "minute" : "minutes");
-        }
-
-        if (seconds > 0)
-        {
-            if (minutes > 0)
-                g_string_append(string, ", ");
-            g_string_append_printf(string, "%i %s", seconds, (seconds == 1) ? "second" : "seconds");
-        }
-
+        GString *string = misc_get_time(temp);
         gtk_label_set_text(GTK_LABEL(label), string->str);
         g_string_free(string, TRUE);
     }
@@ -321,11 +350,13 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
+
     /* Distance */
     label = (GtkWidget *) gtk_builder_get_object(builder, "distance_label");
-
-    gtemp = 0;
-    if(start && stop) gtemp = stop->distance-start->distance;
+    if(start && stop)
+    {
+        gtemp = stop->distance-start->distance;
+    }
     if (gtemp > 0)
     {
         gchar *string = g_strdup_printf("%.2f km", gtemp);
@@ -340,7 +371,10 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     /* Average */
     label = (GtkWidget *) gtk_builder_get_object(builder, "average_label");
     gtemp = 0;
-    if(start && stop) gtemp = gpx_track_calculate_point_to_point_speed(track,start, stop);
+    if(start && stop)
+    {
+        gtemp = gpx_track_calculate_point_to_point_speed(track,start, stop);
+    }
     if (gtemp > 0)
     {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
@@ -356,7 +390,11 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_label");
     gtemp = 0;
     temp = 0;
-    if(start && stop) gtemp = gpx_track_calculate_moving_average(track,start, stop, &temp);
+    if(start && stop)
+    {
+        /* Calculates both time and km/h */
+        gtemp = gpx_track_calculate_moving_average(track,start, stop, &temp);
+    }
     if (gtemp > 0)
     {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
@@ -371,29 +409,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_time_label");
     if (gtemp > 0)
     {
-        int hour = temp / 3600;
-        int minutes = ((temp % 3600) / 60);
-        int seconds = (temp % 60);
-        GString *string = g_string_new("");
-        if (hour > 0)
-        {
-            g_string_append_printf(string, "%i %s", hour, (hour == 1) ? "hour" : "hours");
-        }
-
-        if (minutes > 0)
-        {
-            if (hour > 0)
-                g_string_append(string, ", ");
-            g_string_append_printf(string, "%i %s", minutes, (minutes == 1) ? "minute" : "minutes");
-        }
-
-        if (seconds > 0)
-        {
-            if (minutes > 0)
-                g_string_append(string, ", ");
-            g_string_append_printf(string, "%i %s", seconds, (seconds == 1) ? "second" : "seconds");
-        }
-
+        GString *string = misc_get_time(temp);
         gtk_label_set_text(GTK_LABEL(label), string->str);
         g_string_free(string, TRUE);
     }
@@ -401,6 +417,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
+
     /* Max speed */
     if(track && start && stop)
     {
@@ -473,10 +490,18 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
 }
 
-
+/**
+ * Creates a Polygon for Route, and adds it to the view 
+ */
 static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 {
     GList *iter;
+    /* If Route has allready a route, exit */
+    if(route->polygon != NULL) 
+    {
+        g_warning("Route allready has a polygon.\n");
+        return;
+    }
     route->polygon = champlain_polygon_new();
     for (iter = g_list_first(route->track->points); iter; iter = iter->next)
     {
@@ -539,7 +564,9 @@ void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
     }
 }
 
-
+/**
+ * Handle user selecting another track
+ */
 void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 {
     GtkTreeView *tree = gtk_tree_selection_get_tree_view(sel);
@@ -549,17 +576,24 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
     {
         Route *route = NULL;
         gtk_tree_model_get(model, &iter, 1, &route, -1);
+        /* Unset active route */
         if (active_route)
         {
+            /* Give it ' non-active' colour */
             champlain_polygon_set_stroke_color(active_route->polygon, &normal_track_color);
+            /* Hide stop marker */
             if(active_route->stop)
                 clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
 
+            /* Hide start marker */
             if(active_route->start)
                 clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
-
+            
+            /* Stop playback */
             gpx_playback_stop(playback);
+            /* Clear graph */
             gpx_graph_set_track(gpx_graph, NULL);
+            /* Hide graph */
             gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
         }
 
@@ -653,9 +687,6 @@ void map_zoom_level_change_value_cb(GtkSpinButton * spin, gpointer user_data)
     }
 }
 
-
-ClutterActor *click_marker = NULL;
-guint click_marker_source = 0;
 static gboolean graph_point_remove(ClutterActor * marker)
 {
     clutter_actor_destroy(click_marker);
@@ -1112,7 +1143,6 @@ void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data)
     }
 }
 
-
 void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 {
     gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
@@ -1128,7 +1158,6 @@ void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data)
         }
     }
 }
-
 
 void on_view_menu_files_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 {
@@ -1179,7 +1208,6 @@ static void dock_layout_changed(GdlDock *dock, gpointer data)
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
     }
 }
-
 
 /* Create the interface */
 static void create_interface(void)
@@ -1430,7 +1458,6 @@ static void create_interface(void)
         champlain_view_set_zoom_level(view, 15);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
-
 }
 
 
