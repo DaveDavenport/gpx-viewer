@@ -35,6 +35,7 @@ namespace Gpx
 			SPEED,
 			ELEVATION,
 			DISTANCE,
+            ACCELERATION_F,
 			NUM_GRAPH_MODES
 		}
         
@@ -42,7 +43,8 @@ namespace Gpx
 		private string[] GraphModeName = {
 			N_("Speed (km/h) vs Time (HH:MM)"),
 			N_("Elevation (m) vs Time (HH:MM)"),
-			N_("Distance (km) vs Time (HH:MM)")
+			N_("Distance (km) vs Time (HH:MM)"),
+			N_("Horizontal acceleration (m/s) vs Time (HH:MM)")
 		};
 		
 		/* By default elevation is shown */
@@ -390,7 +392,25 @@ namespace Gpx
 			}else if (this.mode == GraphMode.DISTANCE){
 				max_value = track.total_distance;
 				min_value = 0;
-			}
+            }else if (this.mode == GraphMode.ACCELERATION_F) {
+                weak List<Point?> iter = this.track.points.first();
+                while(iter.next != null)
+                {
+                    weak List<Point?> ii = iter.next;
+                    double speed = 0;
+                    int i=0;
+                    int sf = this.smooth_factor;
+                    for(i=0;i<sf && ii.prev != null; i++)
+                    {
+                        speed += (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
+                        ii = ii.prev;
+                    }
+                    speed = speed/i;
+                    max_value = (speed > max_value )?speed:max_value;
+                    min_value = (speed < min_value)?speed:min_value;
+                    iter = iter.next;
+                }
+            }
 			range = max_value-min_value;
 			double elapsed_time = track.get_total_time();
 
@@ -488,7 +508,9 @@ namespace Gpx
 						speed += ii.data.elevation-min_value;
 					}else if(this.mode == GraphMode.DISTANCE){
 						speed += ii.data.distance;
-					}
+					}else if (this.mode == GraphMode.ACCELERATION_F) {
+                        speed += (ii.data.speed - ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
+                    }
 					ii = ii.prev;
 				}
 				speed = speed/i;
@@ -540,7 +562,9 @@ namespace Gpx
 							speed += ii.data.elevation-min_value;
 						}else if(this.mode == GraphMode.DISTANCE){
 							speed += ii.data.distance;
-						}
+						}else if(this.mode == GraphMode.ACCELERATION_F){
+							speed += (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
+                        }
 						ii = ii.prev;
 					}
 					speed = speed/i;

@@ -490,14 +490,15 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
 }
 
+
 /**
- * Creates a Polygon for Route, and adds it to the view 
+ * Creates a Polygon for Route, and adds it to the view
  */
 static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 {
     GList *iter;
     /* If Route has allready a route, exit */
-    if(route->polygon != NULL) 
+    if(route->polygon != NULL)
     {
         g_warning("Route allready has a polygon.\n");
         return;
@@ -564,6 +565,7 @@ void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
     }
 }
 
+
 /**
  * Handle user selecting another track
  */
@@ -588,7 +590,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             /* Hide start marker */
             if(active_route->start)
                 clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
-            
+
             /* Stop playback */
             gpx_playback_stop(playback);
             /* Clear graph */
@@ -686,6 +688,7 @@ void map_zoom_level_change_value_cb(GtkSpinButton * spin, gpointer user_data)
         champlain_view_set_zoom_level(view, new);
     }
 }
+
 
 static gboolean graph_point_remove(ClutterActor * marker)
 {
@@ -1143,6 +1146,7 @@ void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data)
     }
 }
 
+
 void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 {
     gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
@@ -1158,6 +1162,7 @@ void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data)
         }
     }
 }
+
 
 void on_view_menu_files_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 {
@@ -1208,6 +1213,7 @@ static void dock_layout_changed(GdlDock *dock, gpointer data)
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
     }
 }
+
 
 /* Create the interface */
 static void create_interface(void)
