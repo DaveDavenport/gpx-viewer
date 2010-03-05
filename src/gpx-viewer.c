@@ -74,7 +74,8 @@ static void config_load(void)
     const gchar *config_dir = g_get_user_config_dir();
     g_assert(config_dir != NULL);
     config_path = g_build_filename(config_dir, "gpx-viewer", NULL);
-    if(!g_file_test(config_path, G_FILE_TEST_IS_DIR)) {
+    if(!g_file_test(config_path, G_FILE_TEST_IS_DIR))
+    {
         g_mkdir_with_parents(config_path, 0700);
     }
     g_free(config_path);
@@ -83,7 +84,8 @@ static void config_load(void)
     config_file = g_key_file_new();
     g_key_file_load_from_file(config_file, config_path, G_KEY_FILE_NONE, &error);
 
-    if (error) {
+    if (error)
+    {
         g_debug("Failed to open config file %s: %s",config_path, error->message);
         g_error_free(error);
         error = NULL;
@@ -101,17 +103,21 @@ static void config_save(void)
     config_path = g_build_filename(config_dir, "gpx-viewer", "config.ini", NULL);
     g_debug("Save config file");
     /* Save config file. */
-    if(config_path) {
+    if(config_path)
+    {
         gsize length=0;
         gchar *data = g_key_file_to_data(config_file, &length,&error);
-        if(error) {
+        if(error)
+        {
             g_error("Failed to write config file: %s", error->message);
             g_error_free(error);
             error = NULL;
         }
-        if(data) {
+        if(data)
+        {
             g_file_set_contents(config_path, data, length, &error);
-            if(error) {
+            if(error)
+            {
                 g_error("Failed to write config file: %s", error->message);
                 g_error_free(error);
                 error = NULL;
@@ -130,7 +136,8 @@ static int config_get_integer(const char *a, const char *b, int def)
 {
     GError *error = NULL;
     int retv = g_key_file_get_integer(config_file,a,b, &error);
-    if(error) {
+    if(error)
+    {
         g_debug("Failed to get value: %s", error->message);
         g_error_free(error); error = NULL;
         return def;
@@ -143,7 +150,8 @@ static int config_get_boolean(const char *a, const char *b, gboolean def)
 {
     GError *error = NULL;
     int retv = g_key_file_get_boolean(config_file,a,b, &error);
-    if(error) {
+    if(error)
+    {
         g_debug("Failed to get value: %s", error->message);
         g_error_free(error); error = NULL;
         return def;
@@ -163,7 +171,8 @@ static void restore_layout(void)
     g_assert(config_dir != NULL);
 
     layout_path = g_build_filename(config_dir, "gpx-viewer", "dock-layout.xml",NULL);
-    if(g_file_test(layout_path, G_FILE_TEST_EXISTS)) {
+    if(g_file_test(layout_path, G_FILE_TEST_EXISTS))
+    {
         gdl_dock_layout_load_from_file(dock_layout, layout_path);
         gdl_dock_layout_load_layout(dock_layout, "my_layout");
     }
@@ -180,12 +189,14 @@ static void save_layout(void)
     g_debug("Config dir is: %s", config_dir);
 
     layout_path = g_build_filename(config_dir, "gpx-viewer", NULL);
-    if(!g_file_test(layout_path, G_FILE_TEST_IS_DIR)) {
+    if(!g_file_test(layout_path, G_FILE_TEST_IS_DIR))
+    {
         g_mkdir_with_parents(layout_path, 0700);
     }
     g_free(layout_path);
     layout_path = g_build_filename(config_dir, "gpx-viewer", "dock-layout.xml",NULL);
-    if(dock_layout) {
+    if(dock_layout)
+    {
         g_debug("Saving layout: %s", layout_path);
         gdl_dock_layout_save_layout(dock_layout, "my_layout");
         gdl_dock_layout_save_to_file(dock_layout, layout_path);
@@ -224,7 +235,8 @@ void on_destroy(void)
 
 void about_menuitem_activate_cb(void)
 {
-    const gchar *authors[] = {
+    const gchar *authors[] =
+    {
         "Qball Cow <qball@sarine.nl>",
         "Andrew Harvey",
         NULL
@@ -273,25 +285,30 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     label = (GtkWidget *) gtk_builder_get_object(builder, "duration_label");
 
     temp = 0;
-    if(start && stop) {
+    if(start && stop)
+    {
         temp = gpx_point_get_time(stop) - gpx_point_get_time(start);
     }
-    if (temp > 0) {
+    if (temp > 0)
+    {
         int hour = temp / 3600;
         int minutes = ((temp % 3600) / 60);
         int seconds = (temp % 60);
         GString *string = g_string_new("");
-        if (hour > 0) {
+        if (hour > 0)
+        {
             g_string_append_printf(string, "%i %s", hour, (hour == 1) ? "hour" : "hours");
         }
 
-        if (minutes > 0) {
+        if (minutes > 0)
+        {
             if (hour > 0)
                 g_string_append(string, ", ");
             g_string_append_printf(string, "%i %s", minutes, (minutes == 1) ? "minute" : "minutes");
         }
 
-        if (seconds > 0) {
+        if (seconds > 0)
+        {
             if (minutes > 0)
                 g_string_append(string, ", ");
             g_string_append_printf(string, "%i %s", seconds, (seconds == 1) ? "second" : "seconds");
@@ -300,7 +317,8 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         gtk_label_set_text(GTK_LABEL(label), string->str);
         g_string_free(string, TRUE);
     }
-    else {
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
     /* Distance */
@@ -308,12 +326,14 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
 
     gtemp = 0;
     if(start && stop) gtemp = stop->distance-start->distance;
-    if (gtemp > 0) {
+    if (gtemp > 0)
+    {
         gchar *string = g_strdup_printf("%.2f km", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
     }
-    else {
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
 
@@ -321,12 +341,14 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     label = (GtkWidget *) gtk_builder_get_object(builder, "average_label");
     gtemp = 0;
     if(start && stop) gtemp = gpx_track_calculate_point_to_point_speed(track,start, stop);
-    if (gtemp > 0) {
+    if (gtemp > 0)
+    {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
     }
-    else {
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
 
@@ -335,32 +357,38 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     gtemp = 0;
     temp = 0;
     if(start && stop) gtemp = gpx_track_calculate_moving_average(track,start, stop, &temp);
-    if (gtemp > 0) {
+    if (gtemp > 0)
+    {
         gchar *string = g_strdup_printf("%.2f km/h", gtemp);
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
     }
-    else {
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
 
     label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_time_label");
-    if (gtemp > 0) {
+    if (gtemp > 0)
+    {
         int hour = temp / 3600;
         int minutes = ((temp % 3600) / 60);
         int seconds = (temp % 60);
         GString *string = g_string_new("");
-        if (hour > 0) {
+        if (hour > 0)
+        {
             g_string_append_printf(string, "%i %s", hour, (hour == 1) ? "hour" : "hours");
         }
 
-        if (minutes > 0) {
+        if (minutes > 0)
+        {
             if (hour > 0)
                 g_string_append(string, ", ");
             g_string_append_printf(string, "%i %s", minutes, (minutes == 1) ? "minute" : "minutes");
         }
 
-        if (seconds > 0) {
+        if (seconds > 0)
+        {
             if (minutes > 0)
                 g_string_append(string, ", ");
             g_string_append_printf(string, "%i %s", seconds, (seconds == 1) ? "second" : "seconds");
@@ -369,13 +397,16 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         gtk_label_set_text(GTK_LABEL(label), string->str);
         g_string_free(string, TRUE);
     }
-    else {
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
     /* Max speed */
-    if(track && start && stop) {
+    if(track && start && stop)
+    {
         GList *list ;
-        for(list = g_list_find(track->points, start); list && list->data != stop; list = g_list_next(list)) {
+        for(list = g_list_find(track->points, start); list && list->data != stop; list = g_list_next(list))
+        {
             points++;
             max_speed = MAX(max_speed, ((GpxPoint *)list->data)->speed);
         }
@@ -383,12 +414,14 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
 
     }
     label = (GtkWidget *) gtk_builder_get_object(builder, "max_speed_label");
-    if (max_speed > 0) {
+    if (max_speed > 0)
+    {
         gchar *string = g_strdup_printf("%.2f km/h", max_speed);
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
     }
-    else {
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
 
@@ -398,11 +431,13 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         gdouble distance_diff = 0;
         label = (GtkWidget *) gtk_builder_get_object(builder, "gradient_label");
 
-        if (start && stop) {
+        if (start && stop)
+        {
             elevation_diff = stop->elevation - start->elevation;
             distance_diff = stop->distance - start->distance;
         }
-        if (distance_diff > 0) {
+        if (distance_diff > 0)
+        {
             /* The gradient here is a percentage, using the start and end point only.
                distance_diff is in km so we *1000 to change to m first as elevation_diff
                is in the same units as supplied in the GPX file which as per the GPX
@@ -411,7 +446,8 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
             gtk_label_set_text(GTK_LABEL(label), string);
             g_free(string);
         }
-        else {
+        else
+        {
             gtk_label_set_text(GTK_LABEL(label), "n/a");
         }
 
@@ -419,16 +455,19 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         label = (GtkWidget *) gtk_builder_get_object(builder, "elevation_difference_label");
 
         elevation_diff = 0;
-        if (start && stop) {
+        if (start && stop)
+        {
             elevation_diff = stop->elevation - start->elevation;
             distance_diff = stop->distance - start->distance;
         }
-        if (distance_diff > 0) {
+        if (distance_diff > 0)
+        {
             gchar *string = g_strdup_printf("%.2f m", elevation_diff);
             gtk_label_set_text(GTK_LABEL(label), string);
             g_free(string);
         }
-        else {
+        else
+        {
             gtk_label_set_text(GTK_LABEL(label), "n/a");
         }
     }
@@ -439,7 +478,8 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 {
     GList *iter;
     route->polygon = champlain_polygon_new();
-    for (iter = g_list_first(route->track->points); iter; iter = iter->next) {
+    for (iter = g_list_first(route->track->points); iter; iter = iter->next)
+    {
         GpxPoint *p = iter->data;
         champlain_polygon_append_point(route->polygon, p->lat_dec, p->lon_dec);
     }
@@ -453,7 +493,8 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
 {
     GList *it;
-    for(it = g_list_first(file->waypoints); it; it = g_list_next(it)) {
+    for(it = g_list_first(file->waypoints); it; it = g_list_next(it))
+    {
         GpxPoint *p = it->data;
         const gchar *name = gpx_point_get_name(p);
         ClutterActor *marker = champlain_marker_new_with_text(name, "Seric 12", NULL, NULL);
@@ -467,11 +508,13 @@ static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
 static void interface_map_make_waypoints(ChamplainView * view)
 {
     GList *iter;
-    if (waypoint_layer == NULL) {
+    if (waypoint_layer == NULL)
+    {
         waypoint_layer = champlain_layer_new();
         champlain_view_add_layer(view, waypoint_layer);
     }
-    for (iter = g_list_first(files); iter != NULL; iter = g_list_next(iter)) {
+    for (iter = g_list_first(files); iter != NULL; iter = g_list_next(iter))
+    {
         GpxFile *file = iter->data;
         interface_map_file_waypoints(view, file);
     }
@@ -482,12 +525,15 @@ static void interface_map_make_waypoints(ChamplainView * view)
 /* Show and hide waypoint layer */
 void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
 {
-    if (waypoint_layer) {
+    if (waypoint_layer)
+    {
         gboolean active = gtk_toggle_button_get_active(button);
-        if (active) {
+        if (active)
+        {
             clutter_actor_show_all(CLUTTER_ACTOR(waypoint_layer));
         }
-        else {
+        else
+        {
             clutter_actor_hide(CLUTTER_ACTOR(waypoint_layer));
         }
     }
@@ -499,10 +545,12 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
     GtkTreeView *tree = gtk_tree_selection_get_tree_view(sel);
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree));
     GtkTreeIter iter;
-    if(gtk_tree_selection_get_selected(sel, &model, &iter)) {
+    if(gtk_tree_selection_get_selected(sel, &model, &iter))
+    {
         Route *route = NULL;
         gtk_tree_model_get(model, &iter, 1, &route, -1);
-        if (active_route) {
+        if (active_route)
+        {
             champlain_polygon_set_stroke_color(active_route->polygon, &normal_track_color);
             if(active_route->stop)
                 clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
@@ -516,7 +564,8 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
         }
 
         active_route = route;
-        if (route) {
+        if (route)
+        {
             ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 
             gpx_playback_set_track(playback, active_route->track);
@@ -525,17 +574,20 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 
             if (route->visible)
                 champlain_polygon_show(route->polygon);
-            if (route->track->top && route->track->bottom) {
+            if (route->track->top && route->track->bottom)
+            {
                 champlain_view_ensure_visible(view,
                     route->track->top->lat_dec, route->track->top->lon_dec,
                     route->track->bottom->lat_dec, route->track->bottom->lon_dec, FALSE);
             }
 
-            if (gpx_track_get_total_time(route->track) > 5) {
+            if (gpx_track_get_total_time(route->track) > 5)
+            {
                 gpx_graph_set_track(gpx_graph, route->track);
                 gtk_widget_show(GTK_WIDGET(gpx_graph_container));
             }
-            else {
+            else
+            {
                 gpx_graph_set_track(gpx_graph, NULL);
                 gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
             }
@@ -564,7 +616,8 @@ void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
 {
     int current = gpx_graph_get_smooth_factor(gpx_graph);
     int new = gtk_spin_button_get_value_as_int(spin);
-    if (current != new) {
+    if (current != new)
+    {
         gpx_graph_set_smooth_factor(gpx_graph, new);
         g_key_file_set_integer(config_file, "Window", "smooth-factor", new);
     }
@@ -594,7 +647,8 @@ void map_zoom_level_change_value_cb(GtkSpinButton * spin, gpointer user_data)
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     int current = champlain_view_get_zoom_level(view);
     int new = gtk_spin_button_get_value_as_int(spin);
-    if (current != new) {
+    if (current != new)
+    {
         champlain_view_set_zoom_level(view, new);
     }
 }
@@ -614,12 +668,15 @@ static gboolean graph_point_remove(ClutterActor * marker)
 static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *start, GpxPoint *stop)
 {
     interface_update_heading(builder, track, start, stop);
-    if(active_route && active_route->track->points != NULL) {
-        if(start) {
+    if(active_route && active_route->track->points != NULL)
+    {
+        if(start)
+        {
             champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->start), start->lat_dec, start->lon_dec);
         }
 
-        if(stop) {
+        if(stop)
+        {
             champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->stop), stop->lat_dec, stop->lon_dec);
         }
     }
@@ -630,19 +687,23 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 {
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     ChamplainBaseMarker *marker[2] = {NULL, NULL};
-    if(click_marker == NULL) {
+    if(click_marker == NULL)
+    {
         GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
             "pin-red",
             100, 0);
 
-        if (ii) {
+        if (ii)
+        {
             const gchar *path2 = gtk_icon_info_get_filename(ii);
-            if (path2) {
+            if (path2)
+            {
                 click_marker = champlain_marker_new_from_file(path2, NULL);
                 champlain_marker_set_draw_background(CHAMPLAIN_MARKER(click_marker), FALSE);
             }
         }
-        if (!click_marker) {
+        if (!click_marker)
+        {
             click_marker = champlain_marker_new();
         }
         /* Create the marker */
@@ -653,7 +714,8 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
     champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), point->lat_dec, point->lon_dec);
     clutter_actor_show(CLUTTER_ACTOR(click_marker));
 
-    if(click_marker_source >0) {
+    if(click_marker_source >0)
+    {
         g_source_remove(click_marker_source);
     }
 
@@ -666,7 +728,8 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 
 void playback_play_clicked(void)
 {
-    if(active_route) {
+    if(active_route)
+    {
         gpx_playback_start(playback);
     }
 }
@@ -674,7 +737,8 @@ void playback_play_clicked(void)
 
 void playback_pause_clicked(void)
 {
-    if(active_route) {
+    if(active_route)
+    {
         gpx_playback_pause(playback);
     }
 }
@@ -682,7 +746,8 @@ void playback_pause_clicked(void)
 
 void playback_stop_clicked(void)
 {
-    if(active_route) {
+    if(active_route)
+    {
         gpx_playback_stop(playback);
     }
 }
@@ -690,7 +755,8 @@ void playback_stop_clicked(void)
 
 static void route_playback_tick(GpxPlayback *route_playback, GpxPoint *current)
 {
-    if(current != NULL) {
+    if(current != NULL)
+    {
         time_t ptime = gpx_point_get_time(current);
 
         gpx_graph_show_info(gpx_graph, current);
@@ -698,7 +764,8 @@ static void route_playback_tick(GpxPlayback *route_playback, GpxPoint *current)
 
         graph_point_clicked(gpx_graph, current);
     }
-    else {
+    else
+    {
         gpx_graph_set_highlight(gpx_graph, 0);
         gpx_graph_hide_info(gpx_graph);
     }
@@ -710,19 +777,22 @@ static void route_playback_state_changed(GpxPlayback *route_playback, GpxPlaybac
     GtkWidget *w_stopped =(GtkWidget *) gtk_builder_get_object(builder, "eventbox2");
     GtkWidget *w_play = (GtkWidget *)gtk_builder_get_object(builder, "eventbox3");
     GtkWidget *w_paused = (GtkWidget *)gtk_builder_get_object(builder, "eventbox1");
-    if(state == GPX_PLAYBACK_STATE_STOPPED) {
+    if(state == GPX_PLAYBACK_STATE_STOPPED)
+    {
         g_debug("playback stopped");
         gtk_widget_set_sensitive(w_stopped, FALSE);
         gtk_widget_set_sensitive(w_play, TRUE);
         gtk_widget_set_sensitive(w_paused, FALSE);
     }
-    else if (state == GPX_PLAYBACK_STATE_PAUSED) {
+    else if (state == GPX_PLAYBACK_STATE_PAUSED)
+    {
         g_debug("playback paused");
         gtk_widget_set_sensitive(w_stopped, TRUE);
         gtk_widget_set_sensitive(w_play, TRUE);
         gtk_widget_set_sensitive(w_paused, TRUE);
     }
-    else if  (state == GPX_PLAYBACK_STATE_PLAY) {
+    else if  (state == GPX_PLAYBACK_STATE_PLAY)
+    {
         g_debug("playback started");
         gtk_widget_set_sensitive(w_stopped, TRUE);
         gtk_widget_set_sensitive(w_play, FALSE);
@@ -766,9 +836,11 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         4, g_list_length(route->track->points),
         -1);
 
-    if(first) {
+    if(first)
+    {
         GtkTreePath *path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &liter);
-        if(path != NULL) {
+        if(path != NULL)
+        {
             gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")), path);
             gtk_tree_path_free(path);
         }
@@ -776,22 +848,27 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     }
     first = FALSE;
     /* Pin's */
-    if(route->track) {
+    if(route->track)
+    {
         const GList *start = g_list_first(route->track->points);
         const GList *stop = g_list_last(route->track->points);
-        if(start && stop) {
+        if(start && stop)
+        {
             ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
                 "pin-green",
                 100, 0);
-            if (ii) {
+            if (ii)
+            {
                 const gchar *path2 = gtk_icon_info_get_filename(ii);
-                if (path2) {
+                if (path2)
+                {
                     route->start = (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
                     champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->start), FALSE);
                 }
                 gtk_icon_info_free(ii);
             }
-            if (!route->start) {
+            if (!route->start)
+            {
                 route->start = (ChamplainBaseMarker *)champlain_marker_new();
             }
             /* Create the marker */
@@ -804,15 +881,18 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
             ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
                 "pin-blue",
                 100, 0);
-            if (ii) {
+            if (ii)
+            {
                 const gchar *path2 = gtk_icon_info_get_filename(ii);
-                if (path2) {
+                if (path2)
+                {
                     route->stop =  (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
                     champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->stop), FALSE);
                 }
                 gtk_icon_info_free(ii);
             }
-            if (!route->stop) {
+            if (!route->stop)
+            {
                 route->stop = (ChamplainBaseMarker *)champlain_marker_new();
             }
             /* Create the marker */
@@ -851,7 +931,8 @@ static void main_window_pane2_pos_changed(GtkWidget * panel, GParamSpec * arg1, 
 
 void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer data)
 {
-    if(alloc) {
+    if(alloc)
+    {
         g_key_file_set_integer(config_file, "Window", "width", alloc->width);
         g_key_file_set_integer(config_file, "Window", "height", alloc->height);
         g_debug("size: %i - %i\n", alloc->width, alloc->height);
@@ -866,16 +947,20 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
     GtkTreeIter iter;
     struct Route *route;
 
-    if(gtk_tree_model_get_iter_from_string(model, &iter, path)) {
+    if(gtk_tree_model_get_iter_from_string(model, &iter, path))
+    {
         gtk_tree_model_get(model, &iter, 1, &route, -1);
-        if(route) {
+        if(route)
+        {
             gboolean active = !gtk_cell_renderer_toggle_get_active(toggle);
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, 3, active, -1);
             route->visible = active;
-            if (active) {
+            if (active)
+            {
                 champlain_polygon_show(route->polygon);
             }
-            else {
+            else
+            {
                 champlain_polygon_hide(route->polygon);
             }
         }
@@ -930,13 +1015,17 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
         3, FALSE,
         -1);
     g_free(basename);
-    if (file->tracks) {
-        for (iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
+    if (file->tracks)
+    {
+        for (iter = g_list_first(file->tracks); iter; iter = g_list_next(iter))
+        {
             interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
         }
     }
-    if(file->routes) {
-        for (iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
+    if(file->routes)
+    {
+        for (iter = g_list_first(file->routes); iter; iter = g_list_next(iter))
+        {
             interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
         }
     }
@@ -951,15 +1040,18 @@ GtkImage *image)
     static guint sb_context = 0;
     ChamplainState state;
     GtkWidget *sb = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar2"));
-    if(sb_context == 0) {
+    if(sb_context == 0)
+    {
         sb_context = gtk_statusbar_get_context_id(GTK_STATUSBAR(sb), "loadingstatecontext");
     }
     g_object_get (G_OBJECT (view), "state", &state, NULL);
-    if (state == CHAMPLAIN_STATE_LOADING) {
+    if (state == CHAMPLAIN_STATE_LOADING)
+    {
         gtk_statusbar_push(GTK_STATUSBAR(sb), sb_context, _("Loading map data.."));
         g_debug("STATE: loading.");
     }
-    else {
+    else
+    {
         gtk_statusbar_pop(GTK_STATUSBAR(sb), sb_context);
         g_debug("STATE: done.");
     }
@@ -972,7 +1064,8 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
     GtkTreeModel *model = gtk_combo_box_get_model(box);
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 
-    if(gtk_combo_box_get_active_iter(box, &iter)) {
+    if(gtk_combo_box_get_active_iter(box, &iter))
+    {
         GtkWidget *sp;
         gchar *id;
         ChamplainMapSource *cms;
@@ -1006,11 +1099,14 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
 void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 {
     gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
-    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[2]) != active) {
-        if(active) {
+    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[2]) != active)
+    {
+        if(active)
+        {
             gdl_dock_item_show_item(GDL_DOCK_ITEM(dock_items[2]));
         }
-        else {
+        else
+        {
             gdl_dock_item_hide_item(GDL_DOCK_ITEM(dock_items[2]));
         }
     }
@@ -1020,11 +1116,14 @@ void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 {
     gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
-    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[1]) != active) {
-        if(active) {
+    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[1]) != active)
+    {
+        if(active)
+        {
             gdl_dock_item_show_item(GDL_DOCK_ITEM(dock_items[1]));
         }
-        else {
+        else
+        {
             gdl_dock_item_hide_item(GDL_DOCK_ITEM(dock_items[1]));
         }
     }
@@ -1034,11 +1133,14 @@ void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 void on_view_menu_files_dock_toggled(GtkCheckMenuItem *item, gpointer data)
 {
     gboolean active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item));
-    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[0]) != active) {
-        if(active) {
+    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[0]) != active)
+    {
+        if(active)
+        {
             gdl_dock_item_show_item(GDL_DOCK_ITEM(dock_items[0]));
         }
-        else {
+        else
+        {
             gdl_dock_item_hide_item(GDL_DOCK_ITEM(dock_items[0]));
         }
     }
@@ -1050,24 +1152,30 @@ static void dock_layout_changed(GdlDock *dock, gpointer data)
     GtkWidget *item;
 
     item = (GtkWidget *)gtk_builder_get_object(builder, "view_menu_settings_dock");
-    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[2])) {
+    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[2]))
+    {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
     }
-    else {
+    else
+    {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
     }
     item = (GtkWidget *)gtk_builder_get_object(builder, "view_menu_track_info_dock");
-    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[1])) {
+    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[1]))
+    {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
     }
-    else {
+    else
+    {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
     }
     item = (GtkWidget *)gtk_builder_get_object(builder, "view_menu_files_dock");
-    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[0])) {
+    if(GDL_DOCK_OBJECT_ATTACHED(dock_items[0]))
+    {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), TRUE);
     }
-    else {
+    else
+    {
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), FALSE);
     }
 }
@@ -1091,7 +1199,8 @@ static void create_interface(void)
 
     /* Open UI description file */
     builder = gtk_builder_new();
-    if (!gtk_builder_add_from_file(builder, path, &error)) {
+    if (!gtk_builder_add_from_file(builder, path, &error))
+    {
         g_error("Failed to create ui: %s\n", error->message);
     }
     g_free(path);
@@ -1151,14 +1260,16 @@ static void create_interface(void)
 
     champlain_view_set_show_scale(CHAMPLAIN_VIEW(view), TRUE);
 
-    if (marker_layer == NULL) {
+    if (marker_layer == NULL)
+    {
         marker_layer = champlain_layer_new();
         champlain_view_add_layer(view, marker_layer);
     }
 
     interface_map_make_waypoints(view);
 
-    for (fiter = g_list_first(files); fiter; fiter = g_list_next(fiter)) {
+    for (fiter = g_list_first(files); fiter; fiter = g_list_next(fiter))
+    {
         GpxFile *file = fiter->data;
         GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
         GtkTreeIter liter;
@@ -1171,13 +1282,17 @@ static void create_interface(void)
             3, FALSE,
             -1);
         g_free(basename);
-        if (file->tracks) {
-            for (iter = g_list_first(file->tracks); iter; iter = g_list_next(iter)) {
+        if (file->tracks)
+        {
+            for (iter = g_list_first(file->tracks); iter; iter = g_list_next(iter))
+            {
                 interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
             }
         }
-        if(file->routes) {
-            for (iter = g_list_first(file->routes); iter; iter = g_list_next(iter)) {
+        if(file->routes)
+        {
+            for (iter = g_list_first(file->routes); iter; iter = g_list_next(iter))
+            {
                 interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
             }
         }
@@ -1212,7 +1327,8 @@ static void create_interface(void)
      */
     pos = config_get_integer("Graph", "GraphMode", 0);
     gpx_graph_switch_mode(gpx_graph, pos);
-    switch(pos) {
+    switch(pos)
+    {
         case GPX_GRAPH_GRAPH_MODE_ELEVATION:
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
                 gtk_builder_get_object(builder, "view_menu_elevation")), TRUE);
@@ -1234,7 +1350,8 @@ static void create_interface(void)
         GtkTreeModel *model = GTK_TREE_MODEL(gtk_builder_get_object(builder, "map_selection_store"));
         ChamplainMapSourceFactory *cmsf = champlain_map_source_factory_dup_default();
         GSList *ms_iter, *list = champlain_map_source_factory_dup_list (cmsf);
-        for(ms_iter = (list); ms_iter; ms_iter = g_slist_next(ms_iter)) {
+        for(ms_iter = (list); ms_iter; ms_iter = g_slist_next(ms_iter))
+        {
             ChamplainMapSourceDesc *cms = ms_iter->data;
             gtk_list_store_append(GTK_LIST_STORE(model), &titer);
             gtk_list_store_set(GTK_LIST_STORE(model), &titer,
@@ -1308,7 +1425,8 @@ static void create_interface(void)
     gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), pos);
 
     /* Try to center the track on map correctly */
-    if (lon1 < 1000.0 && lon2 < 1000.0) {
+    if (lon1 < 1000.0 && lon2 < 1000.0)
+    {
         champlain_view_set_zoom_level(view, 15);
         champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
     }
@@ -1322,7 +1440,8 @@ void open_gpx_file(GtkMenu *item)
     GtkBuilder *fbuilder = gtk_builder_new();
     /* Show dialog */
     gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-file-chooser.ui", NULL);
-    if (!gtk_builder_add_from_file(fbuilder, path, NULL)) {
+    if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+    {
         g_error("Failed to load gpx-viewer.ui");
     }
     g_free(path);
@@ -1330,7 +1449,8 @@ void open_gpx_file(GtkMenu *item)
     dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser"));
 
     path = g_key_file_get_string(config_file, "open-dialog", "last-dir", NULL);
-    if(path) {
+    if(path)
+    {
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),path);
         g_free(path); path = NULL;
     }
@@ -1341,12 +1461,14 @@ void open_gpx_file(GtkMenu *item)
         gtk_file_filter_add_pattern(filter, "*.gpx");
 
     }
-    switch (gtk_dialog_run(GTK_DIALOG(dialog))) {
+    switch (gtk_dialog_run(GTK_DIALOG(dialog)))
+    {
         case 1:
         {
             GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
             GSList *iter, *choosen_files = gtk_file_chooser_get_uris(GTK_FILE_CHOOSER(dialog));
-            for (iter = choosen_files; iter; iter = g_slist_next(iter)) {
+            for (iter = choosen_files; iter; iter = g_slist_next(iter))
+            {
                 GpxFile *file;
                 gchar *basename;
                 GtkTreeIter liter;
@@ -1369,15 +1491,19 @@ void open_gpx_file(GtkMenu *item)
                     3, FALSE,
                     -1);
                 g_free(basename);
-                if (file->tracks) {
+                if (file->tracks)
+                {
                     GList *track_iter;
-                    for (track_iter = g_list_first(file->tracks); track_iter; track_iter = g_list_next(track_iter)) {
+                    for (track_iter = g_list_first(file->tracks); track_iter; track_iter = g_list_next(track_iter))
+                    {
                         interface_plot_add_track(&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
                     }
                 }
-                if(file->routes) {
+                if(file->routes)
+                {
                     GList *route_iter;
-                    for (route_iter = g_list_first(file->routes); route_iter; route_iter = g_list_next(route_iter)) {
+                    for (route_iter = g_list_first(file->routes); route_iter; route_iter = g_list_next(route_iter))
+                    {
                         interface_plot_add_track(&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
                     }
                 }
@@ -1389,7 +1515,8 @@ void open_gpx_file(GtkMenu *item)
             break;
     }
     path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(dialog));
-    if(path) {
+    if(path)
+    {
         g_key_file_set_string(config_file, "open-dialog" , "last-dir" , path);
         g_free(path);
     }
@@ -1422,12 +1549,14 @@ int main(int argc, char **argv)
     g_option_context_parse(context, &argc, &argv, &error);
     g_option_context_free(context);
 
-    if (error) {
+    if (error)
+    {
         g_log(NULL, G_LOG_LEVEL_ERROR, "Failed to parse commandline options: %s", error->message);
         g_error_free(error);
         error = NULL;
     }
-    if(!g_thread_supported()) {
+    if(!g_thread_supported())
+    {
         g_thread_init(NULL);
     }
 
@@ -1445,7 +1574,8 @@ int main(int argc, char **argv)
     g_free(path);
 
     /* Open all the files given on the command line */
-    for (i = 1; i < argc; i++) {
+    for (i = 1; i < argc; i++)
+    {
         GpxFile *file;
         GFile *afile = g_file_new_for_commandline_arg(argv[i]);
         gchar *uri = g_file_get_uri(afile);
