@@ -36,7 +36,7 @@ namespace Gpx
 			ELEVATION,
 			DISTANCE,
             ACCELERATION_H,
-            ACCELERATION_V,
+            SPEED_V,
 			NUM_GRAPH_MODES
 		}
         
@@ -412,7 +412,7 @@ namespace Gpx
                     min_value = (speed < min_value)?speed:min_value;
                     iter = iter.next;
                 }
-            }else if (this.mode == GraphMode.ACCELERATION_V) {
+            }else if (this.mode == GraphMode.SPEED_V) {
                 weak List<Point?> iter = this.track.points.first();
                 while(iter.next != null)
                 {
@@ -530,7 +530,7 @@ namespace Gpx
 						speed += ii.data.distance;
 					}else if (this.mode == GraphMode.ACCELERATION_H) {
                         speed += (ii.data.speed - ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
-					}else if (this.mode == GraphMode.ACCELERATION_V) {
+					}else if (this.mode == GraphMode.SPEED_V) {
                         speed += (ii.data.elevation - ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
                     }
 					ii = ii.prev;
@@ -586,7 +586,7 @@ namespace Gpx
 							speed += ii.data.distance;
 						}else if(this.mode == GraphMode.ACCELERATION_H){
 							speed += (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
-						}else if(this.mode == GraphMode.ACCELERATION_V){
+						}else if(this.mode == GraphMode.SPEED_V){
 							speed += (ii.data.elevation- ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
                         }
 						ii = ii.prev;
