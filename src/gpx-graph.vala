@@ -358,6 +358,9 @@ namespace Gpx
 			ctx = new Cairo.Context(this.surf);
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Updating surface");
+			if(this.track.points == null) {
+				return;
+			}
 			/* Paint background white */
 			ctx.set_source_rgba(1,1,1,1);
 			ctx.paint();
@@ -414,7 +417,7 @@ namespace Gpx
                 }
             }else if (this.mode == GraphMode.SPEED_V) {
                 weak List<Point?> iter = this.track.points.first();
-                while(iter.next != null)
+                while(iter != null && iter.next != null)
                 {
                     weak List<Point?> ii = iter.next;
                     double speed = 0;

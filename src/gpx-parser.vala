@@ -134,6 +134,47 @@ namespace Gpx
             last = point;
         }
 
+		public Track cleanup_speed()
+		{
+			Track retv = new  Track(); 
+			retv.name = this.name;
+			var num_points = this.points.length();
+			var mean =  this.get_track_average();
+			var deviation = 0.0;
+			weak List<Point ?> iter = this.points.first();
+			while(iter != null)
+			{
+				var diff = iter.data.speed-mean;
+				deviation += (diff*diff);
+				iter = iter.next;
+			}
+			deviation /= num_points; 
+			var sqrt_deviation = Math.sqrt(deviation);
+
+			GLib.debug("Standard deviation: %f  mean: %f %u\n", sqrt_deviation, mean,num_points);
+
+			iter = this.points.first();
+			while(iter != null)
+			{
+				var pspeed = iter.data.speed;
+				if(iter.next != null){
+					pspeed = iter.next.data.speed;
+				}
+				var pdf =
+				(1/Math.sqrt(2*Math.PI*deviation))*GLib.Math.exp(-((pspeed-mean)*(pspeed-mean))/(2*deviation));
+				if((num_points*pdf) > 0.5) {
+					retv.add_point(iter.data);
+				}
+				iter = iter.next;
+			}
+
+			if(retv.points.length() != num_points)
+			{
+				return retv.cleanup_speed();
+			}
+			return retv; 
+		}
+
         /* Private api */
         /**
          * Calculate the speed of the full track

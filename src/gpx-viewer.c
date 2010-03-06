@@ -226,6 +226,7 @@ static void free_Route(Route *route)
     /* Do not free these. The are (now) automagically cleanup
        when main widget is destroyed*/
     /*	if(route->polygon) g_object_unref(route->polygon); */
+    if(route->track) g_object_unref(route->track);
     g_free(route);
 }
 
@@ -617,9 +618,9 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
                     route->track->bottom->lat_dec, route->track->bottom->lon_dec, FALSE);
             }
 
-            if (gpx_track_get_total_time(route->track) > 5)
+            if (gpx_track_get_total_time(active_route->track) > 5)
             {
-                gpx_graph_set_track(gpx_graph, route->track);
+                gpx_graph_set_track(gpx_graph, active_route->track);
                 gtk_widget_show(GTK_WIDGET(gpx_graph_container));
             }
             else
@@ -846,7 +847,14 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     GtkIconInfo *ii;
     struct Route *route = g_new0(Route, 1);
     /* Route */
-    route->track = track;
+    if(config_get_boolean("Track", "Cleanup speed using chauvenets criterion", FALSE))
+    {
+        route->track = gpx_track_cleanup_speed(track);
+    }
+    else
+    {
+        route->track = g_object_ref(track);
+    }
     route->visible = TRUE;
 
     /* draw the track */
