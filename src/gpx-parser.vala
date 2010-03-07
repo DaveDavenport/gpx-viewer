@@ -93,6 +93,9 @@ namespace Gpx
 
         public void add_point (Point point)
         {
+			/* Make sure this is 0 */
+			point.speed = 0.0;
+
             if(last != null)
             {
                 var distance = calculate_distance(last, point);
@@ -141,7 +144,8 @@ namespace Gpx
 			var num_points = this.points.length();
 			var mean =  this.get_track_average();
 			var deviation = 0.0;
-			weak List<Point ?> iter = this.points.first();
+			List<Point > list_copy = this.points.copy();
+			weak List<Point> iter = list_copy.first();
 			while(iter != null)
 			{
 				var diff = iter.data.speed-mean;
@@ -153,7 +157,7 @@ namespace Gpx
 
 			GLib.debug("Standard deviation: %f  mean: %f %u\n", sqrt_deviation, mean,num_points);
 
-			iter = this.points.first();
+			iter = list_copy.first();
 			while(iter != null)
 			{
 				var pspeed = iter.data.speed;
@@ -162,16 +166,35 @@ namespace Gpx
 				}
 				var pdf =
 				(1/Math.sqrt(2*Math.PI*deviation))*GLib.Math.exp(-((pspeed-mean)*(pspeed-mean))/(2*deviation));
-				if((num_points*pdf) > 0.5) {
-					retv.add_point(iter.data);
+				if((num_points*pdf) < 0.2) {
+					/* Remove point, fix speed off the next point, as it should */
+					weak List<Point> temp = iter.prev;
+					list_copy.remove_link(iter);	
+					if(temp != null)
+					{
+						iter = temp;
+						if(iter.next != null)
+							iter.next.data.speed = calculate_point_to_point_speed(iter.data, iter.next.data);
+					}
+					else{
+						iter = list_copy.first();
+						iter.data.speed = 0.0;
+						if(iter.next != null)
+							iter.next.data.speed = calculate_point_to_point_speed(iter.data, iter.next.data);
+					}
+				}else{
+					/* Skip this */
+					iter = iter.next;
 				}
+			}
+			/* Add remaining points to new track */
+			iter = list_copy.first();
+			while(iter != null)
+			{
+				retv.add_point(iter.data);
 				iter = iter.next;
 			}
 
-			if(retv.points.length() != num_points)
-			{
-				return retv.cleanup_speed();
-			}
 			return retv; 
 		}
 
