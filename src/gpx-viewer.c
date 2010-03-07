@@ -1651,5 +1651,43 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
+/**
+ * Track list viewer 
+ */
+
+ void close_show_current_track(GtkWidget *widget,gint response_id, GtkBuilder *fbuilder)
+ {
+	
+	 GtkWidget *dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
+	 gtk_widget_destroy(dialog);
+
+	 g_object_unref(fbuilder);
+ }
+
+void show_current_track(void)
+{
+	if(active_route && active_route->track)
+	{
+		GtkWidget *dialog;
+		GtkTreeView *tree;
+		GtkTreeModel *model = gpx_track_tree_model_new(active_route->track);
+		GtkBuilder *fbuilder = gtk_builder_new();
+		/* Show dialog */
+		gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-tracklist.ui", NULL);
+		if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+		{
+			g_error("Failed to load gpx-viewer.ui");
+		}
+		g_free(path);
+
+		dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
+		tree = GTK_TREE_VIEW(gtk_builder_get_object(fbuilder, "treeview"));
+
+		gtk_tree_view_set_model(tree, model);
+		g_object_unref(model);
+		gtk_builder_connect_signals(fbuilder, fbuilder);
+		gtk_dialog_run(GTK_DIALOG(dialog));
+	}
+}
 
 /* vim: set noexpandtab ts=4 sw=4 sts=4 tw=120: */

@@ -148,6 +148,14 @@
                         <signal name="toggled" handler="on_view_menu_track_info_dock_toggled"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkMenuItem" id="view_menu_show_track_list">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Show track list</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="show_current_track"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

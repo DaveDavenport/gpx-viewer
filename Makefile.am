@@ -29,7 +29,8 @@ test_data_dir:
 uidir= $(pkgdatadir)/
 ui_DATA=\
 	data/gpx-viewer.ui\
-    data/gpx-viewer-file-chooser.ui
+    data/gpx-viewer-file-chooser.ui\
+    data/gpx-viewer-tracklist.ui
 EXTRA_DIST+=${ui_DATA}
 
 
@@ -43,6 +44,7 @@ gpx_viewer_SOURCES=\
 	src/gpx-parser.vala\
     src/gpx-graph.vala\
     src/gpx-playback.vala\
+    src/gpx-track-treemodel.vala\
 	src/gpx-viewer.c
 
 
