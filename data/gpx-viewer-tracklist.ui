@@ -27,8 +27,13 @@
               <object class="GtkTreeView" id="treeview">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="rules_hint">True</property>
+                <property name="fixed_height_mode">True</property>
                 <child>
                   <object class="GtkTreeViewColumn" id="time_column">
+                    <property name="resizable">True</property>
+                    <property name="sizing">fixed</property>
+                    <property name="fixed_width">150</property>
                     <property name="title">Time</property>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext1"/>
@@ -40,6 +45,9 @@
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                    <property name="resizable">True</property>
+                    <property name="sizing">fixed</property>
+                    <property name="fixed_width">100</property>
                     <property name="title">Distance (km)</property>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext2"/>
@@ -51,6 +59,9 @@
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                    <property name="resizable">True</property>
+                    <property name="sizing">fixed</property>
+                    <property name="fixed_width">80</property>
                     <property name="title">Elevation (m)</property>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext3"/>
@@ -62,6 +73,9 @@
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="treeviewcolumn3">
+                    <property name="resizable">True</property>
+                    <property name="sizing">fixed</property>
+                    <property name="fixed_width">80</property>
                     <property name="title">Speed (km/h)</property>
                     <child>
                       <object class="GtkCellRendererText" id="cellrenderertext4"/>
