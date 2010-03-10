@@ -105,10 +105,13 @@ namespace Gpx
 		public GraphMode mode {
             get {return _mode;}
             set {
-                this._mode= value;
-                this.surf = null;
-                /* Force a redraw */
-                this.queue_draw();
+                if(value != this._mode)
+                {
+                    this._mode= value;
+                    this.surf = null;
+                    /* Force a redraw */
+                    this.queue_draw();
+                }
             }
         }
 

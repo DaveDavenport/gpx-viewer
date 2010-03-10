@@ -76,12 +76,6 @@ typedef struct Route
 Route *active_route                 = NULL;
 
 /**
- * Config abstraction
- */
-/* The keyfile holding the values */
-static GKeyFile *config_file        = NULL;
-
-/**
  * Dock loading/restoring
  */
 
@@ -543,6 +537,10 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             if(route->start)
                 clutter_actor_show(CLUTTER_ACTOR(route->start));
         }
+        else
+        {
+            /* Create a false route here. f.e. to show multiple tracks concatenated */
+        }
     }
 }
 
@@ -573,7 +571,14 @@ void graph_show_points_toggled_cb(GtkToggleButton * button, gpointer user_data)
     gboolean new = gtk_toggle_button_get_active(button);
     gpx_graph_set_show_points(gpx_graph, new);
 }
-
+static void graph_show_points_changed(GpxGraph *graph, GParamSpec *sp, GtkWidget *toggle)
+{
+    int current = gpx_graph_get_show_points(gpx_graph);
+    if(current != gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle)))
+    {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),current); 
+    }
+}
 
 /* Zoom level changed */
 static void map_zoom_changed(ChamplainView * view, GParamSpec * gobject, GtkSpinButton * spinbutton)
@@ -917,20 +922,29 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
 
 void show_elevation(GtkMenuItem item, gpointer user_data)
 {
-    g_debug("switch to elevation\n");
-    gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
+    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_ELEVATION)
+    {
+        g_debug("switch to elevation\n");
+        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
+    }
 }
 
 
 void show_speed(GtkMenuItem item, gpointer user_data)
 {
-    g_debug("switch to speed\n");
-    gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
+    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_SPEED)
+    {
+        g_debug("switch to speed\n");
+        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
+    }
 }
 void show_distance(GtkMenuItem item, gpointer user_data)
 {
-    g_debug("switch to distance\n");
-   gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
+    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_DISTANCE)
+    {
+        g_debug("switch to distance\n");
+        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
+    }
 }
 
 
@@ -1122,6 +1136,27 @@ static void dock_layout_changed(GdlDock *dock, gpointer data)
     }
 }
 
+/* React when graph mode changes */
+static void graph_mode_changed(GpxGraph *graph, GParamSpec *sp, gpointer data)
+{
+    int mode = gpx_graph_get_mode(graph);
+    g_debug("Graph mode switched: %i\n", mode);
+    switch(mode)
+    {
+        case GPX_GRAPH_GRAPH_MODE_ELEVATION:
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+                gtk_builder_get_object(builder, "view_menu_elevation")), TRUE);
+            break;
+        case GPX_GRAPH_GRAPH_MODE_SPEED:
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+                gtk_builder_get_object(builder, "view_menu_speed")), TRUE);
+            break;
+        default:
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+                gtk_builder_get_object(builder, "view_menu_distance")), TRUE);
+    }
+
+}
 
 /* Create the interface */
 static void create_interface(void)
@@ -1259,29 +1294,14 @@ static void create_interface(void)
 
     /* Set up show points checkbox. Load state from config */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "graph_show_points"));
+    g_signal_connect(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), sp);
     gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "show-points");
-    current = gpx_graph_get_show_points(gpx_graph);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sp),current); 
 
     /**
      * Restore/Set graph mode
      */
+    g_signal_connect(gpx_graph, "notify::mode", G_CALLBACK(graph_mode_changed), NULL);
     gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "mode");
-    pos = gpx_graph_get_mode(gpx_graph);
-    switch(pos)
-    {
-        case GPX_GRAPH_GRAPH_MODE_ELEVATION:
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_elevation")), TRUE);
-            break;
-        case GPX_GRAPH_GRAPH_MODE_SPEED:
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_speed")), TRUE);
-            break;
-        default:
-            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_distance")), TRUE);
-    }
 
     /* Setup the map selector widget */
     {
