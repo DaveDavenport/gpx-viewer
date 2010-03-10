@@ -23,4 +23,7 @@ void show_speed(GtkMenuItem item, gpointer user_data);
 void show_distance(GtkMenuItem item, gpointer user_data);
 void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data);
 void open_gpx_file(GtkMenu *item);
+
+void close_show_current_track(GtkWidget *widget,gint response_id, GtkBuilder *fbuilder);
+void show_current_track(void);
 #endif

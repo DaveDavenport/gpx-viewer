@@ -31,6 +31,8 @@
 static GtkWidget        *dock_items[3];
 static GdlDockLayout    *dock_layout = NULL;
 
+static GpxViewerPreferences  *preferences = NULL;
+
 /* List of gpx files */
 GList *files                        = NULL;
 GtkWidget *champlain_view           = NULL;
@@ -78,100 +80,6 @@ Route *active_route                 = NULL;
  */
 /* The keyfile holding the values */
 static GKeyFile *config_file        = NULL;
-/* Load the config from harddisk */
-static void config_load(void)
-{
-    gchar *config_path = NULL;
-    GError *error = NULL;
-    const gchar *config_dir = g_get_user_config_dir();
-    g_assert(config_dir != NULL);
-    config_path = g_build_filename(config_dir, "gpx-viewer", NULL);
-    if(!g_file_test(config_path, G_FILE_TEST_IS_DIR))
-    {
-        g_mkdir_with_parents(config_path, 0700);
-    }
-    g_free(config_path);
-
-    config_path = g_build_filename(config_dir, "gpx-viewer", "config.ini", NULL);
-    config_file = g_key_file_new();
-    g_key_file_load_from_file(config_file, config_path, G_KEY_FILE_NONE, &error);
-
-    if (error)
-    {
-        g_debug("Failed to open config file %s: %s",config_path, error->message);
-        g_error_free(error);
-        error = NULL;
-    }
-    g_free(config_path);
-}
-
-
-/* Save the config to harddisk. */
-static void config_save(void)
-{
-    gchar *config_path;
-    GError *error = NULL;
-    const gchar *config_dir = g_get_user_config_dir();
-    g_assert(config_dir != NULL);
-    config_path = g_build_filename(config_dir, "gpx-viewer", "config.ini", NULL);
-    g_debug("Save config file");
-    /* Save config file. */
-    if(config_path)
-    {
-        gsize length=0;
-        gchar *data = g_key_file_to_data(config_file, &length,&error);
-        if(error)
-        {
-            g_error("Failed to write config file: %s", error->message);
-            g_error_free(error);
-            error = NULL;
-        }
-        if(data)
-        {
-            g_file_set_contents(config_path, data, length, &error);
-            if(error)
-            {
-                g_error("Failed to write config file: %s", error->message);
-                g_error_free(error);
-                error = NULL;
-            }
-        }
-        g_free(data);
-        g_free(config_path);
-    }
-}
-
-
-/* Accessors, this makes code more readable, because you do not have todo the
- * try{}Catch(){} all the time
- */
-static int config_get_integer(const char *a, const char *b, int def)
-{
-    GError *error = NULL;
-    int retv = g_key_file_get_integer(config_file,a,b, &error);
-    if(error)
-    {
-        g_debug("Failed to get value: %s", error->message);
-        g_error_free(error); error = NULL;
-        return def;
-    }
-    return retv;
-}
-
-
-static int config_get_boolean(const char *a, const char *b, gboolean def)
-{
-    GError *error = NULL;
-    int retv = g_key_file_get_boolean(config_file,a,b, &error);
-    if(error)
-    {
-        g_debug("Failed to get value: %s", error->message);
-        g_error_free(error); error = NULL;
-        return def;
-    }
-    return retv;
-}
-
 
 /**
  * Dock loading/restoring
@@ -645,7 +553,6 @@ static void smooth_factor_changed(GpxGraph * graph, GParamSpec * gobject, GtkSpi
     gint zoom;
     g_object_get(G_OBJECT(graph), "smooth-factor", &zoom, NULL);
     gtk_spin_button_set_value(spinbutton, zoom);
-    g_key_file_set_integer(config_file, "Window", "smooth-factor", zoom);
 }
 
 
@@ -656,7 +563,6 @@ void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
     if (current != new)
     {
         gpx_graph_set_smooth_factor(gpx_graph, new);
-        g_key_file_set_integer(config_file, "Window", "smooth-factor", new);
     }
 }
 
@@ -666,7 +572,6 @@ void graph_show_points_toggled_cb(GtkToggleButton * button, gpointer user_data)
 {
     gboolean new = gtk_toggle_button_get_active(button);
     gpx_graph_set_show_points(gpx_graph, new);
-    g_key_file_set_boolean(config_file, "Window", "show-points", new);
 }
 
 
@@ -847,14 +752,14 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     GtkIconInfo *ii;
     struct Route *route = g_new0(Route, 1);
     /* Route */
-    if(config_get_boolean("Track", "Cleanup speed using chauvenets criterion", FALSE))
+/*    if(config_get_boolean("Track", "Cleanup speed using chauvenets criterion", FALSE))
     {
         route->track = gpx_track_cleanup_speed(track);
     }
     else
-    {
+    {*/
         route->track = g_object_ref(track);
-    }
+/*    }*/
     route->visible = TRUE;
 
     /* draw the track */
@@ -957,7 +862,7 @@ static void main_window_pane_pos_changed(GtkWidget * panel, GParamSpec * arg1, g
 {
     gint position = 0;
     g_object_get(G_OBJECT(panel), "position", &position, NULL);
-    g_key_file_set_integer(config_file, "Window", "main_view_pane_pos", position);
+    gpx_viewer_preferences_set_integer(preferences, "Window", "main_view_pane_pos", position);
     g_debug("Position: %i\n", position);
 }
 
@@ -966,7 +871,7 @@ static void main_window_pane2_pos_changed(GtkWidget * panel, GParamSpec * arg1, 
 {
     gint position = 0;
     g_object_get(G_OBJECT(panel), "position", &position, NULL);
-    g_key_file_set_integer(config_file, "Window", "main_view_pane2_pos", position);
+    gpx_viewer_preferences_set_integer(preferences, "Window", "main_view_pane2_pos", position);
     g_debug("Position2: %i\n", position);
 }
 
@@ -975,8 +880,8 @@ void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer dat
 {
     if(alloc)
     {
-        g_key_file_set_integer(config_file, "Window", "width", alloc->width);
-        g_key_file_set_integer(config_file, "Window", "height", alloc->height);
+        gpx_viewer_preferences_set_integer(preferences, "Window", "width", alloc->width);
+        gpx_viewer_preferences_set_integer(preferences, "Window", "height", alloc->height);
         g_debug("size: %i - %i\n", alloc->width, alloc->height);
     }
 
@@ -1013,24 +918,19 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
 void show_elevation(GtkMenuItem item, gpointer user_data)
 {
     g_debug("switch to elevation\n");
-    gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
-    g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_ELEVATION);
+    gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
 }
 
 
 void show_speed(GtkMenuItem item, gpointer user_data)
 {
     g_debug("switch to speed\n");
-    gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
-    g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_SPEED);
+    gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
 }
-
-
 void show_distance(GtkMenuItem item, gpointer user_data)
 {
     g_debug("switch to distance\n");
-    gpx_graph_switch_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
-    g_key_file_set_integer(config_file, "Graph", "GraphMode", GPX_GRAPH_GRAPH_MODE_DISTANCE);
+   gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
 }
 
 
@@ -1130,7 +1030,7 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
         g_object_unref(cmsf);
     }
 
-    g_key_file_set_integer(config_file,
+    gpx_viewer_preferences_set_integer(preferences,
         "Map",
         "Source",
         gtk_combo_box_get_active(box)
@@ -1257,8 +1157,8 @@ static void create_interface(void)
     gtk_recent_chooser_add_filter(GTK_RECENT_CHOOSER(rc),grf);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), rc);
 
-    w =config_get_integer("Window", "width", 400);
-    h =config_get_integer("Window", "height", 300);
+    w =gpx_viewer_preferences_get_integer(preferences,"Window", "width", 400);
+    h =gpx_viewer_preferences_get_integer(preferences,"Window", "height", 300);
     gtk_window_resize(GTK_WINDOW(gtk_builder_get_object(builder,"gpx_viewer_window")), w,h);
 
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")));
@@ -1284,12 +1184,12 @@ static void create_interface(void)
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
 
     /* Set position */
-    pos = config_get_integer("Window", "main_view_pane_pos", 200);
+    pos = gpx_viewer_preferences_get_integer(preferences,"Window", "main_view_pane_pos", 200);
     gtk_paned_set_position(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), pos);
     g_signal_connect( gtk_builder_get_object(builder, "main_view_pane"), "notify::position",
         G_CALLBACK(main_window_pane_pos_changed), NULL);
     /* Set position */
-    pos = config_get_integer("Window", "main_view_pane2_pos", 100);
+    pos = gpx_viewer_preferences_get_integer(preferences,"Window", "main_view_pane2_pos", 100);
     gtk_paned_set_position(GTK_PANED(gtk_builder_get_object(builder, "main_view_hpane")), pos);
 
     g_signal_connect( gtk_builder_get_object(builder, "main_view_hpane"), "notify::position",
@@ -1349,10 +1249,9 @@ static void create_interface(void)
     g_signal_connect(view, "notify::zoom-level", G_CALLBACK(map_zoom_changed), sp);
     /* Set up the smooth widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "smooth_factor"));
+    gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "smooth-factor");
     current = gpx_graph_get_smooth_factor(gpx_graph);
-    pos = config_get_integer("Window", "smooth-factor", current);
-    if(pos != current) gpx_graph_set_smooth_factor(gpx_graph, pos);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)pos);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
 
     g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
     g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
@@ -1360,15 +1259,15 @@ static void create_interface(void)
 
     /* Set up show points checkbox. Load state from config */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "graph_show_points"));
+    gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "show-points");
     current = gpx_graph_get_show_points(gpx_graph);
-    gpx_graph_set_show_points(gpx_graph, config_get_boolean("Window", "show-points", current));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sp), config_get_boolean("Window", "show-points", current));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sp),current); 
 
     /**
      * Restore/Set graph mode
      */
-    pos = config_get_integer("Graph", "GraphMode", 0);
-    gpx_graph_switch_mode(gpx_graph, pos);
+    gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "mode");
+    pos = gpx_graph_get_mode(gpx_graph);
     switch(pos)
     {
         case GPX_GRAPH_GRAPH_MODE_ELEVATION:
@@ -1463,7 +1362,7 @@ static void create_interface(void)
     gtk_builder_connect_signals(builder, NULL);
 
     /* Select previously stored map */
-    pos = config_get_integer("Map", "Source", 0);
+    pos = gpx_viewer_preferences_get_integer(preferences,"Map", "Source", 0);
     gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), pos);
 
     /* Try to center the track on map correctly */
@@ -1489,7 +1388,7 @@ void open_gpx_file(GtkMenu *item)
 
     dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser"));
 
-    path = g_key_file_get_string(config_file, "open-dialog", "last-dir", NULL);
+    path = gpx_viewer_preferences_get_string(preferences, "open-dialog", "last-dir", NULL);
     if(path)
     {
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),path);
@@ -1558,7 +1457,7 @@ void open_gpx_file(GtkMenu *item)
     path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(dialog));
     if(path)
     {
-        g_key_file_set_string(config_file, "open-dialog" , "last-dir" , path);
+        gpx_viewer_preferences_set_string(preferences, "open-dialog" , "last-dir" , path);
         g_free(path);
     }
     gtk_widget_destroy(dialog);
@@ -1601,7 +1500,7 @@ int main(int argc, char **argv)
         g_thread_init(NULL);
     }
 
-    config_load();
+    preferences = gpx_viewer_preferences_new();
 
     gtk_clutter_init(&argc, &argv);
 
@@ -1646,7 +1545,8 @@ int main(int argc, char **argv)
     g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
     g_list_free(files);
 
-    config_save();
+
+    g_object_unref(preferences);
 
     return EXIT_SUCCESS;
 }
@@ -1670,7 +1570,7 @@ void show_current_track(void)
 	{
 		GtkWidget *dialog;
 		GtkTreeView *tree;
-		GtkTreeModel *model = gpx_track_tree_model_new(active_route->track);
+		GtkTreeModel *model = (GtkTreeModel *)gpx_track_tree_model_new(active_route->track);
 		GtkBuilder *fbuilder = gtk_builder_new();
 		/* Show dialog */
 		gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-tracklist.ui", NULL);
