@@ -1,6 +1,6 @@
-/* Gpx Viewer 
+/* Gpx Viewer
  * Copyright (C) 2009-2009 Qball Cow <qball@sarine.nl>
- * Project homepage: http://blog.sarine.nl/ 
+ * Project homepage: http://blog.sarine.nl/
 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

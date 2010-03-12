@@ -1,6 +1,6 @@
-/* Gpx Viewer 
+/* Gpx Viewer
  * Copyright (C) 2009-2009 Qball Cow <qball@sarine.nl>
- * Project homepage: http://blog.sarine.nl/ 
+ * Project homepage: http://blog.sarine.nl/
 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ namespace Gpx
 				time += iter.data.get_time();
 				while(iter.next != null)
 				{
-					if(time < iter.next.data.get_time() && (time == iter.data.get_time() || 
+					if(time < iter.next.data.get_time() && (time == iter.data.get_time() ||
 								time > iter.data.get_time()))
 					{
 						return iter.data;
@@ -179,11 +179,11 @@ namespace Gpx
 		private bool button_press_event_cb(Gdk.EventButton event)
 		{
 			if(this.track == null) return false;
-			Gpx.Point *point = this.get_point_from_position(event.x, event.y); 
+			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null) {
 				if(event.button == 1){
-					this.start = point; 
-				}else{ 
+					this.start = point;
+				}else{
 					this.start = null;
 					point_clicked(point);
 				}
@@ -196,10 +196,10 @@ namespace Gpx
 			if(this.track == null) return false;
 			if(this.start == null) return false;
 
-			Gpx.Point *point = this.get_point_from_position(event.x, event.y); 
+			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null)
 			{
-				this.stop = point; 
+				this.stop = point;
 				/* queue redraw so the selection is updated */
 				this.queue_draw();
 				if(this.start != null && this.stop  != null)
@@ -221,11 +221,11 @@ namespace Gpx
 		private bool button_release_event_cb(Gdk.EventButton event)
 		{
 			if(this.track == null) return false;
-			Gpx.Point *point = this.get_point_from_position(event.x, event.y); 
+			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null)
 			{
 				if(event.button == 1)
-					this.stop = point; 
+					this.stop = point;
 				else this.stop = null;
 				this.queue_draw();
 				if(event.button == 1)
@@ -280,7 +280,7 @@ namespace Gpx
 					double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
 
 					ctx.set_source_rgba(0.3, 0.2, 0.3, 0.8);
-					ctx.rectangle((start.get_time()-f.get_time())/elapsed_time*graph_width, 0, 
+					ctx.rectangle((start.get_time()-f.get_time())/elapsed_time*graph_width, 0,
 							(stop.get_time()-start.get_time())/elapsed_time*graph_width, graph_height);
 					ctx.stroke_preserve();
 					ctx.fill();
@@ -294,7 +294,7 @@ namespace Gpx
 				double graph_width = this.allocation.width-LEFT_OFFSET-10;
 				double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
 
-				double hl = (highlight-f.get_time())/elapsed_time*graph_width; 
+				double hl = (highlight-f.get_time())/elapsed_time*graph_width;
 
 				ctx.set_source_rgba(0.8, 0.2, 0.3, 0.8);
 				ctx.move_to(hl, 0);
@@ -302,8 +302,8 @@ namespace Gpx
 
 				ctx.stroke_preserve();
 				ctx.fill();
-				/* Draw the speed/elavation/distance 
-				 * in the upper top corner 
+				/* Draw the speed/elavation/distance
+				 * in the upper top corner
 				 */
 				if(this.draw_current != null)
 				{
@@ -354,7 +354,7 @@ namespace Gpx
 			var ctx = Gdk.cairo_create(win.window);
 			this.surf = new Cairo.Surface.similar(ctx.get_target(),
 					Cairo.Content.COLOR_ALPHA,
-					win.allocation.width, win.allocation.height); 
+					win.allocation.width, win.allocation.height);
 			ctx = new Cairo.Context(this.surf);
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Updating surface");
@@ -389,7 +389,7 @@ namespace Gpx
 						iter = iter.next;
 					}
 				}
-				else 
+				else
 					max_value = track.max_speed;
 			}else if (this._mode == GraphMode.ELEVATION){
 				max_value = track.max_elevation;
@@ -496,7 +496,7 @@ namespace Gpx
 			ctx.line_to(graph_width, graph_height+(graph_height/range)*(min_value));
 			ctx.stroke();
 
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis"); 
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis");
 
 			/* Draw the graph */
 			ctx.set_source_rgba(0.1, 0.2, 0.3, 1);
@@ -507,7 +507,7 @@ namespace Gpx
 
 			double pref_speed = 2f;
             double pref_speed_threshold = 1f;
-            // If pref_speed drops below this threshold we drop a 0 speed 
+            // If pref_speed drops below this threshold we drop a 0 speed
             // point. 1/20 of average atm.
             // This is used below to make sure that when there was motion (and therefor no new points)
             // the start/stop point are not connect with a straight line, but actually a 0 speed line is drawn.
@@ -568,7 +568,7 @@ namespace Gpx
 			ctx.fill();
 
 			if (this.show_points) {
-				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw data points"); 
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw data points");
 				/* Draw points */
 				ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 				iter = track.points.first();
@@ -603,7 +603,7 @@ namespace Gpx
 				}
 			}
 
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw graph"); 
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw graph");
 
 			iter = track.points.first();
 

@@ -30,7 +30,8 @@ uidir= $(pkgdatadir)/
 ui_DATA=\
 	data/gpx-viewer.ui\
     data/gpx-viewer-file-chooser.ui\
-    data/gpx-viewer-tracklist.ui
+    data/gpx-viewer-tracklist.ui\
+    data/gpx-viewer-preferences.ui
 EXTRA_DIST+=${ui_DATA}
 
 
@@ -46,10 +47,11 @@ gpx_viewer_SOURCES=\
     src/gpx-playback.vala\
     src/gpx-track-treemodel.vala\
     src/gpx-preferences.vala\
+    src/gpx-viewer-mapwidget.vala\
 	src/gpx-viewer.c
 
 
-gpx_viewer_VALAFLAGS= --pkg=config --pkg=gtk+-2.0 --pkg=libxml-2.0 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/src -H gpx.h
+gpx_viewer_VALAFLAGS= --pkg=config --pkg=clutter-1.0 --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=libchamplain-0.5 --pkg=libchamplain-gtk-0.5 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/vapi -H gpx.h
 
 LIBS=\
 	@modules_LIBS@\

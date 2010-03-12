@@ -34,18 +34,23 @@ static GdlDockLayout    *dock_layout = NULL;
 static GpxViewerPreferences  *preferences = NULL;
 
 /* List of gpx files */
-GList *files                        = NULL;
-GtkWidget *champlain_view           = NULL;
-GtkBuilder *builder                 = NULL;
-GpxGraph *gpx_graph                 = NULL;
-GtkWidget *gpx_graph_container      = NULL;
-ChamplainLayer *waypoint_layer      = NULL;
-ChamplainLayer *marker_layer        = NULL;
-GtkRecentManager *recent_man        = NULL;
-
+GList               *files                  = NULL;
+/* The Map view widget */
+GtkWidget           *champlain_view         = NULL;
+/* The interface builder */
+GtkBuilder          *builder                = NULL;
+/* The graph */
+GpxGraph            *gpx_graph              = NULL;
+/* The container holding the graph */
+GtkWidget           *gpx_graph_container    = NULL;
+/* Recent manager */
+GtkRecentManager    *recent_man             = NULL;
+/* */
 GpxPlayback *playback               = NULL;
+/* */
 ClutterActor *click_marker          = NULL;
 guint click_marker_source           = 0;
+
 /* List of routes */
 GList *routes                       = NULL;
 
@@ -425,11 +430,7 @@ static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
     for(it = g_list_first(file->waypoints); it; it = g_list_next(it))
     {
         GpxPoint *p = it->data;
-        const gchar *name = gpx_point_get_name(p);
-        ClutterActor *marker = champlain_marker_new_with_text(name, "Seric 12", NULL, NULL);
-        champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(marker), p->lat_dec, p->lon_dec);
-        champlain_marker_set_color(CHAMPLAIN_MARKER(marker), &waypoint);
-        clutter_container_add(CLUTTER_CONTAINER(waypoint_layer), CLUTTER_ACTOR(marker), NULL);
+        gpx_viewer_map_view_add_waypoint(GPX_VIEWER_MAP_VIEW(champlain_view),p); 
     }
 }
 
@@ -437,35 +438,19 @@ static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
 static void interface_map_make_waypoints(ChamplainView * view)
 {
     GList *iter;
-    if (waypoint_layer == NULL)
-    {
-        waypoint_layer = champlain_layer_new();
-        champlain_view_add_layer(view, waypoint_layer);
-    }
     for (iter = g_list_first(files); iter != NULL; iter = g_list_next(iter))
     {
         GpxFile *file = iter->data;
         interface_map_file_waypoints(view, file);
     }
-    clutter_actor_show(CLUTTER_ACTOR(waypoint_layer));
 }
 
 
 /* Show and hide waypoint layer */
 void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
 {
-    if (waypoint_layer)
-    {
-        gboolean active = gtk_toggle_button_get_active(button);
-        if (active)
-        {
-            clutter_actor_show_all(CLUTTER_ACTOR(waypoint_layer));
-        }
-        else
-        {
-            clutter_actor_hide(CLUTTER_ACTOR(waypoint_layer));
-        }
-    }
+    gboolean active = gtk_toggle_button_get_active(button);
+    gpx_viewer_map_view_set_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view), active);
 }
 
 
@@ -545,6 +530,27 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 }
 
 
+static void map_view_map_source_changed(GpxViewerMapView *view, GParamSpec * gobject, GtkWidget *combo)
+{
+    GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(combo)); 
+    GtkTreeIter iter;
+    const gchar *source_id = gpx_viewer_map_view_get_map_source(view);
+
+    if(gtk_tree_model_get_iter_first(model, &iter)) {
+        do{
+            gchar *a;
+            gtk_tree_model_get(model, &iter,1, &a, -1);
+            if(strcmp(a, source_id) == 0){
+                g_debug("map_view_source_changed: %s",source_id);
+                gtk_combo_box_set_active_iter(GTK_COMBO_BOX(combo), &iter);
+                g_free(a);
+                return;
+            }
+            g_free(a); 
+        }while(gtk_tree_model_iter_next(model, &iter));
+    }
+}
+
 /* Smooth factor changed */
 static void smooth_factor_changed(GpxGraph * graph, GParamSpec * gobject, GtkSpinButton * spinbutton)
 {
@@ -579,15 +585,6 @@ static void graph_show_points_changed(GpxGraph *graph, GParamSpec *sp, GtkWidget
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),current); 
     }
 }
-
-/* Zoom level changed */
-static void map_zoom_changed(ChamplainView * view, GParamSpec * gobject, GtkSpinButton * spinbutton)
-{
-    gint zoom;
-    g_object_get(G_OBJECT(view), "zoom-level", &zoom, NULL);
-    gtk_spin_button_set_value(spinbutton, zoom);
-}
-
 
 void map_zoom_level_change_value_cb(GtkSpinButton * spin, gpointer user_data)
 {
@@ -653,7 +650,7 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
         }
         /* Create the marker */
         champlain_marker_set_color(CHAMPLAIN_MARKER(click_marker), &waypoint);
-        clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(click_marker), NULL);
+        gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), click_marker);
     }
 
     champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), point->lat_dec, point->lon_dec);
@@ -828,7 +825,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
                 ((GpxPoint*)start->data)->lat_dec,
                 ((GpxPoint*)start->data)->lon_dec);
             champlain_marker_set_color(CHAMPLAIN_MARKER(route->start), &waypoint);
-            clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->start), NULL);
+            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
 
             ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
                 "pin-blue",
@@ -852,7 +849,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
                 ((GpxPoint*)stop->data)->lat_dec,
                 ((GpxPoint*)stop->data)->lon_dec);
             champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
-            clutter_container_add(CLUTTER_CONTAINER(marker_layer), CLUTTER_ACTOR(route->stop), NULL);
+            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
 
             clutter_actor_hide(CLUTTER_ACTOR(route->stop));
             clutter_actor_hide(CLUTTER_ACTOR(route->start));
@@ -1013,6 +1010,17 @@ GtkImage *image)
     }
 }
 
+static void map_view_zoom_level_changed(GpxViewerMapView *view, int zoom_level, int min_level, int max_level)
+{
+    GtkWidget *sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
+    gtk_spin_button_set_range(GTK_SPIN_BUTTON(sp),
+            (double)min_level,
+            (double)max_level
+            );
+    if(gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(sp)) != zoom_level) {
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)zoom_level);
+    }
+}
 
 void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
 {
@@ -1022,33 +1030,11 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
 
     if(gtk_combo_box_get_active_iter(box, &iter))
     {
-        GtkWidget *sp;
         gchar *id;
-        ChamplainMapSource *cms;
-        ChamplainMapSourceFactory *cmsf = champlain_map_source_factory_dup_default();
         gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, 1, &id, -1);
-        printf("%s\n", id);
-        cms = champlain_map_source_factory_create(cmsf, id);
-        printf("%s\n", champlain_map_source_get_name(cms));
-        champlain_view_set_map_source ( CHAMPLAIN_VIEW(view),cms);
-
-        sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
-        gtk_spin_button_set_range(GTK_SPIN_BUTTON(sp),
-            (double)champlain_map_source_get_min_zoom_level(cms),
-            (double)champlain_map_source_get_max_zoom_level(cms)
-            );
-        g_debug("Set zoom level: %i %i\n",
-            champlain_map_source_get_min_zoom_level(cms),
-            champlain_map_source_get_max_zoom_level(cms)
-            );
-        g_object_unref(cmsf);
+        gpx_viewer_map_view_set_map_source(champlain_view, id);
     }
 
-    gpx_viewer_preferences_set_integer(preferences,
-        "Map",
-        "Source",
-        gtk_combo_box_get_active(box)
-        );
 }
 
 
@@ -1199,7 +1185,8 @@ static void create_interface(void)
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")));
     g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(routes_list_changed_cb), NULL);
     /* Create map view */
-    champlain_view = gtk_champlain_embed_new();
+    champlain_view = gpx_viewer_map_view_new(); 
+
     gtk_widget_set_size_request(champlain_view, 640, 280);
     sw = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
@@ -1218,6 +1205,8 @@ static void create_interface(void)
     /* show the interface */
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
 
+    
+
     /* Set position */
     pos = gpx_viewer_preferences_get_integer(preferences,"Window", "main_view_pane_pos", 200);
     gtk_paned_set_position(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), pos);
@@ -1231,17 +1220,8 @@ static void create_interface(void)
         G_CALLBACK(main_window_pane2_pos_changed), NULL);
 
     view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
-    g_object_set(G_OBJECT(view), "scroll-mode", CHAMPLAIN_SCROLL_MODE_KINETIC, "zoom-level", 5, NULL);
     g_signal_connect (view, "notify::state", G_CALLBACK (view_state_changed),
         NULL);
-
-    champlain_view_set_show_scale(CHAMPLAIN_VIEW(view), TRUE);
-
-    if (marker_layer == NULL)
-    {
-        marker_layer = champlain_layer_new();
-        champlain_view_add_layer(view, marker_layer);
-    }
 
     interface_map_make_waypoints(view);
 
@@ -1276,12 +1256,9 @@ static void create_interface(void)
     }
     /* Set up the zoom widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
-    champlain_view_set_min_zoom_level(view, 1);
-    champlain_view_set_max_zoom_level(view, 18);
     current = champlain_view_get_zoom_level(view);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
 
-    g_signal_connect(view, "notify::zoom-level", G_CALLBACK(map_zoom_changed), sp);
     /* Set up the smooth widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "smooth_factor"));
     gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "smooth-factor");
@@ -1308,22 +1285,7 @@ static void create_interface(void)
         GtkWidget *combo = GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo"));
         GtkCellRenderer *renderer = (GtkCellRenderer *)gtk_builder_get_object(builder, "cellrenderertext3");
         GtkTreeIter titer;
-        GtkTreeModel *model = GTK_TREE_MODEL(gtk_builder_get_object(builder, "map_selection_store"));
-        ChamplainMapSourceFactory *cmsf = champlain_map_source_factory_dup_default();
-        GSList *ms_iter, *list = champlain_map_source_factory_dup_list (cmsf);
-        for(ms_iter = (list); ms_iter; ms_iter = g_slist_next(ms_iter))
-        {
-            ChamplainMapSourceDesc *cms = ms_iter->data;
-            gtk_list_store_append(GTK_LIST_STORE(model), &titer);
-            gtk_list_store_set(GTK_LIST_STORE(model), &titer,
-                0, cms->name,
-                1, cms->id,
-                -1);
-        }
-
-        g_slist_free(list);
-        g_object_unref(cmsf);
-
+        GtkTreeModel *model = gpx_viewer_map_view_get_model(champlain_view);
         /* hack to work around GtkBuilder limitation that it cannot set expand
             on packing a cell renderer */
         g_object_ref(renderer);
@@ -1332,7 +1294,7 @@ static void create_interface(void)
         gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo), renderer, "text", 0,NULL);
         g_object_unref(renderer);
 
-        gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), 0);
+        gtk_combo_box_set_model(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")),model);
     }
 
     {
@@ -1378,12 +1340,19 @@ static void create_interface(void)
         restore_layout();
 
     }
+    g_signal_connect(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed), NULL);
+    gpx_viewer_preferences_add_object_property(preferences, champlain_view, "map-source");
+    map_view_map_source_changed(champlain_view, NULL, 
+            GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo")));
+    g_signal_connect(G_OBJECT(champlain_view), 
+            "notify::map-source",
+            G_CALLBACK(map_view_map_source_changed),
+            GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo"))
+            );
+
     /* Connect signals */
     gtk_builder_connect_signals(builder, NULL);
 
-    /* Select previously stored map */
-    pos = gpx_viewer_preferences_get_integer(preferences,"Map", "Source", 0);
-    gtk_combo_box_set_active(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")), pos);
 
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0)
@@ -1484,7 +1453,6 @@ void open_gpx_file(GtkMenu *item)
     g_object_unref(fbuilder);
 }
 
-
 int main(int argc, char **argv)
 {
     int i = 0;
@@ -1551,10 +1519,12 @@ int main(int argc, char **argv)
     files = g_list_reverse(files);
 
     playback = gpx_playback_new(NULL);
+
+    gpx_viewer_preferences_add_object_property(preferences, playback, "speedup");
     g_signal_connect(GPX_PLAYBACK(playback), "tick", G_CALLBACK(route_playback_tick), NULL);
     g_signal_connect(GPX_PLAYBACK(playback), "state-changed", G_CALLBACK(route_playback_state_changed), NULL);
 
-    create_interface();
+    gtk_init_add(create_interface,NULL);
 
     gtk_main();
 
@@ -1606,8 +1576,65 @@ void show_current_track(void)
 		gtk_tree_view_set_model(tree, model);
 		g_object_unref(model);
 		gtk_builder_connect_signals(fbuilder, fbuilder);
-		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_show(GTK_DIALOG(dialog));
 	}
 }
 
+/**
+ * Preferences 
+ */
+void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, GtkBuilder *fbuilder)
+{
+    gtk_widget_destroy(dialog);
+    g_object_unref(fbuilder);
+}
+void gpx_viewer_show_preferences_dialog(void)
+{
+    GtkWidget *dialog;
+    GtkTreeModel *model; 
+    GtkWidget *widget;
+    GtkBuilder *fbuilder = gtk_builder_new();
+    /* Show dialog */
+    gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-preferences.ui", NULL);
+    if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+    {
+        g_error("Failed to load gpx-viewer-preferences.ui");
+    }
+    g_free(path);
+    dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "preferences_dialog"));
+    model = gpx_viewer_map_view_get_model(champlain_view);
+    /**
+     * Setup map selection widget 
+     */
+    widget = gtk_builder_get_object(fbuilder,"map_source_combobox");
+    gtk_combo_box_set_model(GTK_COMBO_BOX(widget), model);
+    g_signal_connect_object(G_OBJECT(champlain_view), 
+            "notify::map-source",
+            G_CALLBACK(map_view_map_source_changed),
+            widget,
+            0
+            );
+    map_view_map_source_changed(champlain_view, NULL, widget); 
+    /* TODO */
+    /* to sync this, we need to create a wrapper around the gpx-graph that nicely has these
+        properties. */
+
+    /* Zoom level */
+
+    /* Show Waypoints */
+
+    /** Graph **/
+    /* smooth factor */
+    widget = gtk_builder_get_object(fbuilder,"spin_button_smooth_factor");
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), (double)gpx_graph_get_smooth_factor(gpx_graph));
+    g_signal_connect_object(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), widget,0);
+
+    /* Show points */
+    widget = gtk_builder_get_object(fbuilder,"check_button_data_points");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), gpx_graph_get_show_points(gpx_graph));
+    g_signal_connect_object(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
+
+    gtk_builder_connect_signals(fbuilder, fbuilder);
+    gtk_widget_show(GTK_DIALOG(dialog));
+}
 /* vim: set noexpandtab ts=4 sw=4 sts=4 tw=120: */
