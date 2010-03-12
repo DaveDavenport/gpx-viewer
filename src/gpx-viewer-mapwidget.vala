@@ -21,6 +21,7 @@ namespace Gpx
                         }else{
                             this.waypoint_layer.hide();
                         }
+                        this._show_waypoints = value;
                     }
             }
             public void add_waypoint(Gpx.Point p)

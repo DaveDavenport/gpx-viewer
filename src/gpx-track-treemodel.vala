@@ -1,5 +1,5 @@
 /* Gpx Viewer
- * Copyright (C) 2009-2009 Qball Cow <qball@sarine.nl>
+ * Copyright (C) 2009-2010 Qball Cow <qball@sarine.nl>
  * Project homepage: http://blog.sarine.nl/
 
  * This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@ namespace Gpx
 {
     public class TrackTreeModel :  GLib.Object, Gtk.TreeModel
     {
+	/* Available columns */
         public enum Column {
             TIME,
             DISTANCE,
@@ -39,8 +40,9 @@ namespace Gpx
             typeof(double),
             typeof(double)
         };
+	
         /* Unique id for iter stamp */
-        private int stamp = 5;
+        private int stamp = 42;
         private Gpx.Track track = null;
         public TrackTreeModel (Gpx.Track track)
         {
@@ -172,16 +174,10 @@ namespace Gpx
             return false;
         }
 
-        /**
-         * hmm somethinkg should be bookkept here ..
-         */
         public void ref_node (Gtk.TreeIter iter){
 
         }
-
-        /**
-         * .. and here
-         */
+        
         public void unref_node (Gtk.TreeIter iter){
 
         }

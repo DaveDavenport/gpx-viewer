@@ -449,11 +449,20 @@ static void interface_map_make_waypoints(ChamplainView * view)
 /* Show and hide waypoint layer */
 void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
 {
+	printf("aap noot mies 12\n");
     gboolean active = gtk_toggle_button_get_active(button);
-    gpx_viewer_map_view_set_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view), active);
+	if(active != gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view))){
+		gpx_viewer_map_view_set_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view), active);
+	}
 }
 
-
+static void show_marker_layer_changed(GpxViewerMapView *view, GParamSpec * gobject, GtkWidget *sp)
+{
+	gboolean active = gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sp)) != active) {
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sp), active);
+	}
+}
 /**
  * Handle user selecting another track
  */
@@ -987,8 +996,8 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 
 static void
 view_state_changed (ChamplainView *view,
-GParamSpec *gobject,
-GtkImage *image)
+		    GParamSpec *gobject,
+		    GtkImage *image)
 {
     static guint sb_context = 0;
     ChamplainState state;
@@ -1010,9 +1019,9 @@ GtkImage *image)
     }
 }
 
-static void map_view_zoom_level_changed(GpxViewerMapView *view, int zoom_level, int min_level, int max_level)
+static void map_view_zoom_level_changed(GpxViewerMapView *view, int zoom_level, int min_level, int max_level, GtkWidget
+*sp)
 {
-    GtkWidget *sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(sp),
             (double)min_level,
             (double)max_level
@@ -1258,14 +1267,20 @@ static void create_interface(void)
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
     current = champlain_view_get_zoom_level(view);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
+    g_signal_connect(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed), sp);
 
     /* Set up the smooth widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "smooth_factor"));
     gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "smooth-factor");
     current = gpx_graph_get_smooth_factor(gpx_graph);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
+	g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
 
-    g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
+	/* */
+	sp = GTK_WIDGET(gtk_builder_get_object(builder, "show_marker_layer"));
+	g_signal_connect(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_marker_layer_changed), sp);
+	show_marker_layer_changed(NULL, NULL, sp);
+
     g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
     g_signal_connect(gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), NULL);
 
@@ -1340,7 +1355,6 @@ static void create_interface(void)
         restore_layout();
 
     }
-    g_signal_connect(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed), NULL);
     gpx_viewer_preferences_add_object_property(preferences, champlain_view, "map-source");
     map_view_map_source_changed(champlain_view, NULL, 
             GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo")));
@@ -1590,6 +1604,7 @@ void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, GtkBuilder *f
 }
 void gpx_viewer_show_preferences_dialog(void)
 {
+    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     GtkWidget *dialog;
     GtkTreeModel *model; 
     GtkWidget *widget;
@@ -1621,7 +1636,20 @@ void gpx_viewer_show_preferences_dialog(void)
 
     /* Zoom level */
 
+    widget = gtk_builder_get_object(fbuilder,"spin_button_zoom_level");
+	g_signal_connect_object(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed),
+			widget,0);
+	map_view_zoom_level_changed(champlain_view,
+			champlain_view_get_zoom_level(view),
+			champlain_view_get_min_zoom_level(view),
+			champlain_view_get_max_zoom_level(view),
+			widget);
+
     /* Show Waypoints */
+	widget = GTK_WIDGET(gtk_builder_get_object(fbuilder, "check_button_show_waypoints"));
+	g_signal_connect_object(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_marker_layer_changed),
+			widget,0);
+	show_marker_layer_changed(NULL, NULL, widget);
 
     /** Graph **/
     /* smooth factor */
