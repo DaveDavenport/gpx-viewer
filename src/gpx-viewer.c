@@ -1602,6 +1602,12 @@ void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, GtkBuilder *f
     gtk_widget_destroy(dialog);
     g_object_unref(fbuilder);
 }
+void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp)
+{
+	gint value = gtk_spin_button_get_value_as_int(sp);
+	gpx_playback_set_speedup(playback, value);
+}
+
 void gpx_viewer_show_preferences_dialog(void)
 {
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
@@ -1661,6 +1667,10 @@ void gpx_viewer_show_preferences_dialog(void)
     widget = gtk_builder_get_object(fbuilder,"check_button_data_points");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), gpx_graph_get_show_points(gpx_graph));
     g_signal_connect_object(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
+	/* sppedup */
+    widget = gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), 
+		(double)gpx_playback_get_speedup(playback));
 
     gtk_builder_connect_signals(fbuilder, fbuilder);
     gtk_widget_show(GTK_DIALOG(dialog));

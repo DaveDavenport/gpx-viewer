@@ -44,10 +44,14 @@ namespace Gpx
         public signal void state_changed(Gpx.Playback.State state);
 
         /* Accessor to the speedup */
+        private int _speedup = 50;
         public int speedup {
-            get;
-            set;
-            default = 50;
+            get{ return _speedup;}
+            set {
+                this.pause();
+                this._speedup = value;
+                this.pause();
+            }
         }
 
         public void set_track(Gpx.Track? track)
