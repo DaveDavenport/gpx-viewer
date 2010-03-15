@@ -94,7 +94,6 @@ namespace Gpx
                 this.view.notify["zoom-level"].connect(()=>{
                     zoom_level_changed(this.view.zoom_level, this.view.min_zoom_level,this.view.max_zoom_level);
                 });
-
                 this.view.add_layer(waypoint_layer);
                 this.view.add_layer(marker_layer);
             }
@@ -113,6 +112,11 @@ namespace Gpx
                 }else{
                     GLib.error("Failed to get map source");
                 }
+            }
+            /* Destroy */
+            ~MapView ()
+            {
+                GLib.debug("Destroying map-view");
             }
         }
 

@@ -40,7 +40,7 @@ namespace Gpx
 			NUM_GRAPH_MODES
 		}
 		/* Privates */
-		private string[] GraphModeName = {
+		static string[] GraphModeName = {
 			N_("Speed (km/h) vs Time (HH:MM)"),
 			N_("Elevation (m) vs Time (HH:MM)"),
 			N_("Distance (km) vs Time (HH:MM)"),
@@ -679,6 +679,10 @@ namespace Gpx
 			Pango.cairo_layout_path(ctx, layout);
 			ctx.fill();
 		}
+        ~Graph()
+        {
+            GLib.debug("Destroying graph");
+        }
 	}
 }
 

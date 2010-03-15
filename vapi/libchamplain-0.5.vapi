@@ -12,6 +12,7 @@ namespace Champlain
     }
     public class Marker : BaseMarker
     {
+		[CCode (has_construct_function = false)]
         public Marker();
         public Marker.with_text(string *text, string *font, Clutter.Color? text_color, Clutter.Color? marker_color);
         public void set_text(string text);
@@ -22,8 +23,9 @@ namespace Champlain
     public class MapSource : Object
     {
     }
-    public class Layer : Object, Clutter.Container
+    public class Layer : Gtk.Bin, Clutter.Container
     {
+		[CCode (has_construct_function = false)]
         public Layer();
         public void show();
         public void hide();
@@ -54,7 +56,7 @@ namespace Champlain
 
     }
     [CCode (cheader_filename="champlain/champlain.h")]
-        public class View : GLib.Object
+        public class View : Gtk.Bin
     {
         public ScrollMode scroll_mode {get; set;}
         public bool show_scale {get; set;}
