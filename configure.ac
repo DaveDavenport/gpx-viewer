@@ -39,6 +39,7 @@ PKG_CHECK_MODULES([modules],[
         gmodule-2.0 
         libxml-2.0
         gdl-1.0
+        unique-1.0
         ])
 
 AC_CONFIG_FILES([

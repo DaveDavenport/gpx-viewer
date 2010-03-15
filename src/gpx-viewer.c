@@ -24,6 +24,7 @@
 #include <champlain/champlain.h>
 #include <champlain-gtk/champlain-gtk.h>
 #include <clutter-gtk/clutter-gtk.h>
+#include <unique/unique.h>
 #include <gdl/gdl.h>
 #include "gpx-viewer.h"
 #include "gpx.h"
@@ -33,6 +34,10 @@ static GdlDockLayout    *dock_layout = NULL;
 
 static GpxViewerPreferences  *preferences = NULL;
 
+UniqueApp           *app                    = NULL;
+typedef enum {
+    OPEN_URIS   =   1
+}AppCommands;
 /* List of gpx files */
 GList               *files                  = NULL;
 /* The Map view widget */
@@ -449,7 +454,6 @@ static void interface_map_make_waypoints(ChamplainView * view)
 /* Show and hide waypoint layer */
 void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
 {
-	printf("aap noot mies 12\n");
     gboolean active = gtk_toggle_button_get_active(button);
 	if(active != gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view))){
 		gpx_viewer_map_view_set_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view), active);
@@ -659,7 +663,7 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
         }
         /* Create the marker */
         champlain_marker_set_color(CHAMPLAIN_MARKER(click_marker), &waypoint);
-        gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), click_marker);
+        gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), CHAMPLAIN_BASE_MARKER(click_marker));
     }
 
     champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), point->lat_dec, point->lon_dec);
@@ -1035,13 +1039,12 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
 {
     GtkTreeIter iter;
     GtkTreeModel *model = gtk_combo_box_get_model(box);
-    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 
     if(gtk_combo_box_get_active_iter(box, &iter))
     {
         gchar *id;
         gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, 1, &id, -1);
-        gpx_viewer_map_view_set_map_source(champlain_view, id);
+        gpx_viewer_map_view_set_map_source(GPX_VIEWER_MAP_VIEW(champlain_view), id);
     }
 
 }
@@ -1194,7 +1197,7 @@ static void create_interface(void)
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")));
     g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(routes_list_changed_cb), NULL);
     /* Create map view */
-    champlain_view = gpx_viewer_map_view_new(); 
+    champlain_view = (GtkWidget *)gpx_viewer_map_view_new(); 
 
     gtk_widget_set_size_request(champlain_view, 640, 280);
     sw = gtk_frame_new(NULL);
@@ -1271,7 +1274,7 @@ static void create_interface(void)
 
     /* Set up the smooth widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "smooth_factor"));
-    gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "smooth-factor");
+    gpx_viewer_preferences_add_object_property(preferences, G_OBJECT(gpx_graph), "smooth-factor");
     current = gpx_graph_get_smooth_factor(gpx_graph);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
 	g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
@@ -1287,20 +1290,19 @@ static void create_interface(void)
     /* Set up show points checkbox. Load state from config */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "graph_show_points"));
     g_signal_connect(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), sp);
-    gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "show-points");
+    gpx_viewer_preferences_add_object_property(preferences, G_OBJECT(gpx_graph), "show-points");
 
     /**
      * Restore/Set graph mode
      */
     g_signal_connect(gpx_graph, "notify::mode", G_CALLBACK(graph_mode_changed), NULL);
-    gpx_viewer_preferences_add_object_property(preferences, gpx_graph, "mode");
+    gpx_viewer_preferences_add_object_property(preferences, G_OBJECT(gpx_graph), "mode");
 
     /* Setup the map selector widget */
     {
         GtkWidget *combo = GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo"));
         GtkCellRenderer *renderer = (GtkCellRenderer *)gtk_builder_get_object(builder, "cellrenderertext3");
-        GtkTreeIter titer;
-        GtkTreeModel *model = gpx_viewer_map_view_get_model(champlain_view);
+        GtkTreeModel *model = gpx_viewer_map_view_get_model(GPX_VIEWER_MAP_VIEW(champlain_view));
         /* hack to work around GtkBuilder limitation that it cannot set expand
             on packing a cell renderer */
         g_object_ref(renderer);
@@ -1355,8 +1357,8 @@ static void create_interface(void)
         restore_layout();
 
     }
-    gpx_viewer_preferences_add_object_property(preferences, champlain_view, "map-source");
-    map_view_map_source_changed(champlain_view, NULL, 
+    gpx_viewer_preferences_add_object_property(preferences, G_OBJECT(champlain_view), "map-source");
+    map_view_map_source_changed(GPX_VIEWER_MAP_VIEW(champlain_view), NULL, 
             GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo")));
     g_signal_connect(G_OBJECT(champlain_view), 
             "notify::map-source",
@@ -1502,9 +1504,29 @@ int main(int argc, char **argv)
         g_thread_init(NULL);
     }
 
+    gtk_clutter_init(&argc, &argv);
+
+    app = unique_app_new("gpx-viewer",NULL);
+    unique_app_add_command(app,"open-uris", OPEN_URIS);
+    printf(" %i\n", unique_app_is_running(app));
+    /* Why does it say always running? */
+    if(FALSE && unique_app_is_running(app)) {
+        /* Program is allready running */
+        UniqueMessageData *msd = unique_message_data_new();
+        g_debug("Program is allready running\n");
+        unique_message_data_set_uris(msd,&argv[1]);
+        unique_app_send_message(app,1, msd);
+        /* free msd? */ 
+        g_object_unref(msd);
+        /* Free app */
+        g_object_unref(app);
+        return EXIT_SUCCESS;
+    }
+    /* Setup responding to commands */
+
+
     preferences = gpx_viewer_preferences_new();
 
-    gtk_clutter_init(&argc, &argv);
 
     /* REcent manager */
     recent_man = gtk_recent_manager_get_default();
@@ -1534,11 +1556,11 @@ int main(int argc, char **argv)
 
     playback = gpx_playback_new(NULL);
 
-    gpx_viewer_preferences_add_object_property(preferences, playback, "speedup");
+    gpx_viewer_preferences_add_object_property(preferences, G_OBJECT(playback), "speedup");
     g_signal_connect(GPX_PLAYBACK(playback), "tick", G_CALLBACK(route_playback_tick), NULL);
     g_signal_connect(GPX_PLAYBACK(playback), "state-changed", G_CALLBACK(route_playback_state_changed), NULL);
 
-    gtk_init_add(create_interface,NULL);
+    gtk_init_add((GtkFunction)create_interface,NULL);
 
     gtk_main();
 
@@ -1590,7 +1612,7 @@ void show_current_track(void)
 		gtk_tree_view_set_model(tree, model);
 		g_object_unref(model);
 		gtk_builder_connect_signals(fbuilder, fbuilder);
-		gtk_widget_show(GTK_DIALOG(dialog));
+		gtk_widget_show(GTK_WIDGET(dialog));
 	}
 }
 
@@ -1623,11 +1645,11 @@ void gpx_viewer_show_preferences_dialog(void)
     }
     g_free(path);
     dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "preferences_dialog"));
-    model = gpx_viewer_map_view_get_model(champlain_view);
+    model = gpx_viewer_map_view_get_model(GPX_VIEWER_MAP_VIEW(champlain_view));
     /**
      * Setup map selection widget 
      */
-    widget = gtk_builder_get_object(fbuilder,"map_source_combobox");
+    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"map_source_combobox");
     gtk_combo_box_set_model(GTK_COMBO_BOX(widget), model);
     g_signal_connect_object(G_OBJECT(champlain_view), 
             "notify::map-source",
@@ -1635,17 +1657,17 @@ void gpx_viewer_show_preferences_dialog(void)
             widget,
             0
             );
-    map_view_map_source_changed(champlain_view, NULL, widget); 
+    map_view_map_source_changed(GPX_VIEWER_MAP_VIEW(champlain_view), NULL, widget); 
     /* TODO */
     /* to sync this, we need to create a wrapper around the gpx-graph that nicely has these
         properties. */
 
     /* Zoom level */
 
-    widget = gtk_builder_get_object(fbuilder,"spin_button_zoom_level");
+    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"spin_button_zoom_level");
 	g_signal_connect_object(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed),
 			widget,0);
-	map_view_zoom_level_changed(champlain_view,
+	map_view_zoom_level_changed(GPX_VIEWER_MAP_VIEW(champlain_view),
 			champlain_view_get_zoom_level(view),
 			champlain_view_get_min_zoom_level(view),
 			champlain_view_get_max_zoom_level(view),
@@ -1659,20 +1681,20 @@ void gpx_viewer_show_preferences_dialog(void)
 
     /** Graph **/
     /* smooth factor */
-    widget = gtk_builder_get_object(fbuilder,"spin_button_smooth_factor");
+    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"spin_button_smooth_factor");
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), (double)gpx_graph_get_smooth_factor(gpx_graph));
     g_signal_connect_object(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), widget,0);
 
     /* Show points */
-    widget = gtk_builder_get_object(fbuilder,"check_button_data_points");
+    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"check_button_data_points");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), gpx_graph_get_show_points(gpx_graph));
     g_signal_connect_object(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
 	/* sppedup */
-    widget = gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
+    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), 
 		(double)gpx_playback_get_speedup(playback));
 
     gtk_builder_connect_signals(fbuilder, fbuilder);
-    gtk_widget_show(GTK_DIALOG(dialog));
+    gtk_widget_show(GTK_WIDGET(dialog));
 }
 /* vim: set noexpandtab ts=4 sw=4 sts=4 tw=120: */

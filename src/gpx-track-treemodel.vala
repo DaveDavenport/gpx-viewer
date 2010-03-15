@@ -40,7 +40,7 @@ namespace Gpx
             typeof(double),
             typeof(double)
         };
-	
+
         /* Unique id for iter stamp */
         private int stamp = 42;
         private Gpx.Track track = null;
@@ -51,10 +51,10 @@ namespace Gpx
 
         public GLib.Type get_column_type ( int index_)
         {
-            return ColumnType[index_]; 
+            return ColumnType[index_];
         }
 
-        public bool get_iter (out Gtk.TreeIter iter, Gtk.TreePath path) 
+        public bool get_iter (out Gtk.TreeIter iter, Gtk.TreePath path)
         {
             int depth = path.get_depth ();
             assert (depth == 1);
@@ -85,7 +85,7 @@ namespace Gpx
             assert (pos != -1);
             path.append_index (pos);
             return path;
-        } 
+        }
         public void get_value (Gtk.TreeIter iter, int column, ref GLib.Value value)
         {
             assert (iter.user_data != null);
@@ -150,8 +150,6 @@ namespace Gpx
                 iter.stamp = this.stamp;
                 iter.user_data = node.next.data;
                 return true;
-            } else {
-                return false;
             }
             return false;
         }
@@ -177,7 +175,7 @@ namespace Gpx
         public void ref_node (Gtk.TreeIter iter){
 
         }
-        
+
         public void unref_node (Gtk.TreeIter iter){
 
         }

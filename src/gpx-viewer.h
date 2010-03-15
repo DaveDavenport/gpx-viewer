@@ -26,4 +26,7 @@ void open_gpx_file(GtkMenu *item);
 
 void close_show_current_track(GtkWidget *widget,gint response_id, GtkBuilder *fbuilder);
 void show_current_track(void);
+void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, GtkBuilder *fbuilder);
+void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp);
+void gpx_viewer_show_preferences_dialog(void);
 #endif

@@ -1,6 +1,7 @@
 using Champlain;
 using Gtk;
 using GLib;
+using Unique;
 
 namespace Gpx
 {
