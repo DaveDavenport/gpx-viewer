@@ -979,7 +979,6 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
 {
     GList *iter;
     GtkIconInfo *ii;
-    double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
     GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
     struct Route *route = g_new0(Route, 1);
     route->visible = TRUE;
@@ -1012,7 +1011,6 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
         }
     }
 
-    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     if(route->track)
     {
         const GList *start = g_list_first(route->track->points);

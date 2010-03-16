@@ -59,6 +59,7 @@ namespace Gpx
             p.lat_dec = this.lat_dec;
             p.lon_dec = this.lon_dec;
             p.time = this.time;
+            p.elevation = this.elevation;
             return p;
         }
 

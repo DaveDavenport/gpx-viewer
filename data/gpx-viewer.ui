@@ -16,14 +16,6 @@
       <column type="guint"/>
     </columns>
   </object>
-  <object class="GtkListStore" id="map_selection_store">
-    <columns>
-      <!-- column-name Map -->
-      <column type="gchararray"/>
-      <!-- column-name MapId -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkWindow" id="gpx_viewer_window">
     <property name="title" translatable="yes">GPX Viewer</property>
     <property name="default_width">680</property>
@@ -353,7 +345,6 @@
     <child>
       <object class="GtkComboBox" id="map_selection_combo">
         <property name="visible">True</property>
-        <property name="model">map_selection_store</property>
         <signal name="changed" handler="map_selection_combo_changed_cb"/>
         <child>
           <object class="GtkCellRendererText" id="cellrenderertext3">

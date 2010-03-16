@@ -93,7 +93,8 @@ namespace Gpx
             value = Value (get_column_type(column));
             switch (column) {
                 case Column.TIME:
-                    value.set_string(p.time);
+                    Time t  = Time.local(p.get_time());
+                    value.set_string(t.format("%D - %X"));
                     break;
                 case Column.DISTANCE:
                     value.set_double(p.distance);
