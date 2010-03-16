@@ -67,7 +67,10 @@ AM_CFLAGS+=-Wall -Wdeclaration-after-statement -Wshadow -fno-common -Wextra -Wno
 endif
 	
 EXTRA_DIST+=\
-    src/config.vapi
+    vapi/config.vapi\
+    vapi/libchamplain-0.5.vapi\
+    vapi/libchamplain-gtk-0.5.vapi\
+    src/gpx-viewer.h
 
 ##
 # Icons
