@@ -29,4 +29,6 @@ void show_current_track(void);
 void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, GtkBuilder *fbuilder);
 void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp);
 void gpx_viewer_show_preferences_dialog(void);
+void show_vertical_speed(GtkMenuItem item, gpointer user_data);
+void show_acceleration_h(GtkMenuItem item, gpointer user_data);
 #endif

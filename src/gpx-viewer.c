@@ -974,6 +974,24 @@ void show_distance(GtkMenuItem item, gpointer user_data)
     }
 }
 
+void show_acceleration_h(GtkMenuItem item, gpointer user_data)
+{
+    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_ACCELERATION_H)
+    {
+        g_debug("switch to acceleration\n");
+        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ACCELERATION_H);
+    }
+}
+void show_vertical_speed(GtkMenuItem item, gpointer user_data)
+{
+    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_SPEED_V)
+    {
+        g_debug("switch to vertical speed\n");
+        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED_V);
+    }
+}
+
+
 
 static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter)
 {
@@ -1270,9 +1288,20 @@ static void graph_mode_changed(GpxGraph *graph, GParamSpec *sp, gpointer data)
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
                 gtk_builder_get_object(builder, "view_menu_speed")), TRUE);
             break;
-        default:
+        case GPX_GRAPH_GRAPH_MODE_DISTANCE:
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
                 gtk_builder_get_object(builder, "view_menu_distance")), TRUE);
+            break;
+        case GPX_GRAPH_GRAPH_MODE_ACCELERATION_H:
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+                gtk_builder_get_object(builder, "view_menu_acceleration")), TRUE);
+            break;
+        case GPX_GRAPH_GRAPH_MODE_SPEED_V:
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
+                gtk_builder_get_object(builder, "view_menu_vertical_speed")), TRUE);
+            break;
+        default:
+            break;
     }
 
 }

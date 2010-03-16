@@ -118,6 +118,24 @@
                         <signal name="activate" handler="show_distance"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_vertical_speed">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Vertical Speed</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_vertical_speed"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_acceleration">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Acceleration</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_acceleration_h"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
