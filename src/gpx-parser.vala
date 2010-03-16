@@ -46,6 +46,21 @@ namespace Gpx
         public double speed = 0;
 
         private time_t utime  = 0;
+        /**
+         * Make a clean copy off the point.
+         * Only position and time is copied.
+         */
+        public Gpx.Point copy()
+        {
+            Gpx.Point p = new Gpx.Point();
+            p.name = this.name;
+            p.lat = this.lat;
+            p.lon = this.lon;
+            p.lat_dec = this.lat_dec;
+            p.lon_dec = this.lon_dec;
+            p.time = this.time;
+            return p;
+        }
 
         /* Sets the poistion in degrees, automagically calculates radians */
         public void set_position(double lat, double lon)

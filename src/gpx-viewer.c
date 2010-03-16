@@ -176,19 +176,19 @@ void about_menuitem_activate_cb(void)
     };
 
     const char *gpl_short_version =
-        "This program is free software; you can redistribute it and/or modify\n\
-        it under the terms of the GNU General Public License as published by\n\
-        the Free Software Foundation; either version 2 of the License, or\n\
-        (at your option) any later version.\n\
-        \n\
-        This program is distributed in the hope that it will be useful,\n\
-        but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-        GNU General Public License for more details.\n\
-        \n\
-        You should have received a copy of the GNU General Public License along\n\
-        with this program; if not, write to the Free Software Foundation, Inc.,\n\
-        51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.";
+        "This program is free software; you can redistribute it and/or modify\n"\
+        "it under the terms of the GNU General Public License as published by\n"\
+        "the Free Software Foundation; either version 2 of the License, or\n"\
+        "(at your option) any later version.\n"\
+        "\n"\
+        "This program is distributed in the hope that it will be useful,\n"\
+        "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"\
+        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"\
+        "GNU General Public License for more details.\n"\
+        "\n"\
+        "You should have received a copy of the GNU General Public License along\n"\
+        "with this program; if not, write to the Free Software Foundation, Inc.,\n"\
+        "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.";
 
     /* TODO: Add translators here */
     gtk_show_about_dialog (NULL,
@@ -212,26 +212,26 @@ void about_menuitem_activate_cb(void)
 static GString *misc_get_time(time_t temp)
 {
     GString *string = g_string_new("");
-    int hour = temp / 3600;
-    int minutes = ((temp % 3600) / 60);
-    int seconds = (temp % 60);
+    gulong hour = temp / 3600;
+    gulong minutes = ((temp % 3600) / 60);
+    gulong seconds = (temp % 60);
     if (hour > 0)
     {
-        g_string_append_printf(string, "%i %s", hour, (hour == 1) ? "hour" : "hours");
+        g_string_append_printf(string, "%lu %s", hour,g_dngettext(NULL, "hour", "hours", hour));
     }
 
     if (minutes > 0)
     {
         if (hour > 0)
             g_string_append(string, ", ");
-        g_string_append_printf(string, "%i %s", minutes, (minutes == 1) ? "minute" : "minutes");
+        g_string_append_printf(string, "%lu %s", minutes, g_dngettext(NULL, "minute", "minutes",minutes));
     }
 
     if (seconds > 0)
     {
         if (minutes > 0)
             g_string_append(string, ", ");
-        g_string_append_printf(string, "%i %s", seconds, (seconds == 1) ? "second" : "seconds");
+        g_string_append_printf(string, "%lu %s", seconds, g_dngettext(NULL, "second", "seconds",seconds));
     }
     return string;
 }
@@ -512,11 +512,12 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 
             gpx_playback_set_track(playback, active_route->track);
+            if(route->polygon != NULL)
+                champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
 
-            champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
-
-            if (route->visible)
+            if (route->visible) {
                 champlain_polygon_show(route->polygon);
+            }
             if (route->track->top && route->track->bottom)
             {
                 champlain_view_ensure_visible(view,
@@ -972,6 +973,105 @@ void show_distance(GtkMenuItem item, gpointer user_data)
     }
 }
 
+static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter)
+{
+    GList *iter;
+    GtkIconInfo *ii;
+    double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
+    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+    struct Route *route = g_new0(Route, 1);
+    route->visible = TRUE;
+    route->polygon = NULL;
+    route->track = gpx_track_new();
+    gpx_track_set_name(route->track, _("Combined track"));
+
+    if (file->tracks)
+    {
+        for (iter = g_list_first(file->tracks); iter; iter = g_list_next(iter))
+        {
+            GList *piter;
+            for(piter = g_list_first(GPX_TRACK(iter->data)->points); piter != NULL; piter = g_list_next(piter))
+            {
+                GpxPoint *p = piter->data;
+                gpx_track_add_point(route->track, gpx_point_copy(p));
+            }
+        }
+    }
+    if(file->routes)
+    {
+        for (iter = g_list_first(file->routes); iter; iter = g_list_next(iter))
+        {
+            GList *piter;
+            for(piter = g_list_first(GPX_TRACK(iter->data)->points); piter != NULL; piter = g_list_next(piter))
+            {
+                GpxPoint *p = piter->data;
+                gpx_track_add_point(route->track, gpx_point_copy(p));
+            }
+        }
+    }
+
+    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+    if(route->track)
+    {
+        const GList *start = g_list_first(route->track->points);
+        const GList *stop = g_list_last(route->track->points);
+        if(start && stop)
+        {
+            ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+                "pin-green",
+                100, 0);
+            if (ii)
+            {
+                const gchar *path2 = gtk_icon_info_get_filename(ii);
+                if (path2)
+                {
+                    route->start = (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
+                    champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->start), FALSE);
+                }
+                gtk_icon_info_free(ii);
+            }
+            if (!route->start)
+            {
+                route->start = (ChamplainBaseMarker *)champlain_marker_new();
+            }
+            /* Create the marker */
+            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->start),
+                ((GpxPoint*)start->data)->lat_dec,
+                ((GpxPoint*)start->data)->lon_dec);
+            champlain_marker_set_color(CHAMPLAIN_MARKER(route->start), &waypoint);
+            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
+
+            ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
+                "pin-blue",
+                100, 0);
+            if (ii)
+            {
+                const gchar *path2 = gtk_icon_info_get_filename(ii);
+                if (path2)
+                {
+                    route->stop =  (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
+                    champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->stop), FALSE);
+                }
+                gtk_icon_info_free(ii);
+            }
+            if (!route->stop)
+            {
+                route->stop = (ChamplainBaseMarker *)champlain_marker_new();
+            }
+            /* Create the marker */
+            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop),
+                ((GpxPoint*)stop->data)->lat_dec,
+                ((GpxPoint*)stop->data)->lon_dec);
+            champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
+            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
+
+            clutter_actor_hide(CLUTTER_ACTOR(route->stop));
+            clutter_actor_hide(CLUTTER_ACTOR(route->start));
+        }
+    }
+    routes = g_list_append(routes, route);
+    gtk_tree_store_set(GTK_TREE_STORE(model), liter, 1, route, -1);
+}
 
 static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 {
@@ -1010,6 +1110,7 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
             interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
         }
     }
+    interface_create_fake_master_track(file, &liter);
 }
 
 
@@ -1283,6 +1384,7 @@ static void create_interface(void)
                 interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
             }
         }
+        interface_create_fake_master_track(file, &liter);
     }
     /* Set up the zoom widget */
     sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
@@ -1469,6 +1571,7 @@ void open_gpx_file(GtkMenu *item)
                         interface_plot_add_track(&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
                     }
                 }
+                interface_create_fake_master_track(file, &liter);
             }
             g_slist_foreach(choosen_files, (GFunc) g_free, NULL);
             g_slist_free(choosen_files);
@@ -1540,6 +1643,7 @@ static UniqueResponse unique_response(UniqueApp *uapp, gint command, UniqueMessa
                         interface_plot_add_track(&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
                     }
                 }
+                interface_create_fake_master_track(file, &liter);
             }
             g_strfreev(uris);
             return UNIQUE_RESPONSE_OK;
