@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gpx-viewer\n"
-"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2009-07-16 17:02+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-16 22:21+0100\n"
 "PO-Revision-Date: 2009-11-13 18:25+0000\n"
 "Last-Translator: City-busz <Unknown>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
@@ -17,25 +17,81 @@ msgstr ""
 "X-Launchpad-Export-Date: 2010-02-22 21:24+0000\n"
 "X-Generator: Launchpad (build Unknown)\n"
 
-#: ../src/gpx-viewer.c:598
-msgid "[FILE...] - GPX Viewer"
-msgstr "[FÁJL...] - GPX Viewer"
-
-#: ../src/gpx-viewer.c:600 ../data/gpxviewer.desktop.in.h:1
+#: ../src/gpx-viewer.c:202 ../src/gpx-viewer.c:1672
+#: ../data/gpx-viewer.desktop.in.h:1
 msgid "A simple program to visualize one or more gpx files."
 msgstr "Egy egyszerű program egy vagy több gpx fájl megjelenítéséhez"
 
-#: ../src/gpx-viewer.c:601
-msgid "Website: http://blog.sarine.nl/gpx-viewer"
-msgstr "Webhely: http://blog.sarine.nl/gpx-viewer"
+#: ../src/gpx-viewer.c:203
+#, fuzzy
+msgid "About GPX Viewer"
+msgstr "GPX Viewer"
 
-#: ../src/gpx-graph.c:714
-#, c-format
-msgid "Speed (km/h) vs Time (HH:MM) <i>(smooth window: %i)</i>"
+#: ../src/gpx-viewer.c:220
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gpx-viewer.c:227
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gpx-viewer.c:234
+msgid "second"
+msgid_plural "seconds"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gpx-viewer.c:986
+msgid "Combined track"
+msgstr ""
+
+#: ../src/gpx-viewer.c:1132
+msgid "Loading map data.."
+msgstr ""
+
+#: ../src/gpx-viewer.c:1304
+msgid "_Recent file"
+msgstr ""
+
+#: ../src/gpx-viewer.c:1670
+msgid "[FILE...] - GPX Viewer"
+msgstr "[FÁJL...] - GPX Viewer"
+
+#: ../src/gpx-viewer.c:1674
+msgid "Website: "
+msgstr ""
+
+#: ../src/gpx-graph.c:1125
+#, fuzzy, c-format
+msgid "%s <i>(smooth window: %i)</i>"
 msgstr "Sebesség (km/h) kontra idő (HH:MM) <i>(sima ablak: %i)</i>"
 
-#: ../src/gpx-graph.c:722
+#: ../src/gpx-graph.c:1213
 msgid "Speed (km/h) vs Time (HH:MM)"
+msgstr "Sebesség (km/h) kontra idő (HH:MM)"
+
+#: ../src/gpx-graph.c:1213
+#, fuzzy
+msgid "Elevation (m) vs Time (HH:MM)"
+msgstr "Sebesség (km/h) kontra idő (HH:MM)"
+
+#: ../src/gpx-graph.c:1213
+#, fuzzy
+msgid "Distance (km) vs Time (HH:MM)"
+msgstr "Sebesség (km/h) kontra idő (HH:MM)"
+
+#: ../src/gpx-graph.c:1213
+#, fuzzy
+msgid "Horizontal acceleration (m/s) vs Time (HH:MM)"
+msgstr "Sebesség (km/h) kontra idő (HH:MM)"
+
+#: ../src/gpx-graph.c:1213
+#, fuzzy
+msgid "Vertical speed (m/s) vs Time (HH:MM)"
 msgstr "Sebesség (km/h) kontra idő (HH:MM)"
 
 #: ../data/gpx-viewer-file-chooser.ui.h:1
@@ -63,45 +119,121 @@ msgid "<b>Duration:</b>"
 msgstr "<b>Időtartam:</b>"
 
 #: ../data/gpx-viewer.ui.h:4
-msgid "<b>Gps points:</b>"
-msgstr "<b>Gps pontok:</b>"
+#, fuzzy
+msgid "<b>Elevation Difference:</b>"
+msgstr "<b>Mozgási átlag:</b>"
 
 #: ../data/gpx-viewer.ui.h:5
+#, fuzzy
+msgid "<b>Gradient:</b>"
+msgstr "<b>Időtartam:</b>"
+
+#: ../data/gpx-viewer.ui.h:6
+#, fuzzy
+msgid "<b>Map:</b>"
+msgstr "<b>Max. sebesség:</b>"
+
+#: ../data/gpx-viewer.ui.h:7
 msgid "<b>Max. speed:</b>"
 msgstr "<b>Max. sebesség:</b>"
 
-#: ../data/gpx-viewer.ui.h:6
+#: ../data/gpx-viewer.ui.h:8
 msgid "<b>Moving average:</b>"
 msgstr "<b>Mozgási átlag:</b>"
 
-#: ../data/gpx-viewer.ui.h:7
+#: ../data/gpx-viewer.ui.h:9
 msgid "<b>Moving time:</b>"
 msgstr "<b>Mozgási idő:</b>"
 
-#: ../data/gpx-viewer.ui.h:8
-msgid "Change the smoothing factor used when plotting the speed graph."
-msgstr "A simítási tényező módosítása a sebességdiagram ábrázolásakor"
+#: ../data/gpx-viewer.ui.h:10
+#, fuzzy
+msgid "<b>Playback:</b>"
+msgstr "<b>Távolság:</b>"
 
-#: ../data/gpx-viewer.ui.h:9
-msgid "Change the zoom level of the map."
-msgstr "A térkép nagyítási szintjének módosítása"
+#: ../data/gpx-viewer.ui.h:11
+#, fuzzy
+msgid "<b>Show points:</b>"
+msgstr "<b>Gps pontok:</b>"
 
-#: ../data/gpx-viewer.ui.h:10 ../data/gpxviewer.desktop.in.h:2
+#: ../data/gpx-viewer.ui.h:12
+#, fuzzy
+msgid "<b>Show waypoints:</b>"
+msgstr "<b>Gps pontok:</b>"
+
+#: ../data/gpx-viewer.ui.h:13
+msgid "<b>Smooth factor:</b>"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:14
+#, fuzzy
+msgid "<b>Zoom level:</b>"
+msgstr "<b>Max. sebesség:</b>"
+
+#: ../data/gpx-viewer.ui.h:15
+#, fuzzy
+msgid "Distance"
+msgstr "<b>Távolság:</b>"
+
+#: ../data/gpx-viewer.ui.h:16
+msgid "Elevation"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:17
+msgid "Files dock"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:18 ../data/gpx-viewer.desktop.in.h:2
 msgid "GPX Viewer"
 msgstr "GPX Viewer"
 
-#: ../data/gpx-viewer.ui.h:11
-msgid "Show"
-msgstr "Megjelenítés"
+#: ../data/gpx-viewer.ui.h:19
+msgid "Setings dock"
+msgstr ""
 
-#: ../data/gpx-viewer.ui.h:12
-msgid "Show Waypoints"
-msgstr "Útpontok megjelenítése"
+#: ../data/gpx-viewer.ui.h:20
+msgid "Show track list"
+msgstr ""
 
-#: ../data/gpx-viewer.ui.h:13
+#: ../data/gpx-viewer.ui.h:21
+msgid "Speed"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:22
+msgid "Track information dock"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:23
 msgid "_File"
 msgstr "_Fájl"
 
-#: ../data/gpx-viewer.ui.h:14
+#: ../data/gpx-viewer.ui.h:24
+msgid "_Graph"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:25
+msgid "_Help"
+msgstr ""
+
+#: ../data/gpx-viewer.ui.h:26
+#, fuzzy
+msgid "_View"
+msgstr "_Fájl"
+
+#: ../data/gpx-viewer.ui.h:27
 msgid "n/a"
 msgstr "n/a"
+
+#~ msgid "Website: http://blog.sarine.nl/gpx-viewer"
+#~ msgstr "Webhely: http://blog.sarine.nl/gpx-viewer"
+
+#~ msgid "Change the smoothing factor used when plotting the speed graph."
+#~ msgstr "A simítási tényező módosítása a sebességdiagram ábrázolásakor"
+
+#~ msgid "Change the zoom level of the map."
+#~ msgstr "A térkép nagyítási szintjének módosítása"
+
+#~ msgid "Show"
+#~ msgstr "Megjelenítés"
+
+#~ msgid "Show Waypoints"
+#~ msgstr "Útpontok megjelenítése"
