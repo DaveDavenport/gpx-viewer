@@ -515,7 +515,8 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             if(route->polygon != NULL)
                 champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
 
-            if (route->visible) {
+            if (route->visible)
+            {
                 champlain_polygon_show(route->polygon);
             }
             if (route->track->top && route->track->bottom)
@@ -973,6 +974,7 @@ void show_distance(GtkMenuItem item, gpointer user_data)
     }
 }
 
+
 static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter)
 {
     GList *iter;
@@ -1072,6 +1074,7 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
     routes = g_list_append(routes, route);
     gtk_tree_store_set(GTK_TREE_STORE(model), liter, 1, route, -1);
 }
+
 
 static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
 {
