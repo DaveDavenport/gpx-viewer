@@ -19,6 +19,9 @@
 
 #include <stdlib.h>
 #include <config.h>
+#define __USE_POSIX
+#include <time.h>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <champlain/champlain.h>
@@ -264,7 +267,31 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
+    /* Start time */
+    label = (GtkWidget *) gtk_builder_get_object(builder, "start_time_label");
+    if(start) {
+            char buffer[128];
+            struct tm ltm;
+            temp = gpx_point_get_time(start);
+            localtime_r(&temp, &ltm);
+            strftime(buffer, 128, "%D %X", &ltm);
+            gtk_label_set_text(GTK_LABEL(label), buffer); 
+    }else{
+        gtk_label_set_text(GTK_LABEL(label), "n/a");
+    }
 
+    /* Stop time */
+    label = (GtkWidget *) gtk_builder_get_object(builder, "stop_time_label");
+    if(stop) {
+            char buffer[128];
+            struct tm ltm;
+            temp = gpx_point_get_time(stop);
+            localtime_r(&temp, &ltm);
+            strftime(buffer, 128, "%D %X", &ltm);
+            gtk_label_set_text(GTK_LABEL(label), buffer); 
+    }else{
+        gtk_label_set_text(GTK_LABEL(label), "n/a");
+    }
     /* Distance */
     label = (GtkWidget *) gtk_builder_get_object(builder, "distance_label");
     if(start && stop)

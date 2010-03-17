@@ -511,7 +511,7 @@
   </object>
   <object class="GtkTable" id="TrackInfoWidget">
     <property name="visible">True</property>
-    <property name="n_rows">9</property>
+    <property name="n_rows">11</property>
     <property name="n_columns">2</property>
     <property name="column_spacing">6</property>
     <property name="row_spacing">6</property>
@@ -577,8 +577,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">2</property>
-        <property name="bottom_attach">3</property>
+        <property name="top_attach">4</property>
+        <property name="bottom_attach">5</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -591,8 +591,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">3</property>
-        <property name="bottom_attach">4</property>
+        <property name="top_attach">5</property>
+        <property name="bottom_attach">6</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -605,8 +605,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">4</property>
-        <property name="bottom_attach">5</property>
+        <property name="top_attach">6</property>
+        <property name="bottom_attach">7</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -619,8 +619,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">5</property>
-        <property name="bottom_attach">6</property>
+        <property name="top_attach">7</property>
+        <property name="bottom_attach">8</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -633,8 +633,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">6</property>
-        <property name="bottom_attach">7</property>
+        <property name="top_attach">8</property>
+        <property name="bottom_attach">9</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -647,8 +647,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">7</property>
-        <property name="bottom_attach">8</property>
+        <property name="top_attach">9</property>
+        <property name="bottom_attach">10</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -663,43 +663,13 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
-        <property name="top_attach">2</property>
-        <property name="bottom_attach">3</property>
-        <property name="y_options">GTK_FILL</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel" id="moving_average_label">
-        <property name="visible">True</property>
-        <property name="xalign">0</property>
-        <property name="label" translatable="yes">n/a</property>
-        <property name="ellipsize">end</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="right_attach">2</property>
-        <property name="top_attach">3</property>
-        <property name="bottom_attach">4</property>
-        <property name="y_options">GTK_FILL</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkLabel" id="moving_average_time_label">
-        <property name="visible">True</property>
-        <property name="xalign">0</property>
-        <property name="label" translatable="yes">n/a</property>
-        <property name="ellipsize">end</property>
-      </object>
-      <packing>
-        <property name="left_attach">1</property>
-        <property name="right_attach">2</property>
         <property name="top_attach">4</property>
         <property name="bottom_attach">5</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="max_speed_label">
+      <object class="GtkLabel" id="moving_average_label">
         <property name="visible">True</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
@@ -714,7 +684,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="elevation_difference_label">
+      <object class="GtkLabel" id="moving_average_time_label">
         <property name="visible">True</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
@@ -729,7 +699,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="gradient_label">
+      <object class="GtkLabel" id="max_speed_label">
         <property name="visible">True</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
@@ -744,6 +714,36 @@
       </packing>
     </child>
     <child>
+      <object class="GtkLabel" id="elevation_difference_label">
+        <property name="visible">True</property>
+        <property name="xalign">0</property>
+        <property name="label" translatable="yes">n/a</property>
+        <property name="ellipsize">end</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">8</property>
+        <property name="bottom_attach">9</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="gradient_label">
+        <property name="visible">True</property>
+        <property name="xalign">0</property>
+        <property name="label" translatable="yes">n/a</property>
+        <property name="ellipsize">end</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">9</property>
+        <property name="bottom_attach">10</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkLabel" id="label4">
         <property name="visible">True</property>
         <property name="xalign">1</property>
@@ -751,8 +751,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">8</property>
-        <property name="bottom_attach">9</property>
+        <property name="top_attach">10</property>
+        <property name="bottom_attach">11</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -820,9 +820,63 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
-        <property name="top_attach">8</property>
-        <property name="bottom_attach">9</property>
+        <property name="top_attach">10</property>
+        <property name="bottom_attach">11</property>
         <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="start_time_title_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Start time:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="top_attach">2</property>
+        <property name="bottom_attach">3</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="stop_time_title_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Stop time:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="top_attach">3</property>
+        <property name="bottom_attach">4</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="start_time_label">
+        <property name="visible">True</property>
+        <property name="xalign">0</property>
+        <property name="label" translatable="yes">n/a</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">2</property>
+        <property name="bottom_attach">3</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="stop_time_label">
+        <property name="visible">True</property>
+        <property name="xalign">0</property>
+        <property name="label" translatable="yes">n/a</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">3</property>
+        <property name="bottom_attach">4</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
