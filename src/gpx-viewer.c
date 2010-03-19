@@ -1386,11 +1386,12 @@ static void create_interface(void)
     /* graph */
     gpx_graph = gpx_graph_new();
     gpx_graph_container = gtk_frame_new(NULL);
+    gtk_widget_set_size_request(gpx_graph_container, -1, 120);
     gtk_frame_set_shadow_type(GTK_FRAME(gpx_graph_container), GTK_SHADOW_IN);
     gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(gpx_graph));
     gtk_widget_show(GTK_WIDGET(gpx_graph));
     gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
-    gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(gpx_graph_container), FALSE, TRUE);
+    gtk_paned_pack2(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), GTK_WIDGET(gpx_graph_container), FALSE, FALSE);
 
     /* show the interface */
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));

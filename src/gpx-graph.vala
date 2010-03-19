@@ -449,10 +449,11 @@ namespace Gpx
 			/* Draw Grid */
 			double graph_width = win.allocation.width-LEFT_OFFSET-10;
 			double graph_height = win.allocation.height-20-BOTTOM_OFFSET;
-
+            if(graph_height < 50 ) return;
 			var layout = Pango.cairo_create_layout(ctx);
 			double j =0.0;
 			double step_size = (graph_height)/8.0;
+/*
 			ctx.set_source_rgba(0.2, 0.2, 0.2, 0.6);
 			ctx.set_line_width(1);
 			for(j=graph_height;j>0.0;j-=step_size){
@@ -460,18 +461,23 @@ namespace Gpx
 				ctx.line_to(graph_width,j);
 				ctx.stroke();
 			}
+*/
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw grid lines");
 			/* Draw speed and ticks */
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-			double size = LEFT_OFFSET/("%.1f".printf(max_value).length);
-			if(size > step_size) size = step_size;
-			fd.set_absolute_size(size*1024);
+
+			fd.set_absolute_size(12*1024);
 			layout.set_font_description(fd);
+            layout.set_text("0.0",-1);
+            int wt,ht;
+            layout.get_pixel_size(out wt, out ht);
+			step_size = graph_height/(Math.ceil(graph_height/(ht+10)/5)*5);
 			for(j=0;j<graph_height;j+=step_size){
 				double speed = min_value + (range)*((graph_height-j)/graph_height);
 				var text = "%.1f".printf(speed);
 				int w,h;
-				layout.set_text(text,-1);
+                ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+                layout.set_text(text,-1);
 				layout.get_pixel_size(out w, out h);
 				ctx.move_to(-w-5, j-h/2.0);
 				Pango.cairo_layout_path(ctx, layout);
@@ -482,6 +488,12 @@ namespace Gpx
 
 				ctx.move_to(-4, j);
 				ctx.line_to(0, j);
+				ctx.stroke();
+
+                ctx.set_source_rgba(0.2, 0.2, 0.2, 0.6);
+                ctx.set_line_width(1);
+                ctx.move_to(0.0,j);
+                ctx.line_to(graph_width,j);
 				ctx.stroke();
 				/* */
 			}
