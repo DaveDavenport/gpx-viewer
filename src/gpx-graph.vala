@@ -519,9 +519,9 @@ namespace Gpx
             }
 			while(iter.next != null)
 			{
-				double time_offset = (iter.data.get_time()-f.get_time());
 				double speed = 0;
 				weak List<Point?> ii = iter.next;
+				double time_offset = (ii.data.get_time()-f.get_time());
 				int i=0;
 				int sf = this._smooth_factor;
 				for(i=0;i< sf && ii.prev != null; i++)
@@ -575,7 +575,7 @@ namespace Gpx
 				iter = track.points.first();
 				while(iter.next != null)
 				{
-					double time_offset = (iter.data.get_time()-f.get_time());
+					double time_offset = (iter.next.data.get_time()-f.get_time());
 					double speed = 0;
 					weak List<Point?> ii = iter.next;
 					int i=0;
