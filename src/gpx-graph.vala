@@ -434,6 +434,7 @@ namespace Gpx
                     iter = iter.next;
                 }
             }
+            max_value = GLib.Math.ceil(max_value);
 			range = max_value-min_value;
 			double elapsed_time = track.get_total_time();
 
