@@ -318,7 +318,7 @@ namespace Gpx
 						text = "%.1f m".printf(this.draw_current.elevation);
 					}else if (this._mode == GraphMode.DISTANCE) {
 						text = "%.1f km".printf(this.draw_current.distance);
-					}
+					}else return false;
 
 					fd.set_absolute_size(12*1024);
 					layout.set_font_description(fd);
