@@ -149,6 +149,11 @@ namespace Gpx
                 }
 
             }
+            else
+            {
+                this.max_elevation = point.elevation;
+                this.min_elevation = point.elevation;
+            }
             points.append(point);
             last = point;
         }

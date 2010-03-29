@@ -381,7 +381,7 @@ namespace Gpx
 						int sf = this._smooth_factor;
 						for(i=0;i<sf && ii.prev != null; i++)
 						{
-							speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
+							speed += ii.data.speed;
 							ii = ii.prev;
 						}
 						speed = speed/i;
@@ -438,6 +438,7 @@ namespace Gpx
 			range = max_value-min_value;
 			double elapsed_time = track.get_total_time();
 
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis");
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Max speed: %f, elapsed_time: %f",
 					max_value,
@@ -509,16 +510,35 @@ namespace Gpx
 			ctx.line_to(graph_width, graph_height+(graph_height/range)*(min_value));
 			ctx.stroke();
 
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis");
 
 			/* Draw the graph */
 			ctx.set_source_rgba(0.1, 0.2, 0.3, 1);
 			ctx.set_line_width(1);
 			weak List<Point?> iter = track.points.first();
-			ctx.move_to(0.0, graph_height*(1+min_value/range));
+
+            if(min_value < 0 && max_value > 0) {
+                ctx.move_to(0.0, graph_height*((max_value)/range));
+            }else {
+                ctx.move_to(0.0, graph_height);
+            }
 
 
-			double pref_speed = 2f;
+            double start_speed = 0;
+            if(this._mode == GraphMode.SPEED) {
+                start_speed = iter.data.speed;
+            }else if(this._mode == GraphMode.ELEVATION){
+                start_speed = iter.data.elevation-min_value;
+            }else if(this._mode == GraphMode.DISTANCE){
+                start_speed = iter.data.distance;
+            }else if (this._mode == GraphMode.ACCELERATION_H) {
+                start_speed = -min_value;
+            }else if (this._mode == GraphMode.SPEED_V) {
+                start_speed = -min_value;
+            }
+            ctx.line_to(0.0, graph_height*(1-(start_speed)/range));
+            stdout.printf("%f %f %f\n", range, min_value, max_value);
+
+            double pref_speed = 2f;
             double pref_speed_threshold = 1f;
             // If pref_speed drops below this threshold we drop a 0 speed
             // point. 1/20 of average atm.
@@ -531,15 +551,15 @@ namespace Gpx
             }
 			while(iter.next != null)
 			{
-				double speed = 0;
 				weak List<Point?> ii = iter.next;
 				double time_offset = (ii.data.get_time()-f.get_time());
 				int i=0;
+                double speed = 0;
 				int sf = this._smooth_factor;
 				for(i=0;i< sf && ii.prev != null; i++)
 				{
 					if(this._mode == GraphMode.SPEED) {
-						speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data);
+						speed += ii.data.speed;
 					}else if(this._mode == GraphMode.ELEVATION){
 						speed += ii.data.elevation-min_value;
 					}else if(this._mode == GraphMode.DISTANCE){
@@ -573,8 +593,12 @@ namespace Gpx
 
 				pref_speed = speed;
 			}
-			ctx.line_to(graph_width, graph_height*(1+min_value/range));
-			ctx.close_path();
+            if(min_value < 0 && max_value > 0) {
+			ctx.line_to(graph_width, graph_height*((max_value)/range));
+            }else{
+                ctx.line_to(graph_width, graph_height*1);
+            }
+            ctx.close_path();
 			ctx.stroke_preserve();
 
 			ctx.set_source_rgba(0.1, 0.2, 0.8, 0.5);
