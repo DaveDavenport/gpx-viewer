@@ -838,6 +838,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         2, TRUE,
         3, route->visible,
         4, g_list_length(route->track->points),
+		5, gpx_track_get_track_average(route->track),
         -1);
 
     if(first)
