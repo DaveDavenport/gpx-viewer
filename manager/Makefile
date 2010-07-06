@@ -113,9 +113,9 @@ $(SOURCE_DIR):
 
 $(SOURCE_DIR)/%.c: %.vala $(VALA_SOURCES)
 	$(info Parsing '$^' int '$@')
-	$(QUIET)$(VALAC) -C $^ --pkg=cairo --pkg=gio-2.0 --pkg=gtk+-2.0 --pkg=libxml-2.0 --vapidir=./vapi/ -b $(SOURCE_DIR)
+	$(QUIET)$(VALAC) -C $^ --pkg=cairo  --pkg=gio-2.0 --pkg=gtk+-2.0 --pkg=libxml-2.0 --vapidir=./vapi/ -b $(SOURCE_DIR)
 
-$(PROGRAM): $(SOURCE_DIR) $(C_SOURCES_DIR) $(OBJ_DIR_FILES)
+$(PROGRAM): $(OBJ_DIR_FILES)
 	$(info Linking '$^' into '$@')
 	$(QUIET)$(CC) -o $@ $(OBJ_DIR_FILES) $(CFLAGS) $(LIBS)
 
