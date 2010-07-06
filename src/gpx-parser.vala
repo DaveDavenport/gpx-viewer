@@ -20,7 +20,6 @@
 using Gtk;
 using GLib;
 using Xml;
-using Config;
 
 namespace Gpx
 {
