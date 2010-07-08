@@ -47,7 +47,7 @@ public static int main(string[] argv)
                 total_distance += track.total_distance;
 				Tuple<double?,double?> p = new Tuple<double?,double?>();
 				p.x = (double)   track.points.first().data.get_time();
-				p.y = (double) track.get_track_average();
+				p.y = (double) total_distance;//track.get_track_average();
 				maxy = (p.y > maxy)?p.y:maxy;
 				miny = (p.y < miny)?p.y:miny;
 				points.prepend((owned)p);
@@ -113,8 +113,8 @@ public static int main(string[] argv)
     var t_p = get_trent(points,0);
     g.set_points(t_p);
 
-    var t_p2 = get_trent(points_mov,0);
-    g.set_points(t_p2);
+    //var t_p2 = get_trent(points_mov,0);
+    //g.set_points(t_p2);
 	g.Xaxis = (owned)xaxis;
 	g.Yaxis = (owned)yaxis;
 	g.draw();
