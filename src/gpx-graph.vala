@@ -547,7 +547,7 @@ namespace Gpx
 
             if(this._mode == GraphMode.SPEED) {
 				var avg = track.get_track_average();
-                pref_speed_threshold = avg/20;
+                pref_speed_threshold = avg/5;
             }
 			while(iter.next != null)
 			{
@@ -577,17 +577,20 @@ namespace Gpx
 				if(this._mode == GraphMode.SPEED && pref_speed < pref_speed_threshold) {
 					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
 							graph_height*(double)(1.0-0));
-
 				}
 
 				ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
 						graph_height*(double)(1.0-speed/(range)));
 
-                // if speed on current point was very low, end at 0
-				if(this._mode == GraphMode.SPEED && speed < pref_speed_threshold) {
-					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-							graph_height*(double)(1.0-0));
+                // if speed on next point was very low, go to 0
+				// TODO: Does not work, why?
+				if(ii.next != null) {
+					if(this._mode == GraphMode.SPEED && ii.next.data.speed < pref_speed_threshold) {
+						GLib.debug("test123");
+						ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+								graph_height*(double)(1.0-0));
 
+					}
 				}
 				iter = iter.next;
 
