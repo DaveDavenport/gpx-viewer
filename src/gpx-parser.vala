@@ -159,13 +159,17 @@ namespace Gpx
 
 		public Track cleanup_speed()
 		{
-			Track retv = new  Track(); 
+			Track retv = new Track(); 
+
 			retv.name = this.name;
+
 			var num_points = this.points.length();
 			var mean =  this.get_track_average();
 			var deviation = 0.0;
-			List<Point > list_copy = this.points.copy();
-			weak List<Point> iter = list_copy.first();
+
+
+			List<weak Point > list_copy = this.points.copy();
+			weak List<weak Point> iter = list_copy.first();
 			while(iter != null)
 			{
 				var diff = iter.data.speed-mean;
