@@ -196,7 +196,8 @@ namespace Gpx
 					{
 						iter = temp;
 						if(iter.next != null){
-							iter.next.data.speed = calculate_point_to_point_speed(iter.data, iter.next.data);
+							iter.next.data.speed = calculate_point_to_point_speed(
+									iter.data, iter.next.data);
 							stdout.printf("%u new speed: %f\n",i, iter.next.data.speed);
 						}
 					}
@@ -205,12 +206,14 @@ namespace Gpx
 						i =0;
 						stdout.printf("%u goto first\n",i);
 						iter = list_copy.first();
-						iter.data.speed = 0.0;
-						iter.data.distance = 0.0;
-						if(iter.next != null){
-							iter.next.data.distance = calculate_distance(iter.data, iter.next.data);
-							iter.next.data.speed = calculate_point_to_point_speed(iter.data, iter.next.data);
-							stdout.printf("%u new speed: %f\n",i, iter.next.data.speed);
+						if(iter != null) {
+							iter.data.speed = 0.0;
+							iter.data.distance = 0.0;
+							if(iter.next != null){
+								iter.next.data.distance = calculate_distance(iter.data, iter.next.data);
+								iter.next.data.speed = calculate_point_to_point_speed(iter.data, iter.next.data);
+								stdout.printf("%u new speed: %f\n",i, iter.next.data.speed);
+							}
 						}
 					}
 				}else{

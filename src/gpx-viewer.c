@@ -809,15 +809,15 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     GtkIconInfo *ii;
     struct Route *route = g_new0(Route, 1);
     /* Route */
-    /*    if(config_get_boolean("Track", "Cleanup speed using chauvenets criterion", FALSE))
-        {
-            route->track = gpx_track_cleanup_speed(track);
-        }
-        else
-        {*/
-    route->track = g_object_ref(track);
-    /*    }*/
-    route->visible = TRUE;
+    if(gpx_viewer_preferences_get_integer(preferences,"Track", "Cleanup", 0) > 0)
+	{
+		route->track = gpx_track_cleanup_speed(track);
+	}
+	else
+	{
+		route->track = g_object_ref(track);
+	}
+	route->visible = TRUE;
 
     /* draw the track */
     interface_map_plot_route(view, route);
