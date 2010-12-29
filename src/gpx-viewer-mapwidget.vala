@@ -104,7 +104,7 @@ namespace Gpx
             private void switch_map_source(string id)
             {
                 var fact= new Champlain.MapSourceFactory.dup_default();
-                Champlain.MapSource source = fact.create(id);
+                Champlain.MapSource source = fact.create_cached_source(id);
                 if(source != null)
                 {
                     this.view.set_map_source(source);

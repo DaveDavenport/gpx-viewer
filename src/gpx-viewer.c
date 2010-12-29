@@ -269,27 +269,33 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
     /* Start time */
     label = (GtkWidget *) gtk_builder_get_object(builder, "start_time_label");
-    if(start) {
-            char buffer[128];
-            struct tm ltm;
-            temp = gpx_point_get_time(start);
-            localtime_r(&temp, &ltm);
-            strftime(buffer, 128, "%D %X", &ltm);
-            gtk_label_set_text(GTK_LABEL(label), buffer); 
-    }else{
+    if(start)
+    {
+        char buffer[128];
+        struct tm ltm;
+        temp = gpx_point_get_time(start);
+        localtime_r(&temp, &ltm);
+        strftime(buffer, 128, "%D %X", &ltm);
+        gtk_label_set_text(GTK_LABEL(label), buffer);
+    }
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
 
     /* Stop time */
     label = (GtkWidget *) gtk_builder_get_object(builder, "stop_time_label");
-    if(stop) {
-            char buffer[128];
-            struct tm ltm;
-            temp = gpx_point_get_time(stop);
-            localtime_r(&temp, &ltm);
-            strftime(buffer, 128, "%D %X", &ltm);
-            gtk_label_set_text(GTK_LABEL(label), buffer); 
-    }else{
+    if(stop)
+    {
+        char buffer[128];
+        struct tm ltm;
+        temp = gpx_point_get_time(stop);
+        localtime_r(&temp, &ltm);
+        strftime(buffer, 128, "%D %X", &ltm);
+        gtk_label_set_text(GTK_LABEL(label), buffer);
+    }
+    else
+    {
         gtk_label_set_text(GTK_LABEL(label), "n/a");
     }
     /* Distance */
@@ -810,14 +816,14 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     struct Route *route = g_new0(Route, 1);
     /* Route */
     if(gpx_viewer_preferences_get_integer(preferences,"Track", "Cleanup", 0) > 0)
-	{
-		route->track = gpx_track_cleanup_speed(track);
-	}
-	else
-	{
-		route->track = g_object_ref(track);
-	}
-	route->visible = TRUE;
+    {
+        route->track = gpx_track_cleanup_speed(track);
+    }
+    else
+    {
+        route->track = g_object_ref(track);
+    }
+    route->visible = TRUE;
 
     /* draw the track */
     interface_map_plot_route(view, route);
@@ -838,7 +844,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         2, TRUE,
         3, route->visible,
         4, g_list_length(route->track->points),
-		5, gpx_track_get_track_average(route->track),
+        5, gpx_track_get_track_average(route->track),
         -1);
 
     if(first)
@@ -1002,6 +1008,7 @@ void show_distance(GtkMenuItem item, gpointer user_data)
     }
 }
 
+
 void show_acceleration_h(GtkMenuItem item, gpointer user_data)
 {
     if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_ACCELERATION_H)
@@ -1010,6 +1017,8 @@ void show_acceleration_h(GtkMenuItem item, gpointer user_data)
         gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ACCELERATION_H);
     }
 }
+
+
 void show_vertical_speed(GtkMenuItem item, gpointer user_data)
 {
     if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_SPEED_V)
@@ -1018,7 +1027,6 @@ void show_vertical_speed(GtkMenuItem item, gpointer user_data)
         gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED_V);
     }
 }
-
 
 
 static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter)
