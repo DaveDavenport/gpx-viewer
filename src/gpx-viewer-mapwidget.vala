@@ -11,6 +11,8 @@ namespace Gpx
         {
             /* Color */
             private Clutter.Color waypoint_color;
+
+
             /* Waypoint layer */
             private Champlain.Layer waypoint_layer = new Champlain.Layer();
             private bool _show_waypoints = false;
@@ -25,6 +27,7 @@ namespace Gpx
                         this._show_waypoints = value;
                     }
             }
+
             public void add_waypoint(Gpx.Point p)
             {
                 Champlain.Marker marker = new Marker.with_text(p.name, "Serif 12", null, waypoint_color);
@@ -33,6 +36,7 @@ namespace Gpx
             }
             /* Marker layer */
             private Champlain.Layer marker_layer = new Champlain.Layer();
+
             private bool _show_markers = false;
             public bool show_markers {
                     get { return _show_markers;}
@@ -44,10 +48,13 @@ namespace Gpx
                         }
                     }
             }
+
             public void add_marker(BaseMarker marker)
             {
                 marker_layer.add(marker);
             }
+
+
             /* A TreeModel with all the maps, <name>,<id> */
             private Gtk.ListStore map_source_list = new Gtk.ListStore(2,typeof(string), typeof(string));
 
