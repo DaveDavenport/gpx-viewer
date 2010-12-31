@@ -106,6 +106,11 @@ namespace Gpx
         public double max_elevation = 0.0;
         public double min_elevation = 0.0;
 
+		public unowned Point? get_last()
+		{
+			return last;
+		}
+
         public void add_point (Point point)
         {
 			/* Make sure this is 0 */
@@ -179,8 +184,6 @@ namespace Gpx
 			deviation /= num_points; 
 			var sqrt_deviation = Math.sqrt(deviation);
 
-			GLib.debug("Standard deviation: %f  mean: %f %u\n", sqrt_deviation, mean,num_points);
-
 			iter = list_copy.first();
 			uint i =0;
 			while(iter != null)
@@ -195,20 +198,17 @@ namespace Gpx
 					/* Remove point, fix speed off the next point, as it should */
 					weak List<Point> temp = iter.prev;
 					list_copy.remove_link(iter);	
-					stdout.printf("%u del: %f\n",i, pspeed);
 					if(temp != null)
 					{
 						iter = temp;
 						if(iter.next != null){
 							iter.next.data.speed = calculate_point_to_point_speed(
 									iter.data, iter.next.data);
-							stdout.printf("%u new speed: %f\n",i, iter.next.data.speed);
 						}
 					}
 					else
 					{
 						i =0;
-						stdout.printf("%u goto first\n",i);
 						iter = list_copy.first();
 						if(iter != null) {
 							iter.data.speed = 0.0;
@@ -216,7 +216,6 @@ namespace Gpx
 							if(iter.next != null){
 								iter.next.data.distance = calculate_distance(iter.data, iter.next.data);
 								iter.next.data.speed = calculate_point_to_point_speed(iter.data, iter.next.data);
-								stdout.printf("%u new speed: %f\n",i, iter.next.data.speed);
 							}
 						}
 					}

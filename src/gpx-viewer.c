@@ -823,7 +823,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     {
         route->track = g_object_ref(track);
     }
-    route->visible = TRUE;
+    route->visible = FALSE;
 
     /* draw the track */
     interface_map_plot_route(view, route);
@@ -862,7 +862,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     if(route->track)
     {
         const GList *start = g_list_first(route->track->points);
-        const GList *stop = g_list_last(route->track->points);
+        const GList *stop = gpx_track_get_last(route->track);/*g_list_last(route->track->points);*/
         if(start && stop)
         {
             ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
@@ -1068,7 +1068,8 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
     if(route->track)
     {
         const GList *start = g_list_first(route->track->points);
-        const GList *stop = g_list_last(route->track->points);
+        const GList *stop = gpx_track_get_last(route->track);
+		/*g_list_last(route->track->points);*/
         if(start && stop)
         {
             ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
