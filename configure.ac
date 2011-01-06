@@ -14,6 +14,9 @@ AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_PROG_CC_C_O
 LT_INIT
+# Remove the check for c++ and fortran compiler
+m4_defun([_LT_AC_LANG_CXX_CONFIG], [:])
+m4_defun([_LT_AC_LANG_F77_CONFIG], [:])
 
 #intltool, libtool. Check for CC compiler
 IT_PROG_INTLTOOL([0.21])
@@ -32,15 +35,29 @@ AM_PROG_VALAC([0.7.0])
 PKG_PROG_PKG_CONFIG
 
 
-PKG_CHECK_MODULES([modules],[
+PKG_CHECK_MODULES([gtk],[
         gtk+-2.0  >= 2.16
+        gmodule-2.0 
+        ])
+PKG_CHECK_MODULES([libxml], [
+        libxml-2.0
+])
+PKG_CHECK_MODULES([libgdl], [
+        gdl-1.0
+])
+PKG_CHECK_MODULES([champlain], [
         champlain-gtk-0.8 >= 0.8.0
         champlain-0.8 >= 0.8.0
-        gmodule-2.0 
-        libxml-2.0
-        gdl-1.0
-        unique-1.0
-        ])
+])
+
+# Check for unique. This is optional.
+PKG_CHECK_MODULES([unique], 
+	[unique-1.0],
+	[ 
+		have_unique="yes"
+		AC_DEFINE(HAVE_UNIQUE,1,[unique support enabled])],
+	 have_unique="no"
+)
 
 AC_CONFIG_FILES([
 	Makefile

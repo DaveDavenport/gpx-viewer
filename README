@@ -1,12 +1,13 @@
 Dependencies:
-* libchamplain-gtk (0.4.3)
-* libchamplain  (0.4.3)
-* vala 0.7.*
+* libchamplain-gtk (0.8)
+* libchamplain  (0.8)
+* vala 0.9.*
 * gtk+-2.0 2.16 or up.
 * gmodule 2.0
 * libxml2
 * libgdl 1.0
 * libunique 1.0
+* libgdl
 
 The program is ment as a simple gpx viewer. It has no intention to become a full blown manager, editor or analyzer. 
 

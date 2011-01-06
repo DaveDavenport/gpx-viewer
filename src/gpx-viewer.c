@@ -27,7 +27,11 @@
 #include <champlain/champlain.h>
 #include <champlain-gtk/champlain-gtk.h>
 #include <clutter-gtk/clutter-gtk.h>
+
+#ifdef HAVE_UNIQUE
 #include <unique/unique.h>
+#endif
+
 #include <gdl/gdl.h>
 #include "gpx-viewer.h"
 #include "gpx.h"
@@ -37,7 +41,10 @@ static GdlDockLayout    *dock_layout = NULL;
 
 static GpxViewerPreferences  *preferences = NULL;
 
+#ifdef HAVE_UNIQUE
 UniqueApp           *app                    = NULL;
+#endif
+
 typedef enum
 {
     OPEN_URIS   =   1
@@ -54,14 +61,12 @@ GpxGraph            *gpx_graph              = NULL;
 GtkWidget           *gpx_graph_container    = NULL;
 /* Recent manager */
 GtkRecentManager    *recent_man             = NULL;
-/* */
+/* Track playback widget */
 GpxPlayback *playback               = NULL;
 /* */
 ClutterActor *click_marker          = NULL;
 guint click_marker_source           = 0;
 
-/* List of routes */
-GList *routes                       = NULL;
 
 /* Clutter  collors */
 ClutterColor waypoint               = { 0xf3, 0x94, 0x07, 0xff };
@@ -83,6 +88,9 @@ typedef struct Route
     ChamplainBaseMarker *stop;
     gboolean visible;
 } Route;
+
+/* List of routes GList<Route> *routes */
+GList *routes                       = NULL;
 
 /**
  * This points to the currently active Route.
@@ -109,7 +117,9 @@ static void restore_layout(void)
 
 }
 
-
+/**
+ * Stores the layout off the docks. 
+ */
 static void save_layout(void)
 {
     gchar *layout_path = NULL;
@@ -117,12 +127,19 @@ static void save_layout(void)
     g_assert(config_dir != NULL);
     g_debug("Config dir is: %s", config_dir);
 
+	/**
+	 * Create config directory 
+	 */
     layout_path = g_build_filename(config_dir, "gpx-viewer", NULL);
     if(!g_file_test(layout_path, G_FILE_TEST_IS_DIR))
     {
         g_mkdir_with_parents(layout_path, 0700);
     }
     g_free(layout_path);
+
+	/**
+ 	 * Save dock layout 
+	 */
     layout_path = g_build_filename(config_dir, "gpx-viewer", "dock-layout.xml",NULL);
     if(dock_layout)
     {
@@ -537,6 +554,10 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             gpx_graph_set_track(gpx_graph, NULL);
             /* Hide graph */
             gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
+			/* if not visible hide track again */
+			if(!active_route->visible) {
+                champlain_polygon_hide(route->polygon);
+			}
         }
 
         active_route = route;
@@ -548,7 +569,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             if(route->polygon != NULL)
                 champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
 
-            if (route->visible)
+/*            if (route->visible) */
             {
                 champlain_polygon_show(route->polygon);
             }
@@ -862,7 +883,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     if(route->track)
     {
         const GList *start = g_list_first(route->track->points);
-        const GList *stop = gpx_track_get_last(route->track);/*g_list_last(route->track->points);*/
+        GpxPoint *stop = gpx_track_get_last(route->track);/*g_list_last(route->track->points);*/
         if(start && stop)
         {
             ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
@@ -908,8 +929,8 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
             }
             /* Create the marker */
             champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop),
-                ((GpxPoint*)stop->data)->lat_dec,
-                ((GpxPoint*)stop->data)->lon_dec);
+                stop->lat_dec,
+                stop->lon_dec);
             champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
 
@@ -1068,7 +1089,7 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
     if(route->track)
     {
         const GList *start = g_list_first(route->track->points);
-        const GList *stop = gpx_track_get_last(route->track);
+        GpxPoint *stop = gpx_track_get_last(route->track);
 		/*g_list_last(route->track->points);*/
         if(start && stop)
         {
@@ -1115,8 +1136,8 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
             }
             /* Create the marker */
             champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop),
-                ((GpxPoint*)stop->data)->lat_dec,
-                ((GpxPoint*)stop->data)->lon_dec);
+                (stop)->lat_dec,
+                (stop)->lon_dec);
             champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
 
@@ -1658,6 +1679,7 @@ void open_gpx_file(GtkMenu *item)
 }
 
 
+#ifdef HAVE_UNIQUE
 /**
  * IPC: Handle commands gpx-viewer gets via UniqueApp.
  */
@@ -1721,6 +1743,7 @@ static UniqueResponse unique_response(UniqueApp *uapp, gint command, UniqueMessa
     }
     return UNIQUE_RESPONSE_INVALID;
 }
+#endif
 
 
 int main(int argc, char **argv)
@@ -1734,15 +1757,17 @@ int main(int argc, char **argv)
     bindtextdomain(PACKAGE, LOCALEDIR);
     bind_textdomain_codeset(PACKAGE, "UTF-8");
     textdomain(PACKAGE);
+	gtk_set_locale();
 
+	/* Setup the commandline parser */
     context = g_option_context_new(_("[FILE...] - GPX Viewer"));
-
+	/* summary */
     g_option_context_set_summary(context, N_("A simple program to visualize one or more gpx files."));
-
+	/* website */
     website = g_strconcat(N_("Website: "), PACKAGE_URL, NULL);
     g_option_context_set_description(context, website);
     g_free(website);
-
+	
     g_option_context_add_group(context, gtk_get_option_group(TRUE));
     g_option_context_parse(context, &argc, &argv, &error);
     g_option_context_free(context);
@@ -1760,12 +1785,13 @@ int main(int argc, char **argv)
 
     gtk_clutter_init(&argc, &argv);
 
+#ifdef HAVE_UNIQUE
+	/* Setup unique app.  This enforces only one instance off the application is running. */
     app = unique_app_new("nl.Sarine.gpx-viewer",NULL);
     unique_app_add_command(app,"open-uris", OPEN_URIS);
     g_signal_connect(G_OBJECT(app),"message-received", G_CALLBACK(unique_response), NULL);
 
-    printf(" %i\n", unique_app_is_running(app));
-    /* Why does it say always running? */
+	/* Check if we are allready running */
     if(unique_app_is_running(app))
     {
         /* Program is allready running */
@@ -1773,18 +1799,18 @@ int main(int argc, char **argv)
         g_debug("Program is allready running\n");
         if(argc > 1)
         {
-            printf("uri: %s\n", argv[1]);
             unique_message_data_set_uris(msd,&argv[1]);
             unique_app_send_message(app,1, msd);
         }
-        /* free msd? */
+        /* free msd */
         unique_message_data_free(msd);
         /* Free app */
         g_object_unref(app);
         return EXIT_SUCCESS;
     }
-    /* Setup responding to commands */
+#endif
 
+    /* Setup responding to commands */
     preferences = gpx_viewer_preferences_new();
 
     /* REcent manager */
@@ -1813,24 +1839,36 @@ int main(int argc, char **argv)
     }
     files = g_list_reverse(files);
 
+	/* Create playback option */
     playback = gpx_playback_new(NULL);
-
+	/* Connect settings */
     gpx_viewer_preferences_add_object_property(preferences, G_OBJECT(playback), "speedup");
+	/* Watch signals */
     g_signal_connect(GPX_PLAYBACK(playback), "tick", G_CALLBACK(route_playback_tick), NULL);
     g_signal_connect(GPX_PLAYBACK(playback), "state-changed", G_CALLBACK(route_playback_state_changed), NULL);
-
+	/* Create the interface on main loop begin */
     gtk_init_add((GtkFunction)create_interface,NULL);
 
+	/* Start the main loop */
     gtk_main();
 
+	/* unref playback object */
+	g_debug("Destroying playback");
     g_object_unref(playback);
 
     /* Destroy the files */
     g_debug("Cleaning up files");
     g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
     g_list_free(files);
-
+	/* Destroy the settings object */
+	g_debug("destroying Settings");
     g_object_unref(preferences);
+
+#ifdef HAVE_UNIQUE
+	/* Destroy unique app */
+	g_debug("Destroying unique session");
+	g_object_unref(app);
+#endif
 
     return EXIT_SUCCESS;
 }
@@ -1953,7 +1991,8 @@ void gpx_viewer_show_preferences_dialog(void)
     widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"check_button_data_points");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), gpx_graph_get_show_points(gpx_graph));
     g_signal_connect_object(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
-    /* sppedup */
+
+    /* speedup */
     widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),
         (double)gpx_playback_get_speedup(playback));

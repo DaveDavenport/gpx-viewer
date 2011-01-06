@@ -35,8 +35,8 @@ namespace Gpx
 			SPEED,
 			ELEVATION,
 			DISTANCE,
-            ACCELERATION_H,
-            SPEED_V,
+			ACCELERATION_H,
+			SPEED_V,
 			NUM_GRAPH_MODES
 		}
 		/* Privates */
@@ -48,7 +48,7 @@ namespace Gpx
 			N_("Vertical speed (m/s) vs Time (HH:MM)")
 		};
 		/* By default elevation is shown */
-        private GraphMode _mode = GraphMode.ELEVATION;
+		private GraphMode _mode = GraphMode.ELEVATION;
 		/* By default no smoothing is applied */
 		private int _smooth_factor = 1;
 		/* By default points are shown on graph */
@@ -103,17 +103,17 @@ namespace Gpx
 		}
 
 		public GraphMode mode {
-            get {return _mode;}
-            set {
-                if(value != this._mode)
-                {
-                    this._mode= value;
-                    this.surf = null;
-                    /* Force a redraw */
-                    this.queue_draw();
-                }
-            }
-        }
+			get {return _mode;}
+			set {
+				if(value != this._mode)
+				{
+					this._mode= value;
+					this.surf = null;
+					/* Force a redraw */
+					this.queue_draw();
+				}
+			}
+		}
 
 		public Graph ()
 		{
@@ -146,9 +146,10 @@ namespace Gpx
 			else
 				selection_changed(this.track, null, null);
 		}
-
+		/* Signal if the users clicks a point  */
 		signal void point_clicked(Gpx.Point point);
 
+		/* signal if the selection range changes */
 		signal void selection_changed(Gpx.Track? track, Gpx.Point? start, Gpx.Point? stop);
 		/**
 		 * Private functions

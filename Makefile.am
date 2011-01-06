@@ -51,16 +51,24 @@ gpx_viewer_SOURCES=\
 	src/gpx-viewer.c
 
 
-gpx_viewer_VALAFLAGS= --pkg=config --pkg=unique-1.0 --pkg=clutter-1.0 --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=libchamplain-0.8 --pkg=libchamplain-gtk-0.8 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/vapi -H gpx.h
+gpx_viewer_VALAFLAGS= --pkg=config --pkg=unique-1.0 --pkg=clutter-1.0 --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=libchamplain-0.8 --pkg=libchamplain-gtk-0.8 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/vapi -H $(top_builddir)/src/gpx.h
 
 LIBS=\
-	@modules_LIBS@\
+	@gtk_LIBS@\
+	@unique_LIBS@\
+	@champlain_LIBS@\
+	@libxml_LIBS@\
+	@libgdl_LIBS@\
     -lm
 
 AM_CFLAGS=\
-	@modules_CFLAGS@\
+	@gtk_CFLAGS@\
+	@unique_CFLAGS@\
+	@champlain_CFLAGS@\
+	@libxml_CFLAGS@\
+	@libgdl_CFLAGS@\
 	-DDATA_DIR="\"$(pkgdatadir)\""\
-    -std=c89
+    -std=c99
 
 if MAINTAINER_MODE
 AM_CFLAGS+=-Wall -Wdeclaration-after-statement -Wshadow -fno-common -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wnested-externs -Wmissing-format-attribute -Waggregate-return -Wundef -Wmissing-include-dirs -Winit-self -Wswitch-default -Wswitch-enum

@@ -125,5 +125,10 @@ namespace Gpx
             }
             this.tick(null);
         }
+		
+		~Playback()
+		{
+			GLib.debug("Destroying playback");
+		}
     }
 }
