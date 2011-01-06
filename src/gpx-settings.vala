@@ -25,10 +25,10 @@ namespace Gpx
 {
     namespace Viewer
     {
-        public class Preferences : GLib.Object
+        public class Settings : GLib.Object
         {
             /* The log domain */
-            static string LOG_DOMAIN = "Gpx.Viewer.Preferences";
+            static string LOG_DOMAIN = "Gpx.Viewer.Settings";
             /* The keyfile holding the values */
             private GLib.KeyFile keyfile = new GLib.KeyFile();
 
@@ -40,7 +40,7 @@ namespace Gpx
                 enum_type = typeof(__enum).parent();
             }
             /* Create preferences object */
-            public Preferences()
+            public Settings()
             {
                 GLib.log(LOG_DOMAIN,
                         GLib.LogLevelFlags.LEVEL_DEBUG,
@@ -64,7 +64,7 @@ namespace Gpx
                         e.message);
                 }
             }
-            ~Preferences()
+            ~Settings()
             {
                 GLib.log(LOG_DOMAIN,
                         GLib.LogLevelFlags.LEVEL_DEBUG,
@@ -93,7 +93,7 @@ namespace Gpx
 
 
             /* Work around */
-            static void object_value_changed(GLib.Object object, ParamSpec sp,Preferences pref)
+            static void object_value_changed(GLib.Object object, ParamSpec sp,Settings pref)
             {
                 GLib.Type t = object.get_type();
                 Value value = Value(sp.value_type) ;

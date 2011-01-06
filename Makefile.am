@@ -46,7 +46,7 @@ gpx_viewer_SOURCES=\
     src/gpx-graph.vala\
     src/gpx-playback.vala\
     src/gpx-track-treemodel.vala\
-    src/gpx-preferences.vala\
+    src/gpx-settings.vala\
     src/gpx-viewer-mapwidget.vala\
 	src/gpx-viewer.c
 
