@@ -19,7 +19,6 @@
 
 #include <stdlib.h>
 #include <config.h>
-#define __USE_POSIX
 #include <time.h>
 #include <string.h>
 #include <gtk/gtk.h>

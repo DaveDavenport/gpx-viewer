@@ -653,8 +653,7 @@ namespace Gpx
 			layout.set_font_description(fd);
 			uint interval = (uint)elapsed_time/((uint)(graph_width/(5*12.0)));
 			int current = 0;
-			uint i;
-			for(i=0; i < elapsed_time && interval > 0; i+= interval)
+			for(uint i=0; i < elapsed_time && interval > 0; i+= interval)
 			{
 				if(graph_width*(1-(i/elapsed_time)) > 2.5*12 ){
 					int w,h;

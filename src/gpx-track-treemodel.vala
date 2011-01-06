@@ -59,7 +59,7 @@ namespace Gpx
             int depth = path.get_depth ();
             assert (depth == 1);
             int n = path.get_indices ()[0];
-            assert (n >= 0 && n < this.track.points.length () );
+            assert (n >= 0 && n < (int)this.track.points.length () );
             Point p = this.track.points.nth_data(n);
             iter.stamp = this.stamp;
             iter.user_data = p;

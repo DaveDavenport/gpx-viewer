@@ -68,6 +68,7 @@ AM_CFLAGS=\
 	@libxml_CFLAGS@\
 	@libgdl_CFLAGS@\
 	-DDATA_DIR="\"$(pkgdatadir)\""\
+	-D_XOPEN_SOURCE=500\
     -std=c99
 
 if MAINTAINER_MODE
