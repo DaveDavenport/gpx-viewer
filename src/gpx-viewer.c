@@ -1,5 +1,5 @@
 /* Gpx Viewer
- * Copyright (C) 2009-2010 Qball Cow <qball@sarine.nl>
+ * Copyright (C) 2009-2011 Qball Cow <qball@sarine.nl>
  * Project homepage: http://blog.sarine.nl/
 
  * This program is free software; you can redistribute it and/or modify
@@ -1748,121 +1748,133 @@ static UniqueResponse unique_response(UniqueApp *uapp, gint command, UniqueMessa
 
 int main(int argc, char **argv)
 {
-    int i = 0;
-    gchar *website;
-    GOptionContext *context = NULL;
-    GError *error = NULL;
-    gchar *path;
+	int i = 0;
+	gchar *website;
+	GOptionContext *context = NULL;
+	GError *error = NULL;
+	gchar *path;
 
-    bindtextdomain(PACKAGE, LOCALEDIR);
-    bind_textdomain_codeset(PACKAGE, "UTF-8");
-    textdomain(PACKAGE);
+	/* setup translation */
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	bind_textdomain_codeset(PACKAGE, "UTF-8");
+	textdomain(PACKAGE);
 	gtk_set_locale();
 
 	/* Setup the commandline parser */
-    context = g_option_context_new(_("[FILE...] - GPX Viewer"));
+	context = g_option_context_new(
+			_("[FILE...] - GPX Viewer"));
+
 	/* summary */
-    g_option_context_set_summary(context, N_("A simple program to visualize one or more gpx files."));
+	g_option_context_set_summary(context, 
+			_("A simple program to visualize one or more gpx files."));
 	/* website */
-    website = g_strconcat(N_("Website: "), PACKAGE_URL, NULL);
-    g_option_context_set_description(context, website);
-    g_free(website);
-	
-    g_option_context_add_group(context, gtk_get_option_group(TRUE));
-    g_option_context_parse(context, &argc, &argv, &error);
-    g_option_context_free(context);
+	website = g_strconcat(_("Website: "), PACKAGE_URL, NULL);
+	g_option_context_set_description(context, website);
+	g_free(website);
 
-    if (error)
-    {
-        g_log(NULL, G_LOG_LEVEL_ERROR, "Failed to parse commandline options: %s", error->message);
-        g_error_free(error);
-        error = NULL;
-    }
-    if(!g_thread_supported())
-    {
-        g_thread_init(NULL);
-    }
+	g_option_context_add_group(context, gtk_get_option_group(TRUE));
+	g_option_context_parse(context, &argc, &argv, &error);
+	g_option_context_free(context);
 
-    gtk_clutter_init(&argc, &argv);
+	if (error)
+	{
+		g_log(NULL, G_LOG_LEVEL_ERROR, "Failed to parse commandline options: %s", error->message);
+		g_error_free(error);
+		error = NULL;
+		return EXIT_FAILURE;
+	}
+	if(!g_thread_supported())
+	{
+		g_thread_init(NULL);
+	}
+
+	gtk_clutter_init(&argc, &argv);
 
 #ifdef HAVE_UNIQUE
 	/* Setup unique app.  This enforces only one instance off the application is running. */
-    app = unique_app_new("nl.Sarine.gpx-viewer",NULL);
-    unique_app_add_command(app,"open-uris", OPEN_URIS);
-    g_signal_connect(G_OBJECT(app),"message-received", G_CALLBACK(unique_response), NULL);
+	app = unique_app_new("nl.Sarine.gpx-viewer",NULL);
+	unique_app_add_command(app,"open-uris", OPEN_URIS);
+	g_signal_connect(G_OBJECT(app),"message-received", G_CALLBACK(unique_response), NULL);
 
 	/* Check if we are allready running */
-    if(unique_app_is_running(app))
-    {
-        /* Program is allready running */
-        UniqueMessageData *msd = unique_message_data_new();
-        g_debug("Program is allready running\n");
-        if(argc > 1)
-        {
-            unique_message_data_set_uris(msd,&argv[1]);
-            unique_app_send_message(app,1, msd);
-        }
-        /* free msd */
-        unique_message_data_free(msd);
-        /* Free app */
-        g_object_unref(app);
-        return EXIT_SUCCESS;
-    }
+	if(unique_app_is_running(app))
+	{
+		/* Program is allready running */
+		UniqueMessageData *msd = unique_message_data_new();
+		g_debug("Program is allready running\n");
+		if(argc > 1)
+		{
+			unique_message_data_set_uris(msd,&argv[1]);
+			unique_app_send_message(app,1, msd);
+		}
+		/* free msd */
+		unique_message_data_free(msd);
+		/* Free app */
+		g_object_unref(app);
+		return EXIT_SUCCESS;
+	}
 #endif
 
-    /* Setup responding to commands */
-    settings = gpx_viewer_settings_new();
+	/* Setup responding to commands */
+	settings = gpx_viewer_settings_new();
 
-    /* REcent manager */
-    recent_man = gtk_recent_manager_get_default();
+	/* REcent manager */
+	recent_man = gtk_recent_manager_get_default();
 
-    /* Add own icon strucutre to the theme engine search */
-    path = g_build_filename(DATA_DIR, "icons", NULL);
-    gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
-        path);
-    g_free(path);
+	/* Add own icon strucutre to the theme engine search */
+	path = g_build_filename(DATA_DIR, "icons", NULL);
+	gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
+			path);
+	g_free(path);
 
-    /* Open all the files given on the command line */
-    for (i = 1; i < argc; i++)
-    {
-        GpxFile *file;
-        GFile *afile = g_file_new_for_commandline_arg(argv[i]);
-        gchar *uri = g_file_get_uri(afile);
+	/* Open all the files given on the command line */
+	for (i = 1; i < argc; i++)
+	{
+		GpxFile *file;
+		GFile *afile = g_file_new_for_commandline_arg(argv[i]);
+		gchar *uri = g_file_get_uri(afile);
 
-        /* Try to open the gpx file */
-        gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), uri);
-        file = gpx_file_new(afile);
-        files = g_list_prepend(files, file);
+		/* Try to open the gpx file */
+		gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), uri);
+		file = gpx_file_new(afile);
+		files = g_list_prepend(files, file);
 
-        g_free(uri);
-        g_object_unref(afile);
-    }
-    files = g_list_reverse(files);
+		g_free(uri);
+		g_object_unref(afile);
+	}
+	files = g_list_reverse(files);
 
 	/* Create playback option */
-    playback = gpx_playback_new(NULL);
+	playback = gpx_playback_new(NULL);
 	/* Connect settings */
-    gpx_viewer_settings_add_object_property(settings, G_OBJECT(playback), "speedup");
+	gpx_viewer_settings_add_object_property(settings,
+			G_OBJECT(playback), "speedup");
 	/* Watch signals */
-    g_signal_connect(GPX_PLAYBACK(playback), "tick", G_CALLBACK(route_playback_tick), NULL);
-    g_signal_connect(GPX_PLAYBACK(playback), "state-changed", G_CALLBACK(route_playback_state_changed), NULL);
+	g_signal_connect(GPX_PLAYBACK(playback),
+			"tick",
+			G_CALLBACK(route_playback_tick),
+			NULL);
+	g_signal_connect(GPX_PLAYBACK(playback),
+			"state-changed",
+			G_CALLBACK(route_playback_state_changed),
+			NULL);
 	/* Create the interface on main loop begin */
-    gtk_init_add((GtkFunction)create_interface,NULL);
+	gtk_init_add((GtkFunction)create_interface,NULL);
 
 	/* Start the main loop */
-    gtk_main();
+	gtk_main();
 
 	/* unref playback object */
 	g_debug("Destroying playback");
-    g_object_unref(playback);
+	g_object_unref(playback);
 
-    /* Destroy the files */
-    g_debug("Cleaning up files");
-    g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
-    g_list_free(files);
+	/* Destroy the files */
+	g_debug("Cleaning up files");
+	g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
+	g_list_free(files);
 	/* Destroy the settings object */
 	g_debug("destroying Settings");
-    g_object_unref(settings);
+	g_object_unref(settings);
 
 #ifdef HAVE_UNIQUE
 	/* Destroy unique app */
@@ -1870,7 +1882,7 @@ int main(int argc, char **argv)
 	g_object_unref(app);
 #endif
 
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
 
 
@@ -1881,37 +1893,37 @@ int main(int argc, char **argv)
 void close_show_current_track(GtkWidget *widget,gint response_id, GtkBuilder *fbuilder)
 {
 
-    GtkWidget *dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
-    gtk_widget_destroy(dialog);
+	GtkWidget *dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
+	gtk_widget_destroy(dialog);
 
-    g_object_unref(fbuilder);
+	g_object_unref(fbuilder);
 }
 
 
 void show_current_track(void)
 {
-    if(active_route && active_route->track)
-    {
-        GtkWidget *dialog;
-        GtkTreeView *tree;
-        GtkTreeModel *model = (GtkTreeModel *)gpx_track_tree_model_new(active_route->track);
-        GtkBuilder *fbuilder = gtk_builder_new();
-        /* Show dialog */
-        gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-tracklist.ui", NULL);
-        if (!gtk_builder_add_from_file(fbuilder, path, NULL))
-        {
-            g_error("Failed to load gpx-viewer.ui");
-        }
-        g_free(path);
+	if(active_route && active_route->track)
+	{
+		GtkWidget *dialog;
+		GtkTreeView *tree;
+		GtkTreeModel *model = (GtkTreeModel *)gpx_track_tree_model_new(active_route->track);
+		GtkBuilder *fbuilder = gtk_builder_new();
+		/* Show dialog */
+		gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-tracklist.ui", NULL);
+		if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+		{
+			g_error("Failed to load gpx-viewer.ui");
+		}
+		g_free(path);
 
-        dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
-        tree = GTK_TREE_VIEW(gtk_builder_get_object(fbuilder, "treeview"));
+		dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
+		tree = GTK_TREE_VIEW(gtk_builder_get_object(fbuilder, "treeview"));
 
-        gtk_tree_view_set_model(tree, model);
-        g_object_unref(model);
-        gtk_builder_connect_signals(fbuilder, fbuilder);
-        gtk_widget_show(GTK_WIDGET(dialog));
-    }
+		gtk_tree_view_set_model(tree, model);
+		g_object_unref(model);
+		gtk_builder_connect_signals(fbuilder, fbuilder);
+		gtk_widget_show(GTK_WIDGET(dialog));
+	}
 }
 
 
@@ -1920,85 +1932,85 @@ void show_current_track(void)
  */
 void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, GtkBuilder *fbuilder)
 {
-    gtk_widget_destroy(dialog);
-    g_object_unref(fbuilder);
+	gtk_widget_destroy(dialog);
+	g_object_unref(fbuilder);
 }
 
 
 void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp)
 {
-    gint value = gtk_spin_button_get_value_as_int(sp);
-    gpx_playback_set_speedup(playback, value);
+	gint value = gtk_spin_button_get_value_as_int(sp);
+	gpx_playback_set_speedup(playback, value);
 }
 
 
 void gpx_viewer_show_preferences_dialog(void)
 {
-    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
-    GtkWidget *dialog;
-    GtkTreeModel *model;
-    GtkWidget *widget;
-    GtkBuilder *fbuilder = gtk_builder_new();
-    /* Show dialog */
-    gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-preferences.ui", NULL);
-    if (!gtk_builder_add_from_file(fbuilder, path, NULL))
-    {
-        g_error("Failed to load gpx-viewer-preferences.ui");
-    }
-    g_free(path);
-    dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "preferences_dialog"));
-    model = gpx_viewer_map_view_get_model(GPX_VIEWER_MAP_VIEW(champlain_view));
-    /**
-     * Setup map selection widget
-     */
-    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"map_source_combobox");
-    gtk_combo_box_set_model(GTK_COMBO_BOX(widget), model);
-    g_signal_connect_object(G_OBJECT(champlain_view),
-        "notify::map-source",
-        G_CALLBACK(map_view_map_source_changed),
-        widget,
-        0
-        );
-    map_view_map_source_changed(GPX_VIEWER_MAP_VIEW(champlain_view), NULL, widget);
-    /* TODO */
-    /* to sync this, we need to create a wrapper around the gpx-graph that nicely has these
-        properties. */
+	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
+	GtkWidget *dialog;
+	GtkTreeModel *model;
+	GtkWidget *widget;
+	GtkBuilder *fbuilder = gtk_builder_new();
+	/* Show dialog */
+	gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-preferences.ui", NULL);
+	if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+	{
+		g_error("Failed to load gpx-viewer-preferences.ui");
+	}
+	g_free(path);
+	dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "preferences_dialog"));
+	model = gpx_viewer_map_view_get_model(GPX_VIEWER_MAP_VIEW(champlain_view));
+	/**
+	 * Setup map selection widget
+	 */
+	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"map_source_combobox");
+	gtk_combo_box_set_model(GTK_COMBO_BOX(widget), model);
+	g_signal_connect_object(G_OBJECT(champlain_view),
+			"notify::map-source",
+			G_CALLBACK(map_view_map_source_changed),
+			widget,
+			0
+			);
+	map_view_map_source_changed(GPX_VIEWER_MAP_VIEW(champlain_view), NULL, widget);
+	/* TODO */
+	/* to sync this, we need to create a wrapper around the gpx-graph that nicely has these
+	   properties. */
 
-    /* Zoom level */
+	/* Zoom level */
 
-    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"spin_button_zoom_level");
-    g_signal_connect_object(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed),
-        widget,0);
-    map_view_zoom_level_changed(GPX_VIEWER_MAP_VIEW(champlain_view),
-        champlain_view_get_zoom_level(view),
-        champlain_view_get_min_zoom_level(view),
-        champlain_view_get_max_zoom_level(view),
-        widget);
+	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"spin_button_zoom_level");
+	g_signal_connect_object(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed),
+			widget,0);
+	map_view_zoom_level_changed(GPX_VIEWER_MAP_VIEW(champlain_view),
+			champlain_view_get_zoom_level(view),
+			champlain_view_get_min_zoom_level(view),
+			champlain_view_get_max_zoom_level(view),
+			widget);
 
-    /* Show Waypoints */
-    widget = GTK_WIDGET(gtk_builder_get_object(fbuilder, "check_button_show_waypoints"));
-    g_signal_connect_object(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_marker_layer_changed),
-        widget,0);
-    show_marker_layer_changed(NULL, NULL, widget);
+	/* Show Waypoints */
+	widget = GTK_WIDGET(gtk_builder_get_object(fbuilder, "check_button_show_waypoints"));
+	g_signal_connect_object(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_marker_layer_changed),
+			widget,0);
+	show_marker_layer_changed(NULL, NULL, widget);
 
-    /** Graph **/
-    /* smooth factor */
-    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"spin_button_smooth_factor");
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), (double)gpx_graph_get_smooth_factor(gpx_graph));
-    g_signal_connect_object(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), widget,0);
+	/** Graph **/
+	/* smooth factor */
+	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"spin_button_smooth_factor");
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), (double)gpx_graph_get_smooth_factor(gpx_graph));
+	g_signal_connect_object(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), widget,0);
 
-    /* Show points */
-    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"check_button_data_points");
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), gpx_graph_get_show_points(gpx_graph));
-    g_signal_connect_object(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
+	/* Show points */
+	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"check_button_data_points");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), gpx_graph_get_show_points(gpx_graph));
+	g_signal_connect_object(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
 
-    /* speedup */
-    widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),
-        (double)gpx_playback_get_speedup(playback));
+	/* speedup */
+	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),
+			(double)gpx_playback_get_speedup(playback));
 
-    gtk_builder_connect_signals(fbuilder, fbuilder);
-    gtk_widget_show(GTK_WIDGET(dialog));
+	gtk_builder_connect_signals(fbuilder, fbuilder);
+	gtk_widget_show(GTK_WIDGET(dialog));
 }
 
 
