@@ -31,4 +31,16 @@ void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp);
 void gpx_viewer_show_preferences_dialog(void);
 void show_vertical_speed(GtkMenuItem item, gpointer user_data);
 void show_acceleration_h(GtkMenuItem item, gpointer user_data);
+
+enum _SpeedFormat
+{
+	DISTANCE,
+	SPEED,
+	ELEVATION,
+	ACCEL,
+	NA
+};
+typedef enum _SpeedFormat SpeedFormat;
+
+gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format);
 #endif

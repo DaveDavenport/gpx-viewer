@@ -96,6 +96,57 @@ GList *routes                       = NULL;
  */
 Route *active_route                 = NULL;
 
+
+/* TODO get correct values */
+#define KM_IN_MILE 0.621371192
+#define M_IN_FEET 0.3048
+
+void gv_set_speed_label(GtkWidget *label, gdouble speed, SpeedFormat format)
+{
+	gchar *val = gpx_viewer_misc_convert(speed, (speed == 0)?NA:format);
+	gtk_label_set_text(GTK_LABEL(label), val);
+	g_free(val);
+}
+
+gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format)
+{
+	gchar 		*retv	 = NULL;
+	/* TODO: Make config option? */
+	gboolean 	do_miles = FALSE;
+	switch(format)
+	{
+		case DISTANCE:
+			if(do_miles)
+				retv = g_strdup_printf( "%.2f %s", speed/KM_IN_MILE, _("Miles"));
+			else
+				retv = g_strdup_printf( "%.2f %s", speed, _("km"));
+			break;
+		case SPEED:
+			if(do_miles)
+				retv = g_strdup_printf( "%.2f %s", speed/KM_IN_MILE, _("Miles/h"));
+			else
+				retv = g_strdup_printf( "%.2f %s", speed, _("km/h"));
+			break;
+		case ELEVATION:
+			if(do_miles)
+				/* TODO: */
+				retv = g_strdup_printf( "%.2f %s", speed/M_IN_FEET, _("ft"));
+			else
+				retv = g_strdup_printf( "%.2f %s", speed, _("m"));
+			break;
+		case ACCEL:
+			if(do_miles)
+				/* TODO: */
+				retv = g_strdup_printf( "%.2f %s", speed/M_IN_FEET, _("ft/s²"));
+			else
+				retv = g_strdup_printf( "%.2f %s", speed, _("m/s²"));
+			break;
+		default:
+			retv = g_strdup(_("n/a"));
+			break;
+	}
+	return retv;
+}
 /**
  * Dock loading/restoring
  */
@@ -262,11 +313,10 @@ static GString *misc_get_time(time_t temp)
  */
 static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, GpxPoint *start, GpxPoint *stop)
 {
-    time_t temp = 0;
-    gdouble gtemp = 0;
-    double max_speed = 0;
-    double points = 0;
     GtkWidget *label = NULL;
+    time_t temp = 0;
+    gdouble gtemp = 0, max_speed = 0;
+
     /* Duration */
     label = (GtkWidget *) gtk_builder_get_object(builder, "duration_label");
     if(start && stop)
@@ -281,7 +331,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
     else
     {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
+        gtk_label_set_text(GTK_LABEL(label), _("n/a"));
     }
     /* Start time */
     label = (GtkWidget *) gtk_builder_get_object(builder, "start_time_label");
@@ -296,7 +346,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
     else
     {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
+        gtk_label_set_text(GTK_LABEL(label), _("n/a"));
     }
 
     /* Stop time */
@@ -312,24 +362,16 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
     else
     {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
+        gtk_label_set_text(GTK_LABEL(label), _("n/a"));
     }
     /* Distance */
     label = (GtkWidget *) gtk_builder_get_object(builder, "distance_label");
+    gtemp = 0;
     if(start && stop)
     {
         gtemp = stop->distance-start->distance;
     }
-    if (gtemp > 0)
-    {
-        gchar *string = g_strdup_printf("%.2f km", gtemp);
-        gtk_label_set_text(GTK_LABEL(label), string);
-        g_free(string);
-    }
-    else
-    {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
-    }
+	gv_set_speed_label(label, gtemp, DISTANCE);
 
     /* Average */
     label = (GtkWidget *) gtk_builder_get_object(builder, "average_label");
@@ -338,16 +380,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     {
         gtemp = gpx_track_calculate_point_to_point_speed(track,start, stop);
     }
-    if (gtemp > 0)
-    {
-        gchar *string = g_strdup_printf("%.2f km/h", gtemp);
-        gtk_label_set_text(GTK_LABEL(label), string);
-        g_free(string);
-    }
-    else
-    {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
-    }
+	gv_set_speed_label(label, gtemp, SPEED);
 
     /* Moving Average */
     label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_label");
@@ -358,16 +391,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         /* Calculates both time and km/h */
         gtemp = gpx_track_calculate_moving_average(track,start, stop, &temp);
     }
-    if (gtemp > 0)
-    {
-        gchar *string = g_strdup_printf("%.2f km/h", gtemp);
-        gtk_label_set_text(GTK_LABEL(label), string);
-        g_free(string);
-    }
-    else
-    {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
-    }
+	gv_set_speed_label(label, gtemp, SPEED);
 
     label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_time_label");
     if (gtemp > 0)
@@ -378,7 +402,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
     else
     {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
+        gtk_label_set_text(GTK_LABEL(label), _("n/a"));
     }
 
     /* Max speed */
@@ -387,23 +411,11 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         GList *list ;
         for(list = g_list_find(track->points, start); list && list->data != stop; list = g_list_next(list))
         {
-            points++;
             max_speed = MAX(max_speed, ((GpxPoint *)list->data)->speed);
         }
-        points++;
-
     }
     label = (GtkWidget *) gtk_builder_get_object(builder, "max_speed_label");
-    if (max_speed > 0)
-    {
-        gchar *string = g_strdup_printf("%.2f km/h", max_speed);
-        gtk_label_set_text(GTK_LABEL(label), string);
-        g_free(string);
-    }
-    else
-    {
-        gtk_label_set_text(GTK_LABEL(label), "n/a");
-    }
+	gv_set_speed_label(label, max_speed, SPEED);
 
     /* Gradient */
     {
@@ -440,16 +452,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
             elevation_diff = stop->elevation - start->elevation;
             distance_diff = stop->distance - start->distance;
         }
-        if (distance_diff > 0)
-        {
-            gchar *string = g_strdup_printf("%.2f m", elevation_diff);
-            gtk_label_set_text(GTK_LABEL(label), string);
-            g_free(string);
-        }
-        else
-        {
-            gtk_label_set_text(GTK_LABEL(label), "n/a");
-        }
+	    gv_set_speed_label(label, elevation_diff, ELEVATION);
     }
 }
 

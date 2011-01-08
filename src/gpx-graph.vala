@@ -19,6 +19,7 @@
 
 using Gtk;
 using Gpx;
+using Gpx.Viewer;
 using GLib;
 using Config;
 
@@ -44,9 +45,19 @@ namespace Gpx
 			N_("Speed (km/h) vs Time (HH:MM)"),
 			N_("Elevation (m) vs Time (HH:MM)"),
 			N_("Distance (km) vs Time (HH:MM)"),
-			N_("Horizontal acceleration (m/s) vs Time (HH:MM)"),
+			N_("Horizontal acceleration (m/s²) vs Time (HH:MM)"),
 			N_("Vertical speed (m/s) vs Time (HH:MM)")
 		};
+		static string[] GraphModeMiles = {
+			N_("Speed (Miles/h) vs Time (HH:MM)"),
+			N_("Elevation (feet) vs Time (HH:MM)"),
+			N_("Distance (Miles) vs Time (HH:MM)"),
+			N_("Horizontal acceleration (Miles/s²) vs Time (HH:MM)"),
+			N_("Vertical speed (feet/s) vs Time (HH:MM)")
+		};
+
+		private bool _do_miles = false;
+
 		/* By default elevation is shown */
 		private GraphMode _mode = GraphMode.ELEVATION;
 		/* By default no smoothing is applied */
@@ -314,11 +325,11 @@ namespace Gpx
 					var x_pos =0.0;
 
 					if(this._mode == GraphMode.SPEED) {
-						text = "%.1f km/h".printf(this.draw_current.speed);
+						text = Gpx.Viewer.Misc.convert(this.draw_current.speed, Gpx.Viewer.Misc.SpeedFormat.SPEED);
 					}else if (this._mode == GraphMode.ELEVATION) {
-						text = "%.1f m".printf(this.draw_current.elevation);
+						text = Gpx.Viewer.Misc.convert(this.draw_current.speed, Gpx.Viewer.Misc.SpeedFormat.ELEVATION);
 					}else if (this._mode == GraphMode.DISTANCE) {
-						text = "%.1f km".printf(this.draw_current.distance);
+						text = Gpx.Viewer.Misc.convert(this.draw_current.speed, Gpx.Viewer.Misc.SpeedFormat.DISTANCE);
 					}else return false;
 
 					fd.set_absolute_size(12*1024);
@@ -700,7 +711,12 @@ namespace Gpx
 			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 			fd.set_absolute_size(12*1024);
 			layout.set_font_description(fd);
-			string mtext = _(this.GraphModeName[this._mode]);
+			string mtext = "";
+			if(_do_miles) {
+				mtext = _(this.GraphModeMiles[this._mode]);
+			}else{
+				mtext = _(this.GraphModeName[this._mode]);
+			}
 			if(this._smooth_factor != 1)
 			{
 				var markup = _("%s <i>(smooth window: %i)</i>").printf(mtext,this._smooth_factor);
