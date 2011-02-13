@@ -111,6 +111,72 @@ namespace Gpx
 			return last;
 		}
 
+		/** This function will try to remove useless points */
+		public void filter_points ()
+		{
+			unowned List<Point>? a = null;
+			unowned List<Point>? b = null;
+			unowned List<Point>? c = null;
+			/* We take three points.  A-B-C.  If B lays on the same lineair line as remove it. */
+			for(unowned List<Point> ?iter = this.points.first() ; iter != null;iter = iter.next)
+			{
+				if(b != null) c = b;
+				if(a != null) b = a;
+				a = iter;
+
+				if(a != null && b != null && c != null) 
+				{
+					double elapsed_ca = (double)(a.data.get_time() - c.data.get_time());
+					double elapsed_cb = (double)(a.data.get_time() - b.data.get_time());
+
+					double lat_rico_ca = (a.data.lat_dec-c.data.lat_dec)/(double)elapsed_ca;
+					double lon_rico_ca = (a.data.lon_dec-c.data.lon_dec)/(double)elapsed_ca;
+					double lat_rico_cb = (b.data.lat_dec-c.data.lat_dec)/(double)elapsed_cb;
+					double lon_rico_cb = (b.data.lon_dec-c.data.lon_dec)/(double)elapsed_cb;
+
+					double elv_rico_ca = (a.data.elevation - c.data.elevation)/(double)elapsed_ca;
+					double elv_rico_cb = (a.data.elevation - b.data.elevation)/(double)elapsed_cb;
+
+					double l = Math.fabs(1.0-lat_rico_ca/lat_rico_cb ) ;
+					double m = Math.fabs(1.0-lon_rico_ca/lon_rico_cb ) ;
+					double e = Math.fabs(1.0-elv_rico_ca/elv_rico_cb ) ;
+
+					if( l <= 0.2) 
+					{
+						if(m <= 0.2 /*&& e <= 0.8*/) 
+						{
+							points.remove_link(b);
+							/* Make sure C is c again in the next run.  a becomes the new b, new point a */
+							b = c;
+						}
+					}
+				}
+			}
+			this.recalculate();
+		}
+		public void recalculate()
+		{
+			unowned List<Point> ?last = null;
+			this.total_distance = 0;
+			this.max_speed = 0;
+			this.max_elevation = 0.0;
+			this.min_elevation = 0.0;
+			for(unowned List<Point> ?iter = this.points.first() ; iter != null;iter = iter.next)
+			{
+				if(last != null) {
+					unowned Gpx.Point point = iter.data;
+					total_distance += calculate_distance(last.data,point); 
+					point.distance = total_distance;
+					point.speed = calculate_point_to_point_speed(last.data,point); 
+                    if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
+                    if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
+					if(point.speed > this.max_speed) this.max_speed = point.speed;
+				}
+				last = iter;
+			}
+		}
+
+
         public void add_point (Point point)
         {
 			/* Make sure this is 0 */
@@ -335,7 +401,7 @@ namespace Gpx
         /* A gpx file can also contains a list of Routes */
         public GLib.List<Gpx.Track> routes = null;
 
-        private void parse_track(Xml.Node *node)
+        private Gpx.Track parse_track(Xml.Node *node)
         {
             /* Create new track here */
             Gpx.Track track = new Gpx.Track();
@@ -399,9 +465,10 @@ namespace Gpx
                 }
 
                 trkseg = trkseg->next;
-            }
-            this.tracks.append(track);
-        }
+            
+			}
+			return track;        
+		}
 
         private void parse_waypoint(Xml.Node *node)
         {
@@ -489,6 +556,8 @@ namespace Gpx
                 }
                 trkseg = trkseg->next;
             }
+
+			track.filter_points();
             this.routes.append(track);
         }
         /**
@@ -499,11 +568,11 @@ namespace Gpx
         /* Used for paring */
         public GLib.File file = null;
         private GLib.FileInputStream stream = null;
-        private int read_file(char[] buffer)
+        private int read_file(uint8[] buffer)
         {
             try
             {
-                var value = this.stream.read(buffer, buffer.length, null);
+                var value = this.stream.read(buffer, null);
                 return (int)value;
             }
             catch (GLib.Error e)
@@ -547,7 +616,10 @@ namespace Gpx
                                 {
                                     /* Track */
                                     var node = reader.expand();
-                                    this.parse_track(node);
+                                    var track = this.parse_track(node);
+
+									track.filter_points();
+									this.tracks.append(track);
                                 }
                                 else if (name2 == "wpt")
                                 {

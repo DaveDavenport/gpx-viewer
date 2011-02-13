@@ -139,6 +139,8 @@ namespace Gpx
 			this.button_press_event.connect(button_press_event_cb);
 			this.motion_notify_event.connect(motion_notify_event_cb);
 			this.button_release_event.connect(button_release_event_cb);
+
+			this.expose_event.connect(a_expose_event);
 		}
 
 		public void set_track(Gpx.Track? track)
@@ -267,7 +269,7 @@ namespace Gpx
 
 		private Gpx.Point start = null;
 		private Gpx.Point stop = null;
-		override bool expose_event(Gdk.EventExpose event)
+		bool a_expose_event(Gdk.EventExpose event)
 		{
 			var ctx = Gdk.cairo_create(this.window);
 			/* If no valid surface, render it */
