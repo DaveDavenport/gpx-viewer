@@ -44,7 +44,7 @@ namespace Gpx
 		static string[] GraphModeName = {
 			N_("Speed (km/h) vs Time (HH:MM)"),
 			N_("Elevation (m) vs Time (HH:MM)"),
-			N_("Distance (km) vs Time (HH:MM)"),
+			N_("Absolute Distance (km) vs Time (HH:MM)"),
 			N_("Horizontal acceleration (m/s²) vs Time (HH:MM)"),
 			N_("Vertical speed (m/s) vs Time (HH:MM)")
 		};
@@ -329,9 +329,10 @@ namespace Gpx
 					if(this._mode == GraphMode.SPEED) {
 						text = Gpx.Viewer.Misc.convert(this.draw_current.speed, Gpx.Viewer.Misc.SpeedFormat.SPEED);
 					}else if (this._mode == GraphMode.ELEVATION) {
-						text = Gpx.Viewer.Misc.convert(this.draw_current.speed, Gpx.Viewer.Misc.SpeedFormat.ELEVATION);
+						text = Gpx.Viewer.Misc.convert(this.draw_current.elevation, Gpx.Viewer.Misc.SpeedFormat.ELEVATION);
 					}else if (this._mode == GraphMode.DISTANCE) {
-						text = Gpx.Viewer.Misc.convert(this.draw_current.speed, Gpx.Viewer.Misc.SpeedFormat.DISTANCE);
+						text = Gpx.Viewer.Misc.convert(Gpx.Track.calculate_distance(this.track.points.first().data,this.draw_current), 
+								Gpx.Viewer.Misc.SpeedFormat.DISTANCE);
 					}else return false;
 
 					fd.set_absolute_size(12*1024);
@@ -409,7 +410,12 @@ namespace Gpx
 				max_value = track.max_elevation;
 				min_value = track.min_elevation;
 			}else if (this._mode == GraphMode.DISTANCE){
-				max_value = track.total_distance;
+				/* Get the max absolute distance */ 
+                weak List<Point?> first = this.track.points.first();
+				foreach(Point? p in this.track.points) {
+					var d = Gpx.Track.calculate_distance(first.data, p);
+					if(d>max_value) max_value = d;
+				}
 				min_value = 0;
             }else if (this._mode == GraphMode.ACCELERATION_H) {
                 weak List<Point?> iter = this.track.points.first();
@@ -577,7 +583,7 @@ namespace Gpx
 					}else if(this._mode == GraphMode.ELEVATION){
 						speed += ii.data.elevation-min_value;
 					}else if(this._mode == GraphMode.DISTANCE){
-						speed += ii.data.distance;
+						speed += Gpx.Track.calculate_distance(ii.data, ii.first().data);//.distance;
 					}else if (this._mode == GraphMode.ACCELERATION_H) {
                         speed += (ii.data.speed - ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
 					}else if (this._mode == GraphMode.SPEED_V) {
@@ -640,7 +646,7 @@ namespace Gpx
 						}else if(this._mode == GraphMode.ELEVATION){
 							speed += ii.data.elevation-min_value;
 						}else if(this._mode == GraphMode.DISTANCE){
-							speed += ii.data.distance;
+							speed += Gpx.Track.calculate_distance(ii.data, ii.first().data);//ii.data.distance;
 						}else if(this._mode == GraphMode.ACCELERATION_H){
 							speed += (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
 						}else if(this._mode == GraphMode.SPEED_V){

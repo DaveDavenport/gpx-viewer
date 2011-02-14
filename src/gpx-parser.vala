@@ -93,18 +93,24 @@ namespace Gpx
         /* make a property */
         public string name {get; set; default = null;}
 
+		public int filtered_points = 0; 
+
+
         /* usefull info gathered during walking the list */
         public double total_distance = 0.0;
         public double max_speed = 0;
+        public double max_elevation = 0.0;
+        public double min_elevation = 0.0;
+		
+		/* All the Gpx.Points */
         public List<Point> points = null;
-
+		/* Keeping a last pointer allows us to add points to the list faster. */
         private Point? last = null;
+
         /* To get bounding box for view */
         public Point top = null;
         public Point bottom = null;
-
-        public double max_elevation = 0.0;
-        public double min_elevation = 0.0;
+		
 
 		public unowned Point? get_last()
 		{
@@ -146,6 +152,7 @@ namespace Gpx
 						if(m <= 0.2 /*&& e <= 0.8*/) 
 						{
 							points.remove_link(b);
+							this.filtered_points++;
 							/* Make sure C is c again in the next run.  a becomes the new b, new point a */
 							b = c;
 						}
@@ -370,7 +377,7 @@ namespace Gpx
         /* Calculate distance between point a and point b using great circular distance method
          * Elevation is not taken into account.
          */
-        private double calculate_distance(Point a, Point b)
+        public static double calculate_distance(Point a, Point b)
         {
             double retv =0;
             if(a.lat == b.lat && a.lon == b.lon) return 0;
