@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 using Champlain;
+using GtkChamplain;
 using Gtk;
 using GLib;
 using Unique;
@@ -25,7 +26,7 @@ namespace Gpx
 {
     namespace Viewer
     {
-        public class MapView : Gtk.ChamplainEmbed
+        public class MapView : GtkChamplain.Embed
         {
             /* Color */
             private Clutter.Color waypoint_color;
@@ -98,12 +99,12 @@ namespace Gpx
                 this.waypoint_color.alpha =0xff;
                 /* Do default setup of the view. */
                 /* We want kinetic scroling. */
-                this.view.scroll_mode = Champlain.ScrollMode.KINETIC;
+                this.get_view().scroll_mode = Champlain.ScrollMode.KINETIC;
                 /* We do want to show the scale */
-                this.view.show_scale = true;
+                this.get_view().show_scale = true;
 
                 /* Create a ListStore with all the available maps. Used for selectors */
-                var fact= new Champlain.MapSourceFactory.dup_default();
+                var fact= Champlain.MapSourceFactory.dup_default();
                 var l = fact.dup_list();
                 foreach(weak MapSourceDesc a in l)
                 {
@@ -117,24 +118,24 @@ namespace Gpx
                     map_source_list.set(iter, 0, a.name, 1, a.id);
                 }
                 /* Keep track of changed zoom level, and signal this */
-                this.view.notify["zoom-level"].connect(()=>{
-                    zoom_level_changed(this.view.zoom_level, this.view.min_zoom_level,this.view.max_zoom_level);
+                this.get_view().notify["zoom-level"].connect(()=>{
+                    zoom_level_changed(this.get_view().zoom_level, this.get_view().min_zoom_level,this.get_view().max_zoom_level);
                 });
-                this.view.add_layer(waypoint_layer);
-                this.view.add_layer(marker_layer);
+                this.get_view().add_layer(waypoint_layer);
+                this.get_view().add_layer(marker_layer);
             }
 
             signal void zoom_level_changed(int zoom, int min_zoom, int max_zoom);
 
             private void switch_map_source(string id)
             {
-                var fact= new Champlain.MapSourceFactory.dup_default();
+                var fact= Champlain.MapSourceFactory.dup_default();
                 Champlain.MapSource source = fact.create_cached_source(id);
                 if(source != null)
                 {
-                    this.view.set_map_source(source);
+                    this.get_view().set_map_source(source);
                     this._map_source = id;
-                    zoom_level_changed(this.view.zoom_level, this.view.min_zoom_level,this.view.max_zoom_level);
+                    zoom_level_changed(this.get_view().zoom_level, this.get_view().min_zoom_level,this.get_view().max_zoom_level);
                 }else{
                     GLib.error("Failed to get map source");
                 }
