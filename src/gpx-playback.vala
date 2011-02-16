@@ -80,6 +80,7 @@ namespace Gpx
                 tick(null);
                 return false;
             }
+            /* Calculate point in between?*/
             if(this.current.data.get_time() > (this.first.get_time()+_speedup*this.progress.elapsed())) return true;
             tick(this.current.data);
             /* keep up with the timer.. */

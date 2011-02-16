@@ -160,6 +160,7 @@ namespace Gpx
 				}
 			}
 			this.recalculate();
+			GLib.debug("Removed %i points",this.filtered_points);
 		}
 		public void recalculate()
 		{
@@ -305,7 +306,6 @@ namespace Gpx
 				retv.add_point(iter.data);
 				iter = iter.next;
 			}
-
 			return retv; 
 		}
 

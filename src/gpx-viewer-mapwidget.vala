@@ -28,6 +28,7 @@ namespace Gpx
     {
         public class MapView : GtkChamplain.Embed
         {
+            private unowned Champlain.View view = null;
             /* Color */
             private Clutter.Color waypoint_color;
 
@@ -93,15 +94,19 @@ namespace Gpx
             /* construction */
             public MapView ()
             {
+                view = this.get_view();
+                stdout.printf("MapView init\n");
+                /* Setup waypoint color */
                 this.waypoint_color.red = 0xf3;
                 this.waypoint_color.green = 0x94;
                 this.waypoint_color.blue = 0x07;
                 this.waypoint_color.alpha =0xff;
+
                 /* Do default setup of the view. */
                 /* We want kinetic scroling. */
-                this.get_view().scroll_mode = Champlain.ScrollMode.KINETIC;
+                view.scroll_mode = Champlain.ScrollMode.KINETIC;
                 /* We do want to show the scale */
-                this.get_view().show_scale = true;
+                view.show_scale = true;
 
                 /* Create a ListStore with all the available maps. Used for selectors */
                 var fact= Champlain.MapSourceFactory.dup_default();
@@ -118,11 +123,19 @@ namespace Gpx
                     map_source_list.set(iter, 0, a.name, 1, a.id);
                 }
                 /* Keep track of changed zoom level, and signal this */
-                this.get_view().notify["zoom-level"].connect(()=>{
-                    zoom_level_changed(this.get_view().zoom_level, this.get_view().min_zoom_level,this.get_view().max_zoom_level);
+                view.notify["zoom-level"].connect(()=>{
+                        zoom_level_changed(view.zoom_level,
+                            view.min_zoom_level,
+                            view.max_zoom_level);
+                        });
+                view.add_layer(waypoint_layer);
+                view.add_layer(marker_layer);
+
+                view.button_release_event.connect((actor, event) =>{
+                        stdout.printf("button release event\n");
+                        return false;
+
                 });
-                this.get_view().add_layer(waypoint_layer);
-                this.get_view().add_layer(marker_layer);
             }
 
             signal void zoom_level_changed(int zoom, int min_zoom, int max_zoom);

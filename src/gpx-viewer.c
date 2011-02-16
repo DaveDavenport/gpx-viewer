@@ -475,7 +475,7 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
         GpxPoint *p = iter->data;
         champlain_polygon_append_point(route->polygon, p->lat_dec, p->lon_dec);
     }
-    champlain_polygon_set_stroke_width(route->polygon, 5.0);
+    champlain_polygon_set_stroke_width(route->polygon, 4.0);
     champlain_polygon_set_stroke_color(route->polygon, &normal_track_color);
     champlain_view_add_polygon(CHAMPLAIN_VIEW(view), route->polygon);
     if(!route->visible) champlain_polygon_hide(route->polygon);
@@ -1631,7 +1631,7 @@ void open_gpx_file(GtkMenu *item)
                 /* Create a GFile */
                 GFile *afile = g_file_new_for_uri((gchar*)iter->data);
                 /* Add entry to recent manager */
-                gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)iter->data);
+				gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)iter->data);
                 /* Try to open the gpx file */
                 file = gpx_file_new(afile);
                 files = g_list_append(files, file);
@@ -1708,7 +1708,7 @@ static UniqueResponse unique_response(UniqueApp *uapp, gint command, UniqueMessa
                 files = g_list_append(files, file);
                 g_object_unref(afile);
                 /* Add entry to recent manager */
-                gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)file->file);
+				gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)file->file);
 
                 basename = g_file_get_basename(file->file);
                 gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
