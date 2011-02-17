@@ -130,14 +130,23 @@ namespace Gpx
                         });
                 view.add_layer(waypoint_layer);
                 view.add_layer(marker_layer);
-
-                view.button_release_event.connect((actor, event) =>{
-                        stdout.printf("button release event\n");
-                        return false;
-
-                });
+                /* Set it to recieve signals */
+                view.reactive = true;
+                view.button_release_event.connect(button_press_callback);
+            }
+            private bool button_press_callback(Clutter.ButtonEvent event)
+            {
+                double lat,lon;
+                unowned Clutter.Event e =Clutter.get_current_event();// (Clutter.Event)event;
+                if(view.get_coords_from_event(e, out lat, out lon))
+                {
+                    clicked(lat,lon);
+                    stdout.printf("button release event: %f %f\n",lat,lon);
+                }
+                return false;
             }
 
+            signal void clicked(double lat, double long);
             signal void zoom_level_changed(int zoom, int min_zoom, int max_zoom);
 
             private void switch_map_source(string id)

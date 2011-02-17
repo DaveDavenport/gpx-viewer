@@ -1218,7 +1218,43 @@ GtkImage *image)
     }
 }
 
-
+static void map_view_clicked(GpxViewerMapView *view, double lat, double lon)
+{
+	if(active_route)
+	{
+		if(active_route->track->top->lon_dec > lon && active_route->track->top->lat_dec > lat && 
+			active_route->track->bottom->lon < lon && active_route->track->bottom->lat_dec < lat)
+			{
+				double lat_r = lat*M_PI/180;
+				double lon_r = lon*M_PI/180;
+				
+				GpxPoint *d = NULL;
+				double distance = 0;
+				/* Find closest point */
+				GList *iter = g_list_first(active_route->track->points);
+				for(;iter;iter = g_list_next(iter))
+				{
+					GpxPoint *a = iter->data;
+					double di = 6378.7*acos(sin(a->lat)*sin(lat_r)+
+						cos(a->lat)*cos(lat_r)*cos(lon_r-a->lon));
+					if(d == NULL || di < distance) {
+						d = iter->data;
+						distance = di;
+					}
+				}
+				if(distance < 0.5)
+				{
+					g_debug("inside track: %f\n",distance);
+					gpx_graph_show_info(gpx_graph, d);
+					time_t ptime = gpx_point_get_time(d);
+					gpx_graph_set_highlight(gpx_graph, ptime);
+				}else {
+					gpx_graph_show_info(gpx_graph, NULL);
+					gpx_graph_set_highlight(gpx_graph, 0);
+				}
+			}
+	}
+}
 static void map_view_zoom_level_changed(GpxViewerMapView *view, int zoom_level, int min_level, int max_level, GtkWidget
 *sp)
 {
@@ -1416,6 +1452,7 @@ static void create_interface(void)
     gtk_container_add(GTK_CONTAINER(sw), champlain_view);
     gtk_paned_pack1(GTK_PANED(gtk_builder_get_object(builder, "main_view_pane")), sw, TRUE, TRUE);
 
+	g_signal_connect(G_OBJECT(champlain_view), "clicked", G_CALLBACK(map_view_clicked), NULL);
     /* graph */
     gpx_graph = gpx_graph_new();
     gpx_graph_container = gtk_frame_new(NULL);

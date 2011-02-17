@@ -205,25 +205,29 @@ namespace Gpx
                 }
 
                 /* Update the 2 bounding box points */
-                if(top == null || top.lat_dec ==  1000 || top.lat_dec > point.lat_dec)
+                if(top == null || top.lat_dec ==  1000 || top.lat_dec < point.lat_dec)
                 {
                     if(top == null) top = new Point();
                     top.lat_dec = point.lat_dec;
+                    top.lat = point.lat;
                 }
-                if(top == null || top.lon_dec == 1000 || top.lon_dec > point.lon_dec)
+                if(top == null || top.lon_dec == 1000 || top.lon_dec < point.lon_dec)
                 {
                     if(top == null) top = new Point();
                     top.lon_dec = point.lon_dec;
+					top.lon = point.lon;
                 }
-                if(bottom == null || bottom.lat_dec == 1000 || bottom.lat_dec < point.lat_dec)
+                if(bottom == null || bottom.lat_dec == 1000 || bottom.lat_dec > point.lat_dec)
                 {
                     if(bottom == null) bottom = new Point();
                     bottom.lat_dec = point.lat_dec;
+					bottom.lat = point.lat;
                 }
-                if(bottom == null || bottom.lon_dec == 1000 || bottom.lon_dec < point.lon_dec)
+                if(bottom == null || bottom.lon_dec == 1000 || bottom.lon_dec > point.lon_dec)
                 {
                     if(bottom == null) bottom = new Point();
                     bottom.lon_dec = point.lon_dec;
+                    bottom.lon = point.lon;
                 }
 
             }
