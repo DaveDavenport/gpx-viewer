@@ -378,22 +378,43 @@ namespace Gpx
             return distance/(time/(60.0*60.0));
         }
 
-        /* Calculate distance between point a and point b using great circular distance method
+		/**
+		 * @param lon_a longitude in radians of point a
+		 * @param lat_a latitude in radians of point a
+		 * @param lon_b longitude in radians of point b
+		 * @param lat_a latitude in radians of point b
+         * Calculate distance between point a and point b using great circular distance method
          * Elevation is not taken into account.
-         */
-        public static double calculate_distance(Point a, Point b)
+         *
+         * @returns distance in km.		 
+		 */
+        public static double calculate_distance_coords(double lon_a, double lat_a, double lon_b, double lat_b)
         {
             double retv =0;
-            if(a.lat == b.lat && a.lon == b.lon) return 0;
             retv = 6378.7 * Math.acos(
-                Math.sin(a.lat) *  Math.sin(b.lat) +
-                Math.cos(a.lat) * Math.cos(b.lat) * Math.cos(b.lon - a.lon)
+                Math.sin(lat_a) *  Math.sin(lat_b) +
+                Math.cos(lat_a) * Math.cos(lat_b) * Math.cos(lon_b - lon_a)
                 );
             if(GLib.Math.isnan(retv) == 1)
             {
                 return 0;
             }
             return retv;
+        }
+
+        /**
+         * @param a the first Gpx.Point
+         * @param b the second Gpx.Point
+         *
+         * Calculate distance between point a and point b using great circular distance method
+         * Elevation is not taken into account.
+         *
+         * @returns distance in km.
+         */
+        public static double calculate_distance(Point a, Point b)
+        {
+            if(a.lat == b.lat && a.lon == b.lon) return 0;
+            return calculate_distance_coords(a.lon,a.lat, b.lon,b.lat);
         }
 
     }

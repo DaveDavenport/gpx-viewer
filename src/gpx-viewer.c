@@ -1222,6 +1222,7 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon)
 {
 	if(active_route)
 	{
+		/* Check if the clicked point is within the bounding box of the current track */
 		if(active_route->track->top->lon_dec > lon && active_route->track->top->lat_dec > lat && 
 			active_route->track->bottom->lon < lon && active_route->track->bottom->lat_dec < lat)
 			{
@@ -1235,8 +1236,7 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon)
 				for(;iter;iter = g_list_next(iter))
 				{
 					GpxPoint *a = iter->data;
-					double di = 6378.7*acos(sin(a->lat)*sin(lat_r)+
-						cos(a->lat)*cos(lat_r)*cos(lon_r-a->lon));
+					double di = gpx_track_calculate_distance_coords(a->lon, a->lat, lon_r, lat_r);
 					if(d == NULL || di < distance) {
 						d = iter->data;
 						distance = di;
@@ -1255,8 +1255,9 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon)
 			}
 	}
 }
-static void map_view_zoom_level_changed(GpxViewerMapView *view, int zoom_level, int min_level, int max_level, GtkWidget
-*sp)
+static void map_view_zoom_level_changed(GpxViewerMapView *view, 
+			int zoom_level, int min_level, 
+			int max_level, GtkWidget *sp)
 {
     gtk_spin_button_set_range(GTK_SPIN_BUTTON(sp),
         (double)min_level,
