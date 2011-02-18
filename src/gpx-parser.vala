@@ -26,6 +26,7 @@ namespace Gpx
     /**
      * Represents a point in the track or a waypoint.
      */
+	
     public class Point
     {
         /* Waypoint name */
@@ -92,7 +93,7 @@ namespace Gpx
     {
         /* make a property */
         public string name {get; set; default = null;}
-
+		/**  Number of points that the #filter_points()  function removed */
 		public int filtered_points = 0; 
 
 
@@ -108,6 +109,7 @@ namespace Gpx
         private Point? last = null;
 
         /* To get bounding box for view */
+        /*  These are 2 fake points */
         public Point top = null;
         public Point bottom = null;
 		
@@ -151,6 +153,7 @@ namespace Gpx
 					{
 						if(m <= 0.2 /*&& e <= 0.8*/) 
 						{
+							/*  TODO: this leaks memory */
 							points.remove_link(b);
 							this.filtered_points++;
 							/* Make sure C is c again in the next run.  a becomes the new b, new point a */
@@ -162,6 +165,9 @@ namespace Gpx
 			this.recalculate();
 			GLib.debug("Removed %i points",this.filtered_points);
 		}
+		/**
+		 * This will recalculates all speeds and distances. Call this when the list was modified.
+		 */
 		public void recalculate()
 		{
 			unowned List<Point> ?last = null;
@@ -313,9 +319,11 @@ namespace Gpx
 			return retv; 
 		}
 
-        /* Private api */
+
         /**
          * Calculate the speed of the full track
+         *
+         * @returns the average speed of the full track in km/h.
          */
 
         public double get_track_average()
@@ -532,7 +540,7 @@ namespace Gpx
             }
         }
 
-        private void parse_route(Xml.Node *node)
+        private Gpx.Track parse_route(Xml.Node *node)
         {
             /* Create new track here */
             Gpx.Track track = new Gpx.Track();
@@ -588,9 +596,7 @@ namespace Gpx
                 }
                 trkseg = trkseg->next;
             }
-
-			track.filter_points();
-            this.routes.append(track);
+			return track;
         }
         /**
          * Parse a file
@@ -663,7 +669,8 @@ namespace Gpx
                                 {
                                     var node = reader.expand();
                                     /* Route */
-                                    this.parse_route(node);
+                                    var track = this.parse_route(node);
+                                    this.routes.append(track);
                                 }
                                 doc2 = reader.next();
                             }
@@ -674,7 +681,8 @@ namespace Gpx
                 }
                 else
                 {
-                    /* Todo add error trower here http://www.vala-project.org/doc/vala-draft/errors.html#exceptionsexamples*/
+                    /* Todo add error trower here 
+                		http://www.vala-project.org/doc/vala-draft/errors.html#exceptionsexamples*/
                     GLib.message("Failed to open file");
                 }
                 reader.close();
