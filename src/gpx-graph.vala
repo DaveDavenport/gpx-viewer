@@ -84,7 +84,16 @@ namespace Gpx
 			this.draw_current = cur_point;
 			this.queue_draw();
 		}
-
+		
+		/** 
+		 * @param p A Gpx.Point we want to highlight.
+		 * pass null to unhighlight.
+		 */
+		public void highlight_point(Gpx.Point? p) 
+		{
+			time_t pt = (p == null)?0:p.get_time();
+			this.set_highlight(pt);
+		}
 		public void set_highlight (time_t highlight) {
 			this.highlight = highlight;
 			/* Force a redraw */

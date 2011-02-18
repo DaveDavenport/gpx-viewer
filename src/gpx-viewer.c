@@ -63,7 +63,6 @@ GtkRecentManager    *recent_man             = NULL;
 /* Track playback widget */
 GpxPlayback *playback               = NULL;
 /* */
-ClutterActor *click_marker          = NULL;
 guint click_marker_source           = 0;
 
 
@@ -684,9 +683,8 @@ void map_zoom_level_change_value_cb(GtkSpinButton * spin, gpointer user_data)
 
 static gboolean graph_point_remove(ClutterActor * marker)
 {
-    clutter_actor_destroy(click_marker);
-    click_marker = NULL;
-    click_marker_source =0;
+	gpx_viewer_map_view_click_marker_hide(GPX_VIEWER_MAP_VIEW(champlain_view));
+	gpx_graph_highlight_point(gpx_graph, NULL);
     return FALSE;
 }
 
@@ -713,42 +711,18 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 {
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     ChamplainBaseMarker *marker[2] = {NULL, NULL};
-    if(click_marker == NULL)
-    {
-        GtkIconInfo *ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-            "pin-red",
-            100, 0);
 
-        if (ii)
-        {
-            const gchar *path2 = gtk_icon_info_get_filename(ii);
-            if (path2)
-            {
-                click_marker = champlain_marker_new_from_file(path2, NULL);
-                champlain_marker_set_draw_background(CHAMPLAIN_MARKER(click_marker), FALSE);
-            }
-        }
-        if (!click_marker)
-        {
-            click_marker = champlain_marker_new();
-        }
-        /* Create the marker */
-        champlain_marker_set_color(CHAMPLAIN_MARKER(click_marker), &waypoint);
-        gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), CHAMPLAIN_BASE_MARKER(click_marker));
-    }
-
-    champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(click_marker), point->lat_dec, point->lon_dec);
-    clutter_actor_show(CLUTTER_ACTOR(click_marker));
-
+	gpx_viewer_map_view_click_marker_show(GPX_VIEWER_MAP_VIEW(champlain_view), point);
     if(click_marker_source >0)
     {
         g_source_remove(click_marker_source);
     }
 
-    marker[0] =(ChamplainBaseMarker *) click_marker;
-    champlain_view_ensure_markers_visible(view, marker, FALSE);
+	gpx_graph_highlight_point(gpx_graph, point);
+    gpx_graph_show_info(gpx_graph, point);
+	gpx_viewer_map_view_click_marker_ensure_visible(GPX_VIEWER_MAP_VIEW(champlain_view));
 
-    click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, click_marker);
+    click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, NULL);
 }
 
 
@@ -784,16 +758,7 @@ static void route_playback_tick(GpxPlayback *route_playback, GpxPoint *current)
     if(current != NULL)
     {
         time_t ptime = gpx_point_get_time(current);
-
-        gpx_graph_show_info(gpx_graph, current);
-        gpx_graph_set_highlight(gpx_graph, ptime);
-
         graph_point_clicked(gpx_graph, current);
-    }
-    else
-    {
-        gpx_graph_set_highlight(gpx_graph, 0);
-        gpx_graph_hide_info(gpx_graph);
     }
 }
 
@@ -1244,13 +1209,7 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon)
 				}
 				if(distance < 0.5)
 				{
-					g_debug("inside track: %f\n",distance);
-					gpx_graph_show_info(gpx_graph, d);
-					time_t ptime = gpx_point_get_time(d);
-					gpx_graph_set_highlight(gpx_graph, ptime);
-				}else {
-					gpx_graph_show_info(gpx_graph, NULL);
-					gpx_graph_set_highlight(gpx_graph, 0);
+			        graph_point_clicked(gpx_graph, d);
 				}
 			}
 	}

@@ -31,6 +31,43 @@ namespace Gpx
             private unowned Champlain.View view = null;
             /* Color */
             private Clutter.Color waypoint_color;
+		
+	    /*  Marker  */
+	    private Champlain.Marker click_marker = null;
+	    
+	    /**
+	     * Show marker at Point
+	     */
+	    public void click_marker_show(Gpx.Point p)
+	    {
+	    	if(click_marker == null) 
+	    	{
+	    		var info = Gtk.IconTheme.get_default().lookup_icon(
+	    			"pin-red",
+	    			100,0);
+	    		if(info != null)
+	    		{
+	    			var path = info.get_filename();
+	    			if(path != null){
+	    				click_marker = new Champlain.Marker.from_file(path);
+	    				click_marker.draw_background = false;
+	    			}
+	    		}
+	    		this.add_marker(click_marker);
+	    	}	    	
+	    	click_marker.set_position((float)p.lat_dec,(float)p.lon_dec);
+	    	click_marker.show();
+	    }
+	    public void click_marker_ensure_visible()
+	    {
+	    	Champlain.BaseMarker[2]? marker = {click_marker, null};
+	    	this.view.ensure_markers_visible(marker,false);
+	    }
+	    public void click_marker_hide()
+	    {
+	    	click_marker.hide();
+	    }
+
 
 
             /* Waypoint layer */
