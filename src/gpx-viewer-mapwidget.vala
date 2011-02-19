@@ -53,15 +53,21 @@ namespace Gpx
 	    				click_marker.draw_background = false;
 	    			}
 	    		}
+	    		click_marker.set_size(100f,100f);
+	    		click_marker.set_anchor_point(50f, 50f);
 	    		this.add_marker(click_marker);
+
+	    		
 	    	}	    	
 	    	click_marker.set_position((float)p.lat_dec,(float)p.lon_dec);
 	    	click_marker.show();
 	    }
 	    public void click_marker_ensure_visible()
 	    {
-	    	Champlain.BaseMarker[2]? marker = {click_marker, null};
-	    	this.view.ensure_markers_visible(marker,false);
+	        if(click_marker != null) {
+        	    	Champlain.BaseMarker[2]? marker = {click_marker, null};
+	            	this.view.ensure_markers_visible(marker,false);
+	    	}
 	    }
 	    public void click_marker_hide()
 	    {
@@ -171,20 +177,22 @@ namespace Gpx
                 view.reactive = true;
                 view.button_release_event.connect(button_press_callback);
             }
+            
             private bool button_press_callback(Clutter.ButtonEvent event)
             {
-                double lat,lon;
-                unowned Clutter.Event e =Clutter.get_current_event();// (Clutter.Event)event;
-                if(view.get_coords_from_event(e, out lat, out lon))
+                if(event.button == 2 || event.button == 3)
                 {
-                    clicked(lat,lon);
-                    stdout.printf("button release event: %f %f\n",lat,lon);
+                    double lat,lon;
+                    unowned Clutter.Event e = Clutter.get_current_event();
+                    if(view.get_coords_from_event(e, out lat, out lon))
+                    {
+                        clicked(lat,lon);
+                        stdout.printf("button release event: %f %f\n",lat,lon);
+                        return true;
+                    }
                 }
                 return false;
             }
-
-            signal void clicked(double lat, double long);
-            signal void zoom_level_changed(int zoom, int min_zoom, int max_zoom);
 
             private void switch_map_source(string id)
             {
@@ -192,18 +200,41 @@ namespace Gpx
                 Champlain.MapSource source = fact.create_cached_source(id);
                 if(source != null)
                 {
-                    this.get_view().set_map_source(source);
+                    view.set_map_source(source);
                     this._map_source = id;
-                    zoom_level_changed(this.get_view().zoom_level, this.get_view().min_zoom_level,this.get_view().max_zoom_level);
+                    zoom_level_changed(
+                            view.zoom_level,
+                            view.min_zoom_level,
+                            view.max_zoom_level);
                 }else{
                     GLib.error("Failed to get map source");
                 }
             }
+            
             /* Destroy */
             ~MapView ()
             {
                 GLib.debug("Destroying map-view");
             }
+            
+            /* Signals */
+            /**
+             * @param lat_dec the latitude of the click point in dec.
+             * @param lon_dec the longitude of the click point.
+             * 
+             * Fired when the users right or middle clicks on the  map.
+             */
+            signal void clicked(double lat_dec, double lon_dec);
+            
+            /**
+             * @param zoom the current zoom level.
+             * @param min_zoom the minimum supported zoom level.
+             * @param max_zoom the maximum supported zoom level.
+             * 
+             * Fired when the zoomlevel changed.
+             */
+            signal void zoom_level_changed(int zoom, int min_zoom, int max_zoom);
+
         }
 
     }
