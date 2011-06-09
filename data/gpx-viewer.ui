@@ -151,30 +151,6 @@
                   <object class="GtkMenu" id="menu4">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkCheckMenuItem" id="view_menu_settings_dock">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Setings dock</property>
-                        <property name="use_underline">True</property>
-                        <signal name="toggled" handler="on_view_menu_settings_dock_toggled"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_menu_files_dock">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Files dock</property>
-                        <property name="use_underline">True</property>
-                        <signal name="toggled" handler="on_view_menu_files_dock_toggled"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkCheckMenuItem" id="view_menu_track_info_dock">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Track information dock</property>
-                        <property name="use_underline">True</property>
-                        <signal name="toggled" handler="on_view_menu_track_info_dock_toggled"/>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkMenuItem" id="view_menu_show_track_list">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Show track list</property>
@@ -214,40 +190,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHPaned" id="main_view_hpane">
+          <object class="GtkHBox" id="main_view_hpane">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <child>
-              <object class="GtkHBox" id="vbox1">
-                <property name="visible">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-              <packing>
-                <property name="resize">False</property>
-                <property name="shrink">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkVPaned" id="main_view_pane">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="orientation">vertical</property>
-                <property name="position">1</property>
-                <property name="position_set">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </object>
-              <packing>
-                <property name="resize">True</property>
-                <property name="shrink">True</property>
-              </packing>
-            </child>
           </object>
           <packing>
             <property name="position">1</property>
@@ -257,15 +202,6 @@
           <object class="GtkHBox" id="hbox2">
             <property name="visible">True</property>
             <property name="spacing">6</property>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
             <child>
               <object class="GtkStatusbar" id="statusbar2">
                 <property name="visible">True</property>
@@ -645,7 +581,7 @@
       <object class="GtkLabel" id="elevation_difference_title_label">
         <property name="visible">True</property>
         <property name="xalign">1</property>
-        <property name="label" translatable="yes">&lt;b&gt;Elevation Difference:&lt;/b&gt;</property>
+        <property name="label" translatable="yes">&lt;b&gt;Elevation Diff.:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
