@@ -3,7 +3,6 @@ src/gpx-viewer.c
 src/gpx-parser.c
 src/gpx-graph.c
 src/gpx-playback.c
-src/gpx-preferences.c
 src/gpx-viewer-mapwidget.c
 src/gpx-track-treemodel.c
 

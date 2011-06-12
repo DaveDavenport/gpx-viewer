@@ -81,8 +81,8 @@ endif
 	
 EXTRA_DIST+=\
     vapi/config.vapi\
-    vapi/libchamplain-0.8.vapi\
-    vapi/libchamplain-gtk-0.8.vapi\
+    vapi/champlain-0.8.vapi\
+    vapi/champlain-gtk-0.8.vapi\
     src/gpx-viewer.h
 
 ##
