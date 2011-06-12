@@ -382,12 +382,15 @@ namespace Gpx
 			ctx = new Cairo.Context(this.surf);
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Updating surface");
-			if(this.track.points == null) {
-				return;
-			}
 			/* Paint background white */
 			ctx.set_source_rgba(1,1,1,1);
 			ctx.paint();
+			if(this.track == null) {
+				return;
+			}
+			if(this.track.points == null) {
+				return;
+			}
 			if(this.track == null) return;
 			double max_value = 0;
 			double min_value = 0;

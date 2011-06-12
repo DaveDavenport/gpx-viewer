@@ -561,7 +561,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             /* Clear graph */
             gpx_graph_set_track(gpx_graph, NULL);
             /* Hide graph */
-            gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
+//            gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 			/* if not visible hide track again */
 			if(!active_route->visible) {
                 champlain_polygon_hide(route->polygon);
@@ -591,12 +591,12 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             if (gpx_track_get_total_time(active_route->track) > 5)
             {
                 gpx_graph_set_track(gpx_graph, active_route->track);
-                gtk_widget_show(GTK_WIDGET(gpx_graph_container));
+//                gtk_widget_show(GTK_WIDGET(gpx_graph_container));
             }
             else
             {
                 gpx_graph_set_track(gpx_graph, NULL);
-                gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
+//                gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
             }
 
             if(route->stop)
@@ -610,6 +610,10 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             /* Create a false route here. f.e. to show multiple tracks concatenated */
         }
     }
+	else
+	{
+		gpx_graph_set_track(gpx_graph, NULL);
+	}
 }
 
 
@@ -1362,7 +1366,7 @@ static void create_interface(void)
     gtk_frame_set_shadow_type(GTK_FRAME(gpx_graph_container), GTK_SHADOW_IN);
     gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(gpx_graph));
     gtk_widget_show(GTK_WIDGET(gpx_graph));
-    gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
+    //gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
 
 	graph_dock_item = gdl_dock_item_new("Graph", "Graph",
 				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
