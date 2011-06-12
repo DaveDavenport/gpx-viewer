@@ -564,7 +564,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 //            gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 			/* if not visible hide track again */
 			if(!active_route->visible) {
-                champlain_polygon_hide(route->polygon);
+                champlain_polygon_hide(active_route->polygon);
 			}
         }
 
@@ -583,6 +583,8 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             }
             if (route->track->top && route->track->bottom)
             {
+				printf("zet zoom leveland view track\n");
+				champlain_view_set_zoom_level(view, champlain_view_get_max_zoom_level(view));
                 champlain_view_ensure_visible(view,
                     route->track->top->lat_dec, route->track->top->lon_dec,
                     route->track->bottom->lat_dec, route->track->bottom->lon_dec, FALSE);
