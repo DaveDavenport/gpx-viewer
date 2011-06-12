@@ -35,6 +35,7 @@
 #include "gpx-viewer.h"
 #include "gpx.h"
 
+
 static GtkWidget        *dock_items[3];
 static GdlDockLayout    *dock_layout = NULL;
 
@@ -161,7 +162,13 @@ static void restore_layout(void)
     {
         gdl_dock_layout_load_from_file(dock_layout, layout_path);
         gdl_dock_layout_load_layout(dock_layout, "my_layout");
-    }
+    }else
+	{
+		gchar *path = g_build_filename(DATA_DIR, "default-layout.xml", NULL);
+        gdl_dock_layout_load_from_file(dock_layout, path);
+        gdl_dock_layout_load_layout(dock_layout, "my_layout");
+		g_free(path);
+	}
     g_free(layout_path);
 
 }
@@ -1359,6 +1366,7 @@ static void create_interface(void)
 
 	graph_dock_item = gdl_dock_item_new("Graph", "Graph",
 				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
+				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
 				GDL_DOCK_ITEM_BEH_NEVER_FLOATING);
 
 	gtk_container_add(GTK_CONTAINER(graph_dock_item), GTK_WIDGET(gpx_graph_container));
@@ -1463,7 +1471,9 @@ static void create_interface(void)
         dock_items[0] = item = gdl_dock_item_new(
             "Files",
             "File and track list",
-            GDL_DOCK_ITEM_BEH_CANT_CLOSE);
+            GDL_DOCK_ITEM_BEH_CANT_CLOSE
+            |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+			);
         gtk_container_add(GTK_CONTAINER(item), flw);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_LEFT);
         gtk_widget_show(item);
@@ -1472,7 +1482,9 @@ static void create_interface(void)
         dock_items[1] =     item = gdl_dock_item_new(
             "Information",
             "Detailed track information",
-            GDL_DOCK_ITEM_BEH_CANT_CLOSE);
+            GDL_DOCK_ITEM_BEH_CANT_CLOSE
+            |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+			);
         gtk_container_add(GTK_CONTAINER(item), tiw);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_CENTER);
         gtk_widget_show(item);
@@ -1481,16 +1493,19 @@ static void create_interface(void)
         dock_items[2] =item = gdl_dock_item_new(
             "Settings",
             "Map and graph settings",
-            GDL_DOCK_ITEM_BEH_CANT_CLOSE);
+            GDL_DOCK_ITEM_BEH_CANT_CLOSE
+            |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+			);
         gtk_container_add(GTK_CONTAINER(item), swi);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_CENTER);
         gtk_widget_show(item);
 
         gtk_widget_show_all(dock);
-		GtkWidget *bar = gdl_dock_bar_new(GDL_DOCK(dock));
+		/*GtkWidget *bar = gdl_dock_bar_new(GDL_DOCK(dock));
 		gdl_dock_bar_set_orientation(GDL_DOCK_BAR(bar), GTK_ORIENTATION_VERTICAL);
 		gtk_widget_show(bar);
         gtk_box_pack_start(GTK_BOX(gtk_builder_get_object(builder, "main_view_hpane")), bar, FALSE, FALSE, 0);
+		*/
         gtk_box_pack_end(GTK_BOX(gtk_builder_get_object(builder, "main_view_hpane")), dock, TRUE, TRUE, 0);
 
         dock_layout = gdl_dock_layout_new(GDL_DOCK(dock));

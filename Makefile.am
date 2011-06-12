@@ -31,7 +31,8 @@ ui_DATA=\
 	data/gpx-viewer.ui\
     data/gpx-viewer-file-chooser.ui\
     data/gpx-viewer-tracklist.ui\
-    data/gpx-viewer-preferences.ui
+    data/gpx-viewer-preferences.ui\
+    data/default-layout.xml
 EXTRA_DIST+=${ui_DATA}
 
 
