@@ -43,4 +43,6 @@ enum _SpeedFormat
 typedef enum _SpeedFormat SpeedFormat;
 
 gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format);
+
+void gv_set_speed_label(GtkWidget *label, gdouble speed, SpeedFormat format);
 #endif

@@ -46,8 +46,8 @@ PKG_CHECK_MODULES([libgdl], [
         gdl-1.0
 ])
 PKG_CHECK_MODULES([champlain], [
-        champlain-gtk-0.8 >= 0.8.0
-        champlain-0.8 >= 0.8.0
+        champlain-gtk-0.12 >= 0.12.0
+        champlain-0.12 >= 0.12.0
 ])
 
 # Check for unique. This is optional.

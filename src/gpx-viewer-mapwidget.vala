@@ -31,53 +31,50 @@ namespace Gpx
             private unowned Champlain.View view = null;
             /* Color */
             private Clutter.Color waypoint_color;
-		
-	    /*  Marker  */
-	    private Champlain.Marker click_marker = null;
-	    
-	    /**
-	     * Show marker at Point
-	     */
-	    public void click_marker_show(Gpx.Point p)
-	    {
-	    	if(click_marker == null) 
-	    	{
-	    		var info = Gtk.IconTheme.get_default().lookup_icon(
-	    			"pin-red",
-	    			100,0);
-	    		if(info != null)
-	    		{
-	    			var path = info.get_filename();
-	    			if(path != null){
-	    				click_marker = new Champlain.Marker.from_file(path);
-	    				click_marker.draw_background = false;
-	    			}
-	    		}
-	    		click_marker.set_size(100f,100f);
-	    		click_marker.set_anchor_point(50f, 50f);
-	    		this.add_marker(click_marker);
+        
+        /*  Marker  */
+        private Champlain.Label click_marker = null;
+        
+        /**
+         * Show marker at Point
+         */
+        public void click_marker_show(Gpx.Point p)
+        {
+            if(click_marker == null) 
+            {
+                var info = Gtk.IconTheme.get_default().lookup_icon(
+                    "pin-red",
+                    100,0);
+                if(info != null)
+                {
+                    var path = info.get_filename();
+                    if(path != null){
+                        try {
+                            click_marker = new Champlain.Label.from_file(path);
+                        } catch (GLib.Error e) {
+                            GLib.warning ("%s", e.message);
+                        }
+                        click_marker.set_draw_background(false);
+                    }
+                }
+                click_marker.set_size(100f,100f);
+                click_marker.set_anchor_point(50f, 50f);
+                this.add_marker(click_marker);
 
-	    		
-	    	}	    	
-	    	click_marker.set_position((float)p.lat_dec,(float)p.lon_dec);
-	    	click_marker.show();
-	    }
-	    public void click_marker_ensure_visible()
-	    {
-	        if(click_marker != null) {
-        	    	Champlain.BaseMarker[2]? marker = {click_marker, null};
-	            	this.view.ensure_markers_visible(marker,false);
-	    	}
-	    }
-	    public void click_marker_hide()
-	    {
-	    	click_marker.hide();
-	    }
+                
+            }            
+            click_marker.set_position((float)p.lat_dec,(float)p.lon_dec);
+            click_marker.show();
+        }
+        public void click_marker_hide()
+        {
+            click_marker.hide();
+        }
 
 
 
             /* Waypoint layer */
-            private Champlain.Layer waypoint_layer = new Champlain.Layer();
+            private Champlain.MarkerLayer waypoint_layer = new Champlain.MarkerLayer();
             private bool _show_waypoints = false;
             public bool show_waypoints {
                     get { return _show_waypoints;}
@@ -93,12 +90,12 @@ namespace Gpx
 
             public void add_waypoint(Gpx.Point p)
             {
-                Champlain.Marker marker = new Marker.with_text(p.name, "Serif 12", null, waypoint_color);
-                marker.set_position(p.lat_dec, p.lon_dec);
-                waypoint_layer.add(marker);
+                Champlain.Marker marker = new Champlain.Label.with_text(p.name, "Serif 12", null, waypoint_color);
+                marker.set_location(p.lat_dec, p.lon_dec);
+                waypoint_layer.add_marker(marker);
             }
             /* Marker layer */
-            private Champlain.Layer marker_layer = new Champlain.Layer();
+            private Champlain.MarkerLayer marker_layer = new Champlain.MarkerLayer();
 
             private bool _show_markers = false;
             public bool show_markers {
@@ -112,9 +109,9 @@ namespace Gpx
                     }
             }
 
-            public void add_marker(BaseMarker marker)
+            public void add_marker(Marker marker)
             {
-                marker_layer.add(marker);
+                marker_layer.add_marker(marker);
             }
 
 
@@ -147,13 +144,11 @@ namespace Gpx
 
                 /* Do default setup of the view. */
                 /* We want kinetic scroling. */
-                view.scroll_mode = Champlain.ScrollMode.KINETIC;
-                /* We do want to show the scale */
-                view.show_scale = true;
+                view.kinetic_mode = true;
 
                 /* Create a ListStore with all the available maps. Used for selectors */
-                var fact= Champlain.MapSourceFactory.dup_default();
-                var l = fact.dup_list();
+                var fact = Champlain.MapSourceFactory.dup_default();
+                var l = fact.get_registered();
                 foreach(weak MapSourceDesc a in l)
                 {
                     Gtk.TreeIter iter;
@@ -183,13 +178,11 @@ namespace Gpx
                 if(event.button == 2 || event.button == 3)
                 {
                     double lat,lon;
-                    unowned Clutter.Event e = Clutter.get_current_event();
-                    if(view.get_coords_from_event(e, out lat, out lon))
-                    {
-                        clicked(lat,lon);
-                        stdout.printf("button release event: %f %f\n",lat,lon);
-                        return true;
-                    }
+                    lat = view.y_to_latitude (event.y);
+                    lon = view.x_to_longitude (event.x);
+                    clicked(lat,lon);
+                    stdout.printf("button release event: %f %f\n",lat,lon);
+                    return true;
                 }
                 return false;
             }
@@ -233,7 +226,7 @@ namespace Gpx
              * 
              * Fired when the zoomlevel changed.
              */
-            signal void zoom_level_changed(int zoom, int min_zoom, int max_zoom);
+            signal void zoom_level_changed(uint zoom, uint min_zoom, uint max_zoom);
 
         }
 

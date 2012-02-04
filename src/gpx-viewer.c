@@ -75,16 +75,16 @@ ClutterColor normal_track_color     = { 0x00, 0x00, 0xff, 0x66 };
 /**
  * This structure holds all information related to
  * a track.
- * The file the track belongs to, the polygon on the map start/stop marker
+ * The file the track belongs to, the path on the map start/stop marker
  * and the visible state.
  */
 typedef struct Route
 {
     GpxFile *file;
     GpxTrack *track;
-    ChamplainPolygon *polygon;
-    ChamplainBaseMarker *start;
-    ChamplainBaseMarker *stop;
+    ChamplainPathLayer *path;
+    ChamplainMarker *start;
+    ChamplainMarker *stop;
     gboolean visible;
 } Route;
 
@@ -141,6 +141,7 @@ gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format)
 			else
 				retv = g_strdup_printf( "%.2f %s", speed, _("m/s²"));
 			break;
+		case NA:
 		default:
 			retv = g_strdup(_("n/a"));
 			break;
@@ -214,7 +215,7 @@ static void free_Route(Route *route)
 {
     /* Do not free these. The are (now) automagically cleanup
        when main widget is destroyed*/
-    /*	if(route->polygon) g_object_unref(route->polygon); */
+    /*	if(route->path) g_object_unref(route->path); */
     if(route->track) g_object_unref(route->track);
     g_free(route);
 }
@@ -464,27 +465,28 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
 
 
 /**
- * Creates a Polygon for Route, and adds it to the view
+ * Creates a Path for Route, and adds it to the view
  */
 static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 {
     GList *iter;
     /* If Route has allready a route, exit */
-    if(route->polygon != NULL)
+    if(route->path != NULL)
     {
-        g_warning("Route allready has a polygon.\n");
+        g_warning("Route allready has a path.\n");
         return;
     }
-    route->polygon = champlain_polygon_new();
+    route->path = champlain_path_layer_new();
     for (iter = g_list_first(route->track->points); iter; iter = iter->next)
     {
         GpxPoint *p = iter->data;
-        champlain_polygon_append_point(route->polygon, p->lat_dec, p->lon_dec);
+        ChamplainCoordinate *coord = champlain_coordinate_new_full(p->lat_dec, p->lon_dec);
+        champlain_path_layer_add_node(route->path, CHAMPLAIN_LOCATION (coord));
     }
-    champlain_polygon_set_stroke_width(route->polygon, 4.0);
-    champlain_polygon_set_stroke_color(route->polygon, &normal_track_color);
-    champlain_view_add_polygon(CHAMPLAIN_VIEW(view), route->polygon);
-    if(!route->visible) champlain_polygon_hide(route->polygon);
+    champlain_path_layer_set_stroke_width(route->path, 4.0);
+    champlain_path_layer_set_stroke_color(route->path, &normal_track_color);
+    champlain_view_add_layer(CHAMPLAIN_VIEW(view), CHAMPLAIN_LAYER(route->path));
+    if(!route->visible) champlain_path_layer_set_visible(route->path, FALSE);
 }
 
 
@@ -547,7 +549,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
         if (active_route)
         {
             /* Give it ' non-active' colour */
-            champlain_polygon_set_stroke_color(active_route->polygon, &normal_track_color);
+            champlain_path_layer_set_stroke_color(active_route->path, &normal_track_color);
             /* Hide stop marker */
             if(active_route->stop)
                 clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
@@ -564,7 +566,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 //            gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 			/* if not visible hide track again */
 			if(!active_route->visible) {
-                champlain_polygon_hide(active_route->polygon);
+                champlain_path_layer_set_visible(active_route->path, FALSE);
 			}
         }
 
@@ -574,20 +576,25 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 
             gpx_playback_set_track(playback, active_route->track);
-            if(route->polygon != NULL)
-                champlain_polygon_set_stroke_color(route->polygon, &highlight_track_color);
+            if(route->path != NULL)
+                champlain_path_layer_set_stroke_color(route->path, &highlight_track_color);
 
 /*            if (route->visible) */
             {
-                champlain_polygon_show(route->polygon);
+                champlain_path_layer_set_visible(route->path, TRUE);
             }
             if (route->track->top && route->track->bottom)
             {
-				printf("zet zoom leveland view track\n");
-				champlain_view_set_zoom_level(view, champlain_view_get_max_zoom_level(view));
-                champlain_view_ensure_visible(view,
-                    route->track->top->lat_dec, route->track->top->lon_dec,
-                    route->track->bottom->lat_dec, route->track->bottom->lon_dec, FALSE);
+                ChamplainBoundingBox *track_bounding_box;
+                printf("zet zoom leveland view track\n");
+                champlain_view_set_zoom_level(view, champlain_view_get_max_zoom_level(view));
+                track_bounding_box = champlain_bounding_box_new();
+                track_bounding_box->left = route->track->top->lon_dec;
+                track_bounding_box->top = route->track->top->lat_dec;
+                track_bounding_box->right = route->track->bottom->lon_dec;
+                track_bounding_box->bottom = route->track->bottom->lat_dec;
+                champlain_view_ensure_visible(view, track_bounding_box, FALSE);
+                champlain_bounding_box_free(track_bounding_box);
             }
 
             if (gpx_track_get_total_time(active_route->track) > 5)
@@ -709,12 +716,12 @@ static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *s
     {
         if(start)
         {
-            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->start), start->lat_dec, start->lon_dec);
+            champlain_location_set_location (CHAMPLAIN_LOCATION (active_route->start), start->lat_dec, start->lon_dec);
         }
 
         if(stop)
         {
-            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(active_route->stop), stop->lat_dec, stop->lon_dec);
+            champlain_location_set_location (CHAMPLAIN_LOCATION (active_route->stop), stop->lat_dec, stop->lon_dec);
         }
     }
 }
@@ -723,7 +730,7 @@ static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *s
 static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 {
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
-    ChamplainBaseMarker *marker[2] = {NULL, NULL};
+    ChamplainPoint *marker[2] = {NULL, NULL};
 
 	gpx_viewer_map_view_click_marker_show(GPX_VIEWER_MAP_VIEW(champlain_view), point);
     if(click_marker_source >0)
@@ -813,7 +820,8 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     /* Plot all tracks, and get total bounding box */
     GtkTreeIter liter;
     GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
-    GtkIconInfo *ii;
+    ClutterColor *start_point_color;
+    ClutterColor *stop_point_color;
     struct Route *route = g_new0(Route, 1);
     /* Route */
     if(gpx_viewer_settings_get_integer(settings,"Track", "Cleanup", 0) > 0)
@@ -866,52 +874,24 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         GpxPoint *stop = gpx_track_get_last(route->track);/*g_list_last(route->track->points);*/
         if(start && stop)
         {
-            ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-                "pin-green",
-                100, 0);
-            if (ii)
-            {
-                const gchar *path2 = gtk_icon_info_get_filename(ii);
-                if (path2)
-                {
-                    route->start = (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
-                    champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->start), FALSE);
-                }
-                gtk_icon_info_free(ii);
-            }
-            if (!route->start)
-            {
-                route->start = (ChamplainBaseMarker *)champlain_marker_new();
-            }
+            /* create start marker */
+            start_point_color = clutter_color_new(0, 255, 0, 1);
+            route->start = (ChamplainMarker *)champlain_point_new_full(3, start_point_color);
+            clutter_color_free(start_point_color);
             /* Create the marker */
-            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->start),
+            champlain_location_set_location (CHAMPLAIN_LOCATION (route->start),
                 ((GpxPoint*)start->data)->lat_dec,
                 ((GpxPoint*)start->data)->lon_dec);
-            champlain_marker_set_color(CHAMPLAIN_MARKER(route->start), &waypoint);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
 
-            ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-                "pin-blue",
-                100, 0);
-            if (ii)
-            {
-                const gchar *path2 = gtk_icon_info_get_filename(ii);
-                if (path2)
-                {
-                    route->stop =  (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
-                    champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->stop), FALSE);
-                }
-                gtk_icon_info_free(ii);
-            }
-            if (!route->stop)
-            {
-                route->stop = (ChamplainBaseMarker *)champlain_marker_new();
-            }
+            /* create end marker */
+            stop_point_color = clutter_color_new(255, 0, 0, 1);
+            route->stop = (ChamplainMarker *)champlain_point_new_full(3, stop_point_color);
+            clutter_color_free(stop_point_color);
             /* Create the marker */
-            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop),
-                stop->lat_dec,
-                stop->lon_dec);
-            champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
+            champlain_location_set_location (CHAMPLAIN_LOCATION (route->stop),
+                (stop)->lat_dec,
+                (stop)->lon_dec);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
 
             clutter_actor_hide(CLUTTER_ACTOR(route->stop));
@@ -969,11 +949,11 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
             route->visible = active;
             if (active)
             {
-                champlain_polygon_show(route->polygon);
+                champlain_path_layer_set_visible(route->path, TRUE);
             }
             else
             {
-                champlain_polygon_hide(route->polygon);
+                champlain_path_layer_set_visible(route->path, FALSE);
             }
         }
     }
@@ -1033,11 +1013,12 @@ void show_vertical_speed(GtkMenuItem item, gpointer user_data)
 static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter)
 {
     GList *iter;
-    GtkIconInfo *ii;
+    ClutterColor *start_point_color;
+    ClutterColor *stop_point_color;
     GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
     struct Route *route = g_new0(Route, 1);
     route->visible = TRUE;
-    route->polygon = NULL;
+    route->path = NULL;
     route->track = gpx_track_new();
     gpx_track_set_name(route->track, _("Combined track"));
 
@@ -1073,52 +1054,24 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
 		/*g_list_last(route->track->points);*/
         if(start && stop)
         {
-            ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-                "pin-green",
-                100, 0);
-            if (ii)
-            {
-                const gchar *path2 = gtk_icon_info_get_filename(ii);
-                if (path2)
-                {
-                    route->start = (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
-                    champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->start), FALSE);
-                }
-                gtk_icon_info_free(ii);
-            }
-            if (!route->start)
-            {
-                route->start = (ChamplainBaseMarker *)champlain_marker_new();
-            }
+            /* create start marker */
+            start_point_color = clutter_color_new(0, 255, 0, 1);
+            route->start = (ChamplainMarker *)champlain_point_new_full(3, start_point_color);
+            clutter_color_free(start_point_color);
             /* Create the marker */
-            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->start),
+            champlain_location_set_location (CHAMPLAIN_LOCATION (route->start),
                 ((GpxPoint*)start->data)->lat_dec,
                 ((GpxPoint*)start->data)->lon_dec);
-            champlain_marker_set_color(CHAMPLAIN_MARKER(route->start), &waypoint);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
 
-            ii = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-                "pin-blue",
-                100, 0);
-            if (ii)
-            {
-                const gchar *path2 = gtk_icon_info_get_filename(ii);
-                if (path2)
-                {
-                    route->stop =  (ChamplainBaseMarker *)champlain_marker_new_from_file(path2, NULL);
-                    champlain_marker_set_draw_background(CHAMPLAIN_MARKER(route->stop), FALSE);
-                }
-                gtk_icon_info_free(ii);
-            }
-            if (!route->stop)
-            {
-                route->stop = (ChamplainBaseMarker *)champlain_marker_new();
-            }
+            /* create end marker */
+            stop_point_color = clutter_color_new(255, 0, 0, 1);
+            route->stop = (ChamplainMarker *)champlain_point_new_full(3, stop_point_color);
+            clutter_color_free(stop_point_color);
             /* Create the marker */
-            champlain_base_marker_set_position(CHAMPLAIN_BASE_MARKER(route->stop),
+            champlain_location_set_location (CHAMPLAIN_LOCATION (route->stop),
                 (stop)->lat_dec,
                 (stop)->lon_dec);
-            champlain_marker_set_color(CHAMPLAIN_MARKER(route->stop), &waypoint);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
 
             clutter_actor_hide(CLUTTER_ACTOR(route->stop));
@@ -1533,8 +1486,17 @@ static void create_interface(void)
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0)
     {
+        ChamplainBoundingBox *bounding_box;
+
         champlain_view_set_zoom_level(view, 15);
-        champlain_view_ensure_visible(view, lat1, lon1, lat2, lon2, FALSE);
+
+        bounding_box = champlain_bounding_box_new();
+        bounding_box->left = lon1;
+        bounding_box->top = lat1;
+        bounding_box->right = lon2;
+        bounding_box->bottom = lat2;
+        champlain_view_ensure_visible(view, bounding_box, FALSE);
+        champlain_bounding_box_free(bounding_box);
     }
 }
 

@@ -1,6 +1,6 @@
 Dependencies:
-* libchamplain-gtk (0.8)
-* libchamplain  (0.8)
+* libchamplain-gtk (0.12)
+* libchamplain  (0.12)
 * vala 0.9.*
 * gtk+-2.0 2.16 or up.
 * gmodule 2.0

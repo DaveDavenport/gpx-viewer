@@ -52,7 +52,7 @@ gpx_viewer_SOURCES=\
 	src/gpx-viewer.c
 
 
-gpx_viewer_VALAFLAGS= --pkg=config --pkg=unique-1.0 --pkg=clutter-1.0 --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=champlain-0.8 --pkg=gpx-viewer --pkg=champlain-gtk-0.8 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/vapi -H $(top_builddir)/src/gpx.h --use-header
+gpx_viewer_VALAFLAGS= --pkg=config --pkg=unique-1.0 --pkg=clutter-1.0 --pkg=gtk+-2.0 --pkg=libxml-2.0 --pkg=champlain-0.12 --pkg=gpx-viewer --pkg=champlain-gtk-0.12 --basedir=$(top_builddir)/src --vapidir=$(top_srcdir)/vapi -H $(top_builddir)/src/gpx.h --use-header
 
 LIBS=\
 	@gtk_LIBS@\
@@ -82,8 +82,8 @@ endif
 	
 EXTRA_DIST+=\
     vapi/config.vapi\
-    vapi/champlain-0.8.vapi\
-    vapi/champlain-gtk-0.8.vapi\
+    vapi/champlain-0.12.vapi\
+    vapi/champlain-gtk-0.12.vapi\
     src/gpx-viewer.h
 
 ##
