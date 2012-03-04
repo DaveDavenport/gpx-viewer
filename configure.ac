@@ -36,14 +36,14 @@ PKG_PROG_PKG_CONFIG
 
 
 PKG_CHECK_MODULES([gtk],[
-        gtk+-2.0  >= 2.16
+        gtk+-3.0  >= 3.0
         gmodule-2.0 
         ])
 PKG_CHECK_MODULES([libxml], [
         libxml-2.0
 ])
 PKG_CHECK_MODULES([libgdl], [
-        gdl-1.0
+        gdl-3.0
 ])
 PKG_CHECK_MODULES([champlain], [
         champlain-gtk-0.12 >= 0.12.0
@@ -51,13 +51,15 @@ PKG_CHECK_MODULES([champlain], [
 ])
 
 # Check for unique. This is optional.
-PKG_CHECK_MODULES([unique], 
-	[unique-1.0],
-	[ 
-		have_unique="yes"
-		AC_DEFINE(HAVE_UNIQUE,1,[unique support enabled])],
-	 have_unique="no"
-)
+#PKG_CHECK_MODULES([unique], 
+#	[unique-1.0],
+#	[ 
+#		have_unique="yes"
+#		AC_DEFINE(HAVE_UNIQUE,1,[unique support enabled])],
+#	 have_unique="no"
+#)
+AC_SUBST(unique_LIBS)
+AC_SUBST(unique_CFLAGS)
 
 AC_CONFIG_FILES([
 	Makefile

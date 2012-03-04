@@ -593,7 +593,8 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
                 track_bounding_box->top = route->track->top->lat_dec;
                 track_bounding_box->right = route->track->bottom->lon_dec;
                 track_bounding_box->bottom = route->track->bottom->lat_dec;
-                champlain_view_ensure_visible(view, track_bounding_box, FALSE);
+// TODO
+//                champlain_view_ensure_visible(view, track_bounding_box, FALSE);
                 champlain_bounding_box_free(track_bounding_box);
             }
 
@@ -740,7 +741,8 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 
 	gpx_graph_highlight_point(gpx_graph, point);
     gpx_graph_show_info(gpx_graph, point);
-	gpx_viewer_map_view_click_marker_ensure_visible(GPX_VIEWER_MAP_VIEW(champlain_view));
+//TODO
+//	gpx_viewer_map_view_click_marker_ensure_visible(GPX_VIEWER_MAP_VIEW(champlain_view));
 
     click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, NULL);
 }
@@ -1672,7 +1674,8 @@ int main(int argc, char **argv)
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(PACKAGE, "UTF-8");
 	textdomain(PACKAGE);
-	gtk_set_locale();
+//	gtk_set_locale();
+	setlocale (LC_ALL, "");
 
 	/* Setup the commandline parser */
 	context = g_option_context_new(
@@ -1773,7 +1776,8 @@ int main(int argc, char **argv)
 			G_CALLBACK(route_playback_state_changed),
 			NULL);
 	/* Create the interface on main loop begin */
-	gtk_init_add((GtkFunction)create_interface,NULL);
+//		gtk_init_add((GtkFunction)create_interface,NULL);
+	create_interface();
 
 	/* Start the main loop */
 	gtk_main();

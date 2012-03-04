@@ -76,7 +76,7 @@ namespace Gpx
         /**
          * Given an iter, returns a path
          */
-        public Gtk.TreePath get_path (Gtk.TreeIter iter){
+        public Gtk.TreePath? get_path (Gtk.TreeIter iter){
             assert (iter.user_data != null);
             Point p = iter.user_data as Gpx.Point;
 

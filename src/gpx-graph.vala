@@ -178,12 +178,13 @@ namespace Gpx
 		 */
 		private Gpx.Point? get_point_from_position(double x, double y)
 		{
-
+			Gtk.Allocation alloc;
 			if(this.track == null) return null;
-			if(x > LEFT_OFFSET && x < (this.allocation.width-10))
+			this.get_allocation(out alloc);
+			if(x > LEFT_OFFSET && x < (alloc.width-10))
 			{
 				double elapsed_time = track.get_total_time();
-				time_t time = (time_t)((x-LEFT_OFFSET)/(this.allocation.width-10-LEFT_OFFSET)*elapsed_time);
+				time_t time = (time_t)((x-LEFT_OFFSET)/(alloc.width-10-LEFT_OFFSET)*elapsed_time);
 				weak List<Point?> iter = this.track.points.first();
 				/* calculated time is offset from start time,  get real time */
 				time += iter.data.get_time();
@@ -280,11 +281,15 @@ namespace Gpx
 		private Gpx.Point stop = null;
 		bool a_expose_event(Gdk.EventExpose event)
 		{
-			var ctx = Gdk.cairo_create(this.window);
+#if 0
+			var ctx = Gdk.cairo_create(this.get_window());
 			/* If no valid surface, render it */
 			if(surf == null)
 				update_surface(this);
 
+			/* Get allocation */
+			Gtk.Allocation alloc;
+			this.get_allocation(out alloc);
 			/* Draw the actual surface on the widget */
 			ctx.set_source_surface(this.surf, 0, 0);
 			Gdk.cairo_region(ctx, event.region);
@@ -299,8 +304,8 @@ namespace Gpx
 				{
 					Gpx.Point f = this.track.points.first().data;
 					double elapsed_time = track.get_total_time();
-					double graph_width = this.allocation.width-LEFT_OFFSET-10;
-					double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
+					double graph_width = alloc.width-LEFT_OFFSET-10;
+					double graph_height = alloc.height-20-BOTTOM_OFFSET;
 
 					ctx.set_source_rgba(0.3, 0.2, 0.3, 0.8);
 					ctx.rectangle((start.get_time()-f.get_time())/elapsed_time*graph_width, 0,
@@ -314,8 +319,8 @@ namespace Gpx
 			{
 				Gpx.Point f = this.track.points.first().data;
 				double elapsed_time = track.get_total_time();
-				double graph_width = this.allocation.width-LEFT_OFFSET-10;
-				double graph_height = this.allocation.height-20-BOTTOM_OFFSET;
+				double graph_width = alloc.width-LEFT_OFFSET-10;
+				double graph_height = alloc.height-20-BOTTOM_OFFSET;
 
 				double hl = (highlight-f.get_time())/elapsed_time*graph_width;
 
@@ -371,16 +376,23 @@ namespace Gpx
 					ctx.fill();
 				}
 			}
+#endif
 			return false;
 		}
 		private void update_surface(Gtk.Widget win)
 		{
-			var ctx = Gdk.cairo_create(win.window);
+#if 0
+			var ctx = Gdk.cairo_create(win.get_window());
+
+			/* Get allocation */
+			Gtk.Allocation alloc;
+
+			win.get_allocation(out alloc);
+			/* Create new surface */
 			this.surf = new Cairo.Surface.similar(ctx.get_target(),
 					Cairo.Content.COLOR_ALPHA,
-					win.allocation.width, win.allocation.height);
+					alloc.width, alloc.height);
 			ctx = new Cairo.Context(this.surf);
-
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Updating surface");
 			/* Paint background white */
 			ctx.set_source_rgba(1,1,1,1);
@@ -480,8 +492,8 @@ namespace Gpx
 			Point f = track.points.data;
 
 			/* Draw Grid */
-			double graph_width = win.allocation.width-LEFT_OFFSET-10;
-			double graph_height = win.allocation.height-20-BOTTOM_OFFSET;
+			double graph_width = alloc.width-LEFT_OFFSET-10;
+			double graph_height = alloc.height-20-BOTTOM_OFFSET;
             if(graph_height < 50 ) return;
 			var layout = Pango.cairo_create_layout(ctx);
 			double j =0.0;
@@ -754,6 +766,7 @@ namespace Gpx
 			ctx.move_to(graph_width/2-w/2, -20);
 			Pango.cairo_layout_path(ctx, layout);
 			ctx.fill();
+#endif
 		}
         ~Graph()
         {
