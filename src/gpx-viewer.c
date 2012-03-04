@@ -1677,6 +1677,7 @@ int main(int argc, char **argv)
 //	gtk_set_locale();
 	setlocale (LC_ALL, "");
 
+	gtk_clutter_init(&argc, &argv);
 	/* Setup the commandline parser */
 	context = g_option_context_new(
 			_("[FILE...] - GPX Viewer"));
@@ -1705,7 +1706,6 @@ int main(int argc, char **argv)
 		g_thread_init(NULL);
 	}
 
-	gtk_clutter_init(&argc, &argv);
 
 #ifdef HAVE_UNIQUE
 	/* Setup unique app.  This enforces only one instance off the application is running. */
