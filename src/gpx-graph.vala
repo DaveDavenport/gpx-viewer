@@ -380,6 +380,7 @@ namespace Gpx
 		private void update_surface(Gtk.Widget win)
 		{
 			var ctx = Gdk.cairo_create(win.get_window());
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Updating surface");
 
 			/* Get allocation */
 			Gtk.Allocation alloc;
@@ -390,7 +391,7 @@ namespace Gpx
 					Cairo.Content.COLOR_ALPHA,
 					alloc.width, alloc.height);
 			ctx = new Cairo.Context(this.surf);
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Updating surface");
+
 			/* Paint background white */
 			ctx.set_source_rgba(1,1,1,1);
 			ctx.paint();
@@ -577,7 +578,6 @@ namespace Gpx
                 start_speed = -min_value;
             }
             ctx.line_to(0.0, graph_height*(1-(start_speed)/range));
-            stdout.printf("%f %f %f\n", range, min_value, max_value);
 
             double pref_speed = 2f;
             double pref_speed_threshold = 1f;
@@ -638,8 +638,8 @@ namespace Gpx
 				pref_speed = speed;
 			}
             if(min_value < 0 && max_value > 0) {
-			ctx.line_to(graph_width, graph_height*((max_value)/range));
-            }else{
+				ctx.line_to(graph_width, graph_height*((max_value)/range));
+			}else{
                 ctx.line_to(graph_width, graph_height*1);
             }
             ctx.close_path();
@@ -717,6 +717,7 @@ namespace Gpx
 			/* Draw average speed */
 			if(this._mode == GraphMode.SPEED)
 			{
+				ctx.set_line_width(2.5);
 				var avg = track.get_track_average();
 				ctx.set_source_rgba(0.0, 0.7, 0.0, 0.7);
 				ctx.move_to(0.0, graph_height*(1-avg/max_value));
