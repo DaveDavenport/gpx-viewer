@@ -20,7 +20,6 @@ using Champlain;
 using GtkChamplain;
 using Gtk;
 using GLib;
-using Unique;
 
 namespace Gpx
 {

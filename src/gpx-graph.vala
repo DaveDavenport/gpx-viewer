@@ -149,7 +149,7 @@ namespace Gpx
 			this.motion_notify_event.connect(motion_notify_event_cb);
 			this.button_release_event.connect(button_release_event_cb);
 
-			this.expose_event.connect(a_expose_event);
+			this.draw.connect(a_expose_event);
 		}
 
 		public void set_track(Gpx.Track? track)
@@ -271,7 +271,7 @@ namespace Gpx
 			}
 			return false;
 		}
-		private void size_allocate_cb(Gdk.Rectangle alloc)
+		private void size_allocate_cb(Gtk.Allocation alloc)
 		{
 			/* Invalidate the previous plot, so it is redrawn */
 			this.surf = null;
@@ -279,10 +279,9 @@ namespace Gpx
 
 		private Gpx.Point start = null;
 		private Gpx.Point stop = null;
-		bool a_expose_event(Gdk.EventExpose event)
+		bool a_expose_event(Cairo.Context ctx)
 		{
-#if 0
-			var ctx = Gdk.cairo_create(this.get_window());
+			//var ctx = Gdk.cairo_create(this.get_window());
 			/* If no valid surface, render it */
 			if(surf == null)
 				update_surface(this);
@@ -292,8 +291,8 @@ namespace Gpx
 			this.get_allocation(out alloc);
 			/* Draw the actual surface on the widget */
 			ctx.set_source_surface(this.surf, 0, 0);
-			Gdk.cairo_region(ctx, event.region);
-			ctx.clip();
+//			Gdk.cairo_region(ctx, event.region);
+//			ctx.clip();
 			ctx.paint();
 
 			ctx.translate(LEFT_OFFSET,20);
@@ -376,12 +375,10 @@ namespace Gpx
 					ctx.fill();
 				}
 			}
-#endif
 			return false;
 		}
 		private void update_surface(Gtk.Widget win)
 		{
-#if 0
 			var ctx = Gdk.cairo_create(win.get_window());
 
 			/* Get allocation */
@@ -766,7 +763,6 @@ namespace Gpx
 			ctx.move_to(graph_width/2-w/2, -20);
 			Pango.cairo_layout_path(ctx, layout);
 			ctx.fill();
-#endif
 		}
         ~Graph()
         {
