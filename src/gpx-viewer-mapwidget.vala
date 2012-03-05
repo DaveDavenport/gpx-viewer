@@ -26,208 +26,206 @@ namespace Gpx
     namespace Viewer
     {
         public class MapView : GtkChamplain.Embed
-        {
-            private unowned Champlain.View view = null;
-            /* Color */
-            private Clutter.Color waypoint_color;
-        
-        /*  Marker  */
-        private Champlain.Label click_marker = null;
-        
-        /**
-         * Show marker at Point
-         */
-        public void click_marker_show(Gpx.Point p)
-        {
-            if(click_marker == null) 
-            {
-                var info = Gtk.IconTheme.get_default().lookup_icon(
-                    "pin-red",
-                    100,0);
-                if(info != null)
-                {
-                    var path = info.get_filename();
-                    if(path != null){
-                        try {
-                            click_marker = new Champlain.Label.from_file(path);
-                        } catch (GLib.Error e) {
-                            GLib.warning ("%s", e.message);
-                        }
-                        click_marker.set_draw_background(false);
-                    }
-                }
-                click_marker.set_size(100f,100f);
-                click_marker.set_anchor_point(50f, 50f);
-                this.add_marker(click_marker);
+		{
+			private unowned Champlain.View view = null;
+			/* Color */
+			private Clutter.Color waypoint_color;
 
-                
-            }            
-            click_marker.set_position((float)p.lat_dec,(float)p.lon_dec);
-            click_marker.show();
-        }
-        public void click_marker_hide()
-        {
-            click_marker.hide();
-        }
+			/*  Marker  */
+			private Champlain.Label click_marker = null;
+
+			/**
+			 * Show marker at Point
+			 */
+			public void click_marker_show(Gpx.Point p)
+			{
+				if(click_marker == null) 
+				{
+					var info = Gtk.IconTheme.get_default().lookup_icon(
+							"pin-red",
+							100,0);
+					if(info != null)
+					{
+						var path = info.get_filename();
+						if(path != null){
+							try {
+								click_marker = new Champlain.Label.from_file(path);
+							} catch (GLib.Error e) {
+								GLib.warning ("%s", e.message);
+							}
+							click_marker.set_draw_background(false);
+						}
+					}
+					click_marker.set_size(100f,100f);
+					click_marker.set_anchor_point(50f, 50f);
+					this.add_marker(click_marker);
+				}            
+				click_marker.set_location((float)p.lat_dec,(float)p.lon_dec);
+				click_marker.show();
+			}
+			public void click_marker_hide()
+			{
+				click_marker.hide();
+			}
 
 
 
-            /* Waypoint layer */
-            private Champlain.MarkerLayer waypoint_layer = new Champlain.MarkerLayer();
-            private bool _show_waypoints = false;
-            public bool show_waypoints {
-                    get { return _show_waypoints;}
-                    set {
-                        if(value) {
-                            this.waypoint_layer.show();
-                        }else{
-                            this.waypoint_layer.hide();
-                        }
-                        this._show_waypoints = value;
-                    }
-            }
+			/* Waypoint layer */
+			private Champlain.MarkerLayer waypoint_layer = new Champlain.MarkerLayer();
+			private bool _show_waypoints = false;
+			public bool show_waypoints {
+				get { return _show_waypoints;}
+				set {
+					if(value) {
+						this.waypoint_layer.show();
+					}else{
+						this.waypoint_layer.hide();
+					}
+					this._show_waypoints = value;
+				}
+			}
 
-            public void add_waypoint(Gpx.Point p)
-            {
-                Champlain.Marker marker = new Champlain.Label.with_text(p.name, "Serif 12", null, waypoint_color);
-                marker.set_location(p.lat_dec, p.lon_dec);
-                waypoint_layer.add_marker(marker);
-            }
-            /* Marker layer */
-            private Champlain.MarkerLayer marker_layer = new Champlain.MarkerLayer();
+			public void add_waypoint(Gpx.Point p)
+			{
+				Champlain.Marker marker = new Champlain.Label.with_text(p.name, "Serif 12", null, waypoint_color);
+				marker.set_location(p.lat_dec, p.lon_dec);
+				waypoint_layer.add_marker(marker);
+			}
+			/* Marker layer */
+			private Champlain.MarkerLayer marker_layer = new Champlain.MarkerLayer();
 
-            private bool _show_markers = false;
-            public bool show_markers {
-                    get { return _show_markers;}
-                    set {
-                        if(value) {
-                            this.marker_layer.show();
-                        }else{
-                            this.marker_layer.hide();
-                        }
-                    }
-            }
+			private bool _show_markers = false;
+			public bool show_markers {
+				get { return _show_markers;}
+				set {
+					if(value) {
+						this.marker_layer.show();
+					}else{
+						this.marker_layer.hide();
+					}
+				}
+			}
 
-            public void add_marker(Marker marker)
-            {
-                marker_layer.add_marker(marker);
-            }
+			public void add_marker(Marker marker)
+			{
+				marker_layer.add_marker(marker);
+			}
 
 
-            /* A TreeModel with all the maps, <name>,<id> */
-            private Gtk.ListStore map_source_list = new Gtk.ListStore(2,typeof(string), typeof(string));
+			/* A TreeModel with all the maps, <name>,<id> */
+			private Gtk.ListStore map_source_list = new Gtk.ListStore(2,typeof(string), typeof(string));
 
-            private string _map_source = null;
-            public string map_source {
-                get { return _map_source; }
-                set {
-                    if(value == _map_source) return;
-                    this.switch_map_source(value);
-                }
-            }
-            /* Get the model (for use in combo box and equal) */
-            public Gtk.TreeModel get_model()
-            {
-                return map_source_list as Gtk.TreeModel;
-            }
-            /* construction */
-            public MapView ()
-            {
-                view = this.get_view();
-                stdout.printf("MapView init\n");
-                /* Setup waypoint color */
-                this.waypoint_color.red = 0xf3;
-                this.waypoint_color.green = 0x94;
-                this.waypoint_color.blue = 0x07;
-                this.waypoint_color.alpha =0xff;
+			private string _map_source = null;
+			public string map_source {
+				get { return _map_source; }
+				set {
+					if(value == _map_source) return;
+					this.switch_map_source(value);
+				}
+			}
+			/* Get the model (for use in combo box and equal) */
+			public Gtk.TreeModel get_model()
+			{
+				return map_source_list as Gtk.TreeModel;
+			}
+			/* construction */
+			public MapView ()
+			{
+				view = this.get_view();
+				stdout.printf("MapView init\n");
+				/* Setup waypoint color */
+				this.waypoint_color.red = 0xf3;
+				this.waypoint_color.green = 0x94;
+				this.waypoint_color.blue = 0x07;
+				this.waypoint_color.alpha =0xff;
 
-                /* Do default setup of the view. */
-                /* We want kinetic scroling. */
-                view.kinetic_mode = true;
+				/* Do default setup of the view. */
+				/* We want kinetic scroling. */
+				view.kinetic_mode = true;
 
-                /* Create a ListStore with all the available maps. Used for selectors */
-                var fact = Champlain.MapSourceFactory.dup_default();
-                var l = fact.get_registered();
-                foreach(weak MapSourceDesc a in l)
-                {
-                    Gtk.TreeIter iter;
-                    /* If no map set, pick the first one */
-                    if(this._map_source == null) {
-                        this._map_source = a.id;
-                    }
-                    /* Add the available map's to the list */
-                    map_source_list.append(out iter);
-                    map_source_list.set(iter, 0, a.name, 1, a.id);
-                }
-                /* Keep track of changed zoom level, and signal this */
-                view.notify["zoom-level"].connect(()=>{
-                        zoom_level_changed(view.zoom_level,
-                            view.min_zoom_level,
-                            view.max_zoom_level);
-                        });
-                view.add_layer(waypoint_layer);
-                view.add_layer(marker_layer);
-                /* Set it to recieve signals */
-                view.reactive = true;
-                view.button_release_event.connect(button_press_callback);
-            }
-            
-            private bool button_press_callback(Clutter.ButtonEvent event)
-            {
-                if(event.button == 2 || event.button == 3)
-                {
-                    double lat,lon;
-                    lat = view.y_to_latitude (event.y);
-                    lon = view.x_to_longitude (event.x);
-                    clicked(lat,lon);
-                    stdout.printf("button release event: %f %f\n",lat,lon);
-                    return true;
-                }
-                return false;
-            }
+				/* Create a ListStore with all the available maps. Used for selectors */
+				var fact = Champlain.MapSourceFactory.dup_default();
+				var l = fact.get_registered();
+				foreach(weak MapSourceDesc a in l)
+				{
+					Gtk.TreeIter iter;
+					/* If no map set, pick the first one */
+					if(this._map_source == null) {
+						this._map_source = a.id;
+					}
+					/* Add the available map's to the list */
+					map_source_list.append(out iter);
+					map_source_list.set(iter, 0, a.name, 1, a.id);
+				}
+				/* Keep track of changed zoom level, and signal this */
+				view.notify["zoom-level"].connect(()=>{
+						zoom_level_changed(view.zoom_level,
+							view.min_zoom_level,
+							view.max_zoom_level);
+						});
+				view.add_layer(waypoint_layer);
+				view.add_layer(marker_layer);
+				/* Set it to recieve signals */
+				view.reactive = true;
+				view.button_release_event.connect(button_press_callback);
+			}
 
-            private void switch_map_source(string id)
-            {
-                var fact= Champlain.MapSourceFactory.dup_default();
-                Champlain.MapSource source = fact.create_cached_source(id);
-                if(source != null)
-                {
-                    view.set_map_source(source);
-                    this._map_source = id;
-                    zoom_level_changed(
-                            view.zoom_level,
-                            view.min_zoom_level,
-                            view.max_zoom_level);
-                }else{
-                    GLib.error("Failed to get map source");
-                }
-            }
-            
-            /* Destroy */
-            ~MapView ()
-            {
-                GLib.debug("Destroying map-view");
-            }
-            
-            /* Signals */
-            /**
-             * @param lat_dec the latitude of the click point in dec.
-             * @param lon_dec the longitude of the click point.
-             * 
-             * Fired when the users right or middle clicks on the  map.
-             */
-            signal void clicked(double lat_dec, double lon_dec);
-            
-            /**
-             * @param zoom the current zoom level.
-             * @param min_zoom the minimum supported zoom level.
-             * @param max_zoom the maximum supported zoom level.
-             * 
-             * Fired when the zoomlevel changed.
-             */
-            signal void zoom_level_changed(uint zoom, uint min_zoom, uint max_zoom);
+			private bool button_press_callback(Clutter.ButtonEvent event)
+			{
+				if(event.button == 2 || event.button == 3)
+				{
+					double lat,lon;
+					lat = view.y_to_latitude (event.y);
+					lon = view.x_to_longitude (event.x);
+					clicked(lat,lon);
+					stdout.printf("button release event: %f %f\n",lat,lon);
+					return true;
+				}
+				return false;
+			}
 
-        }
+			private void switch_map_source(string id)
+			{
+				var fact= Champlain.MapSourceFactory.dup_default();
+				Champlain.MapSource source = fact.create_cached_source(id);
+				if(source != null)
+				{
+					view.set_map_source(source);
+					this._map_source = id;
+					zoom_level_changed(
+							view.zoom_level,
+							view.min_zoom_level,
+							view.max_zoom_level);
+				}else{
+					GLib.error("Failed to get map source");
+				}
+			}
+
+			/* Destroy */
+			~MapView ()
+			{
+				GLib.debug("Destroying map-view");
+			}
+
+			/* Signals */
+			/**
+			 * @param lat_dec the latitude of the click point in dec.
+			 * @param lon_dec the longitude of the click point.
+			 * 
+			 * Fired when the users right or middle clicks on the  map.
+			 */
+			signal void clicked(double lat_dec, double lon_dec);
+
+			/**
+			 * @param zoom the current zoom level.
+			 * @param min_zoom the minimum supported zoom level.
+			 * @param max_zoom the maximum supported zoom level.
+			 * 
+			 * Fired when the zoomlevel changed.
+			 */
+			signal void zoom_level_changed(uint zoom, uint min_zoom, uint max_zoom);
+
+		}
 
     }
 }

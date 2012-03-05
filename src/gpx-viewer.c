@@ -549,8 +549,11 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
         if (active_route)
         {
             /* Give it ' non-active' colour */
-            champlain_path_layer_set_stroke_color(active_route->path, &normal_track_color);
-            /* Hide stop marker */
+			if(active_route->path != NULL)
+			{
+				champlain_path_layer_set_stroke_color(active_route->path, &normal_track_color);
+			}
+			/* Hide stop marker */
             if(active_route->stop)
                 clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
 
@@ -579,22 +582,18 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             if(route->path != NULL)
                 champlain_path_layer_set_stroke_color(route->path, &highlight_track_color);
 
-/*            if (route->visible) */
-            {
-                champlain_path_layer_set_visible(route->path, TRUE);
+            if(route->path /*&& route->visible*/)
+			{
+				champlain_path_layer_set_visible(route->path, TRUE);
             }
             if (route->track->top && route->track->bottom)
             {
                 ChamplainBoundingBox *track_bounding_box;
                 printf("zet zoom leveland view track\n");
-                champlain_view_set_zoom_level(view, champlain_view_get_max_zoom_level(view));
                 track_bounding_box = champlain_bounding_box_new();
-                track_bounding_box->left = route->track->top->lon_dec;
-                track_bounding_box->top = route->track->top->lat_dec;
-                track_bounding_box->right = route->track->bottom->lon_dec;
-                track_bounding_box->bottom = route->track->bottom->lat_dec;
-// TODO
-//                champlain_view_ensure_visible(view, track_bounding_box, FALSE);
+				champlain_bounding_box_extend(track_bounding_box, route->track->top->lat_dec, route->track->top->lon_dec);
+				champlain_bounding_box_extend(track_bounding_box, route->track->bottom->lat_dec, route->track->bottom->lon_dec);
+                champlain_view_ensure_visible(view, track_bounding_box, TRUE);
                 champlain_bounding_box_free(track_bounding_box);
             }
 
@@ -741,8 +740,10 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
 
 	gpx_graph_highlight_point(gpx_graph, point);
     gpx_graph_show_info(gpx_graph, point);
-//TODO
-//	gpx_viewer_map_view_click_marker_ensure_visible(GPX_VIEWER_MAP_VIEW(champlain_view));
+
+	// Center map on this point.
+	champlain_view_center_on(view, point->lat_dec, point->lon_dec);
+
 
     click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, NULL);
 }
@@ -1493,11 +1494,10 @@ static void create_interface(void)
         champlain_view_set_zoom_level(view, 15);
 
         bounding_box = champlain_bounding_box_new();
-        bounding_box->left = lon1;
-        bounding_box->top = lat1;
-        bounding_box->right = lon2;
-        bounding_box->bottom = lat2;
-        champlain_view_ensure_visible(view, bounding_box, FALSE);
+		champlain_bounding_box_extend(bounding_box,lat1,lon1); 
+		champlain_bounding_box_extend(bounding_box,lat2, lon2); 
+		champlain_view_ensure_visible(view, bounding_box, FALSE);
+
         champlain_bounding_box_free(bounding_box);
     }
 }
