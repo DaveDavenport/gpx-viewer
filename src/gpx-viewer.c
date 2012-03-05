@@ -513,9 +513,9 @@ static void interface_map_make_waypoints(ChamplainView * view)
 
 
 /* Show and hide waypoint layer */
-void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
+void show_marker_layer_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer user_data)
 {
-    gboolean active = gtk_toggle_button_get_active(button);
+    gboolean active = gtk_switch_get_active(button);
     if(active != gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view)))
     {
         gpx_viewer_map_view_set_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view), active);
@@ -526,9 +526,9 @@ void show_marker_layer_toggled_cb(GtkToggleButton * button, gpointer user_data)
 static void show_marker_layer_changed(GpxViewerMapView *view, GParamSpec * gobject, GtkWidget *sp)
 {
     gboolean active = gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view));
-    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(sp)) != active)
+    if(gtk_switch_get_active(GTK_SWITCH(sp)) != active)
     {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sp), active);
+        gtk_switch_set_active(GTK_SWITCH(sp), active);
     }
 }
 
@@ -676,9 +676,9 @@ void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
 
 
 /* Show and hide points on graph */
-void graph_show_points_toggled_cb(GtkToggleButton * button, gpointer user_data)
+void graph_show_points_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer user_data)
 {
-    gboolean new = gtk_toggle_button_get_active(button);
+    gboolean new = gtk_switch_get_active(button);
     gpx_graph_set_show_points(gpx_graph, new);
 }
 
@@ -686,9 +686,9 @@ void graph_show_points_toggled_cb(GtkToggleButton * button, gpointer user_data)
 static void graph_show_points_changed(GpxGraph *graph, GParamSpec *sp, GtkWidget *toggle)
 {
     int current = gpx_graph_get_show_points(gpx_graph);
-    if(current != gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle)))
+    if(current != gtk_switch_get_active(GTK_SWITCH(toggle)))
     {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggle),current);
+        gtk_switch_set_active(GTK_SWITCH(toggle),current);
     }
 }
 

@@ -379,14 +379,21 @@
       </packing>
     </child>
     <child>
-      <object class="GtkCheckButton" id="show_marker_layer">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">False</property>
-        <property name="active">True</property>
-        <property name="draw_indicator">True</property>
-        <signal name="toggled" handler="show_marker_layer_toggled_cb"/>
-      </object>
+		<object class="GtkAlignment" id="show_marker_layer_ali">
+			<property name="xalign">1</property>
+			<property name="yalign">0.5</property>
+			<property name="yscale">1</property>
+			<property name="xscale">0</property>
+			<child>
+		      <object class="GtkSwitch" id="show_marker_layer">
+        		<property name="visible">True</property>
+		        <property name="can_focus">True</property>
+        		<property name="receives_default">False</property>
+		        <property name="active">True</property>	
+        		<signal name="notify::active" handler="show_marker_layer_toggled_cb"/>
+		      </object>
+			</child>
+		</object>
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
@@ -443,14 +450,21 @@
       </packing>
     </child>
     <child>
-      <object class="GtkCheckButton" id="graph_show_points">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">False</property>
-        <property name="active">True</property>
-        <property name="draw_indicator">True</property>
-        <signal name="toggled" handler="graph_show_points_toggled_cb"/>
-      </object>
+		<object class="GtkAlignment" id="graph_show_points_ali">
+			<property name="xalign">1</property>
+			<property name="yalign">0.5</property>
+			<property name="yscale">1</property>
+			<property name="xscale">0</property>
+			<child>
+		      <object class="GtkSwitch" id="graph_show_points">
+        		<property name="visible">True</property>
+		        <property name="can_focus">True</property>
+		        <property name="receives_default">False</property>
+		        <property name="active">True</property>
+        		<signal name="notify::active" handler="graph_show_points_toggled_cb"/>
+		      </object>
+			</child>
+		</object>
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
