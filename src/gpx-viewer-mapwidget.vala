@@ -94,7 +94,7 @@ namespace Gpx
 			/* Marker layer */
 			private Champlain.MarkerLayer marker_layer = new Champlain.MarkerLayer();
 
-			private bool _show_markers = false;
+			private bool _show_markers = true;
 			public bool show_markers {
 				get { return _show_markers;}
 				set {
@@ -165,6 +165,7 @@ namespace Gpx
 						});
 				view.add_layer(waypoint_layer);
 				view.add_layer(marker_layer);
+				marker_layer.show();
 				/* Set it to recieve signals */
 				view.reactive = true;
 				view.button_release_event.connect(button_press_callback);

@@ -590,6 +590,8 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             {
                 ChamplainBoundingBox *track_bounding_box;
                 printf("zet zoom leveland view track\n");
+				champlain_view_set_zoom_level(view,
+						champlain_view_get_max_zoom_level(view));
                 track_bounding_box = champlain_bounding_box_new();
 				champlain_bounding_box_extend(track_bounding_box, route->track->top->lat_dec, route->track->top->lon_dec);
 				champlain_bounding_box_extend(track_bounding_box, route->track->bottom->lat_dec, route->track->bottom->lon_dec);
@@ -608,8 +610,10 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 //                gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
             }
 
-            if(route->stop)
+            if(route->stop){
                 clutter_actor_show(CLUTTER_ACTOR(route->stop));
+				printf("show stop marker\n");
+			}
 
             if(route->start)
                 clutter_actor_show(CLUTTER_ACTOR(route->start));
@@ -878,8 +882,8 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         if(start && stop)
         {
             /* create start marker */
-            start_point_color = clutter_color_new(0, 255, 0, 1);
-            route->start = (ChamplainMarker *)champlain_point_new_full(3, start_point_color);
+            start_point_color = clutter_color_new(0, 255, 0, 255);
+            route->start = (ChamplainMarker *)champlain_point_new_full(15, start_point_color);
             clutter_color_free(start_point_color);
             /* Create the marker */
             champlain_location_set_location (CHAMPLAIN_LOCATION (route->start),
@@ -888,8 +892,8 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
 
             /* create end marker */
-            stop_point_color = clutter_color_new(255, 0, 0, 1);
-            route->stop = (ChamplainMarker *)champlain_point_new_full(3, stop_point_color);
+            stop_point_color = clutter_color_new(255, 0, 0, 255);
+            route->stop = (ChamplainMarker *)champlain_point_new_full(15, stop_point_color);
             clutter_color_free(stop_point_color);
             /* Create the marker */
             champlain_location_set_location (CHAMPLAIN_LOCATION (route->stop),
