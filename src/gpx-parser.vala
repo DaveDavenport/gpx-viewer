@@ -44,6 +44,8 @@ namespace Gpx
         public string time;
         /* The speed (only if part of track */
         public double speed = 0;
+		/* indicate if stopped */
+		public bool stopped = false;
 
         private time_t utime  = 0;
         /**
@@ -202,14 +204,6 @@ namespace Gpx
                 this.total_distance += distance;
                 point.distance = this.total_distance;
 
-                if(last.time != null && point.time != null)
-                {
-                    point.speed = calculate_point_to_point_speed(last, point);
-                    if(point.speed > this.max_speed) this.max_speed = point.speed;
-                    if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
-                    if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
-                }
-
                 /* Update the 2 bounding box points */
                 if(top == null || top.lat_dec ==  1000 || top.lat_dec < point.lat_dec)
                 {
@@ -234,6 +228,17 @@ namespace Gpx
                     if(bottom == null) bottom = new Point();
                     bottom.lon_dec = point.lon_dec;
                     bottom.lon = point.lon;
+                }
+                if(last.time != null && point.time != null)
+                {
+                    point.speed = calculate_point_to_point_speed(last, point);
+                    if(point.speed > this.max_speed) this.max_speed = point.speed;
+                    if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
+                    if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
+
+					if(distance < 0.01 && point.speed < 1) {
+						point.stopped = true;
+					}
                 }
 
             }

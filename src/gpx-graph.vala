@@ -614,22 +614,28 @@ namespace Gpx
 				}
 				speed = speed/i;
 
-                // if speed on previous point lower then pref_speed, start at 0.
-				if(this._mode == GraphMode.SPEED && pref_speed < pref_speed_threshold) {
+                // if previous one is stopped, start at 0 
+				if(this._mode == GraphMode.SPEED && iter.data.stopped) {
 					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-							graph_height*(double)(1.0-0));
+							graph_height);
 				}
-
-				ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-						graph_height*(double)(1.0-speed/(range)));
+				// if this one is  stopped, draw line at 0. 
+				if(iter.next.data.stopped)
+				{
+					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+							graph_height);
+				}else{
+					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+							graph_height*(double)(1.0-speed/(range)));
+				}
 
                 // if speed on next point was very low, go to 0
 				// TODO: Does not work, why?
-				if(ii.next != null) {
-					if(this._mode == GraphMode.SPEED && ii.next.data.speed < pref_speed_threshold) {
+				if(iter.next.next != null) {
+					if(this._mode == GraphMode.SPEED && iter.next.next.data.stopped) {
 						GLib.debug("test123");
 						ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-								graph_height*(double)(1.0-0));
+								graph_height*(double)1.0);
 
 					}
 				}
@@ -655,15 +661,15 @@ namespace Gpx
 				iter = track.points.first();
 				while(iter.next != null)
 				{
-					double time_offset = (iter.next.data.get_time()-f.get_time());
-					double speed = 0;
 					weak List<Point?> ii = iter.next;
+					double time_offset = (ii.data.get_time()-f.get_time());
+					double speed = 0;
 					int i=0;
 					int sf = this._smooth_factor;
 					for(i=0;i< sf && ii.prev != null; i++)
 					{
 						if(this._mode == GraphMode.SPEED) {
-							speed += track.calculate_point_to_point_speed(ii.prev.data, ii.data)-min_value;
+							speed += ii.data.speed;//track.calculate_point_to_point_speed(ii.prev.data, ii.data)-min_value;
 						}else if(this._mode == GraphMode.ELEVATION){
 							speed += ii.data.elevation-min_value;
 						}else if(this._mode == GraphMode.DISTANCE){
@@ -676,6 +682,11 @@ namespace Gpx
 						ii = ii.prev;
 					}
 					speed = speed/i;
+					if(iter.next.data.stopped) {
+						ctx.set_source_rgba(1.0, 0.0, 0.0, 1.0);
+					}else{
+						ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+					}
 					ctx.rectangle(graph_width*(double)(time_offset/(double)elapsed_time)-1,
 							graph_height*(double)(1.0-speed/(range))-1,2,2);
 					ctx.stroke();
