@@ -579,17 +579,6 @@ namespace Gpx
             }
             ctx.line_to(0.0, graph_height*(1-(start_speed)/range));
 
-            double pref_speed = 2f;
-            double pref_speed_threshold = 1f;
-            // If pref_speed drops below this threshold we drop a 0 speed
-            // point. 1/20 of average atm.
-            // This is used below to make sure that when there was motion (and therefor no new points)
-            // the start/stop point are not connect with a straight line, but actually a 0 speed line is drawn.
-
-            if(this._mode == GraphMode.SPEED) {
-				var avg = track.get_track_average();
-                pref_speed_threshold = avg/5;
-            }
 			while(iter.next != null)
 			{
 				weak List<Point?> ii = iter.next;
@@ -641,7 +630,6 @@ namespace Gpx
 				}
 				iter = iter.next;
 
-				pref_speed = speed;
 			}
             if(min_value < 0 && max_value > 0) {
 				ctx.line_to(graph_width, graph_height*((max_value)/range));
