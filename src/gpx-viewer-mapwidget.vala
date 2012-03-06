@@ -173,6 +173,7 @@ namespace Gpx
 
 			private bool button_press_callback(Clutter.ButtonEvent event)
 			{
+				stdout.printf("button release event\n");
 				if(event.button == 2 || event.button == 3)
 				{
 					double lat,lon;

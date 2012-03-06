@@ -513,7 +513,7 @@ static void interface_map_make_waypoints(ChamplainView * view)
 
 
 /* Show and hide waypoint layer */
-void show_marker_layer_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer user_data)
+void show_waypoints_layer_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer user_data)
 {
     gboolean active = gtk_switch_get_active(button);
     if(active != gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view)))
@@ -523,7 +523,7 @@ void show_marker_layer_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer 
 }
 
 
-static void show_marker_layer_changed(GpxViewerMapView *view, GParamSpec * gobject, GtkWidget *sp)
+static void show_waypoints_layer_changed(GpxViewerMapView *view, GParamSpec * gobject, GtkWidget *sp)
 {
     gboolean active = gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(champlain_view));
     if(gtk_switch_get_active(GTK_SWITCH(sp)) != active)
@@ -1393,9 +1393,10 @@ static void create_interface(void)
     g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
 
     /* */
-    sp = GTK_WIDGET(gtk_builder_get_object(builder, "show_marker_layer"));
-    g_signal_connect(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_marker_layer_changed), sp);
-    show_marker_layer_changed(NULL, NULL, sp);
+    sp = GTK_WIDGET(gtk_builder_get_object(builder, "show_waypoints_layer"));
+    g_signal_connect(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_waypoints_layer_changed), sp);
+    gpx_viewer_settings_add_object_property(settings, G_OBJECT(champlain_view), "show-waypoints");
+    show_waypoints_layer_changed(NULL, NULL, sp);
 
     g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
     g_signal_connect(gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), NULL);
@@ -1911,9 +1912,9 @@ void gpx_viewer_show_preferences_dialog(void)
 
 	/* Show Waypoints */
 	widget = GTK_WIDGET(gtk_builder_get_object(fbuilder, "check_button_show_waypoints"));
-	g_signal_connect_object(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_marker_layer_changed),
+	g_signal_connect_object(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_waypoints_layer_changed),
 			widget,0);
-	show_marker_layer_changed(NULL, NULL, widget);
+	show_waypoints_layer_changed(NULL, NULL, widget);
 
 	/** Graph **/
 	/* smooth factor */

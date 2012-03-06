@@ -379,18 +379,18 @@
       </packing>
     </child>
     <child>
-		<object class="GtkAlignment" id="show_marker_layer_ali">
+		<object class="GtkAlignment" id="show_waypoints_layer_ali">
 			<property name="xalign">1</property>
 			<property name="yalign">0.5</property>
 			<property name="yscale">1</property>
 			<property name="xscale">0</property>
 			<child>
-		      <object class="GtkSwitch" id="show_marker_layer">
+		      <object class="GtkSwitch" id="show_waypoints_layer">
         		<property name="visible">True</property>
 		        <property name="can_focus">True</property>
         		<property name="receives_default">False</property>
 		        <property name="active">True</property>	
-        		<signal name="notify::active" handler="show_marker_layer_toggled_cb"/>
+        		<signal name="notify::active" handler="show_waypoints_layer_toggled_cb"/>
 		      </object>
 			</child>
 		</object>
