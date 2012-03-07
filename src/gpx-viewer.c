@@ -1312,8 +1312,8 @@ static void create_interface(void)
 	map_dock_item = gdl_dock_item_new("Map", "Map",
 				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
 				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
+				GDL_DOCK_ITEM_BEH_LOCKED|
 				GDL_DOCK_ITEM_BEH_NEVER_FLOATING);
-
 	gtk_container_add(GTK_CONTAINER(map_dock_item), sw);
 	gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(map_dock_item), GDL_DOCK_RIGHT);
 	gtk_widget_show_all(map_dock_item);

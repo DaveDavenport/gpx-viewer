@@ -377,6 +377,109 @@ namespace Gpx
 			}
 			return false;
 		}
+
+		/**
+		 * Draw the graph to the required surface.
+		 */
+		private void draw_grid(Cairo.Context ctx, Pango.Layout layout,
+				double graph_width, double graph_height,
+				double min_value, double max_value, double elapsed_time)
+		{
+			double j =0.0;
+			double step_size = (graph_height)/8.0;
+			double range = max_value - min_value;
+
+			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw grid lines");
+			/* Draw speed and ticks */
+			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+
+			fd.set_absolute_size(12*1024);
+			layout.set_font_description(fd);
+            layout.set_text("0.0",-1);
+            int wt,ht;
+            layout.get_pixel_size(out wt, out ht);
+			step_size = graph_height/(Math.ceil(graph_height/(ht+10)/5)*5);
+			/* Draw horizontal lines + labels */
+			for(j=0;j<=graph_height;j+=step_size){
+				double speed = min_value + (range)*((graph_height-j)/graph_height);
+				var text = "%.1f".printf(speed);
+				int w,h;
+                ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+                layout.set_text(text,-1);
+				layout.get_pixel_size(out w, out h);
+				ctx.move_to(-w-5, j-h/2.0);
+				Pango.cairo_layout_path(ctx, layout);
+				ctx.fill();
+
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set speed tick: %s",
+						text);
+
+				ctx.move_to(-4, j);
+				ctx.line_to(0, j);
+				ctx.stroke();
+				// do not draw top/bottom. Small offset for float/double inpr.
+				if(j <= 0.00001 || j >= (graph_height-0.00001)) continue;
+                ctx.set_source_rgba(0.4, 0.4, 0.4, 0.6);
+                ctx.set_line_width(1);
+                ctx.move_to(0.0,j);
+                ctx.line_to(graph_width,j);
+				ctx.stroke();
+			}
+
+			/* Draw axis */
+			ctx.set_line_width(2.5);
+			ctx.set_source_rgba(0.0, 0.0, 0.0, 1);
+			ctx.move_to(0.0, 0.0);
+			ctx.line_to(0.0,graph_height);
+			ctx.stroke();
+
+			ctx.line_to(0.0, graph_height+(graph_height/range)*(min_value));
+			ctx.line_to(graph_width, graph_height+(graph_height/range)*(min_value));
+			ctx.stroke();
+
+			/* Draw time units. */
+			weak List<Point?> iter = track.points.first();
+
+			fd.set_absolute_size(12*1024);
+			layout.set_font_description(fd);
+			uint interval = (uint)elapsed_time/((uint)(graph_width/(5*12.0)));
+			int current = 0;
+			for(uint i=0; i < elapsed_time && interval > 0; i+= interval)
+			{
+				if(graph_width*(1-(i/elapsed_time)) > 2.5*12 ){
+					int w,h;
+					var text = "%02i:%02i".printf((int)i/3600, ((int)i%3600)/60);
+					layout.set_text(text,-1);
+					layout.get_pixel_size(out w, out h);
+					ctx.move_to(graph_width*(double)(i/elapsed_time)-w/2.0, graph_height+10);
+					Pango.cairo_layout_path(ctx, layout);
+
+
+					ctx.set_line_width(1.0);
+					ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+					ctx.fill();
+
+					log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set time tick: %s",
+							text);
+
+					ctx.set_source_rgba(0.4, 0.4, 0.4, 0.6);
+					ctx.set_line_width(1);
+					ctx.move_to(graph_width*(double)(i/elapsed_time), graph_height);
+					ctx.line_to(graph_width*(double)(i/elapsed_time), graph_height*0);
+					ctx.stroke();
+
+					ctx.set_line_width(1.5);
+					ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
+					ctx.move_to(graph_width*(double)(i/elapsed_time), graph_height+(graph_height/range)*(min_value));//graph_height);
+					ctx.line_to(graph_width*(double)(i/elapsed_time), graph_height+(graph_height/range)*(min_value)+5);//graph_height+5);
+					ctx.stroke();
+
+				}
+				current++;
+			}
+
+
+		}
 		private void update_surface(Gtk.Widget win)
 		{
 			var ctx = Gdk.cairo_create(win.get_window());
@@ -489,68 +592,14 @@ namespace Gpx
 			ctx.translate(LEFT_OFFSET,20);
 			Point f = track.points.data;
 
-			/* Draw Grid */
 			double graph_width = alloc.width-LEFT_OFFSET-10;
 			double graph_height = alloc.height-20-BOTTOM_OFFSET;
             if(graph_height < 50 ) return;
 			var layout = Pango.cairo_create_layout(ctx);
-			double j =0.0;
-			double step_size = (graph_height)/8.0;
-/*
-			ctx.set_source_rgba(0.2, 0.2, 0.2, 0.6);
-			ctx.set_line_width(1);
-			for(j=graph_height;j>0.0;j-=step_size){
-				ctx.move_to(0.0,j);
-				ctx.line_to(graph_width,j);
-				ctx.stroke();
-			}
-*/
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw grid lines");
-			/* Draw speed and ticks */
-			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-
-			fd.set_absolute_size(12*1024);
-			layout.set_font_description(fd);
-            layout.set_text("0.0",-1);
-            int wt,ht;
-            layout.get_pixel_size(out wt, out ht);
-			step_size = graph_height/(Math.ceil(graph_height/(ht+10)/5)*5);
-			for(j=0;j<graph_height;j+=step_size){
-				double speed = min_value + (range)*((graph_height-j)/graph_height);
-				var text = "%.1f".printf(speed);
-				int w,h;
-                ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-                layout.set_text(text,-1);
-				layout.get_pixel_size(out w, out h);
-				ctx.move_to(-w-5, j-h/2.0);
-				Pango.cairo_layout_path(ctx, layout);
-				ctx.fill();
-
-				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set speed tick: %s",
-						text);
-
-				ctx.move_to(-4, j);
-				ctx.line_to(0, j);
-				ctx.stroke();
-
-                ctx.set_source_rgba(0.2, 0.2, 0.2, 0.6);
-                ctx.set_line_width(1);
-                ctx.move_to(0.0,j);
-                ctx.line_to(graph_width,j);
-				ctx.stroke();
-				/* */
-			}
-
-			/* Draw axis */
-			ctx.set_line_width(1.5);
-			ctx.set_source_rgba(0.0, 0.0, 0.0, 1);
-			ctx.move_to(0.0, 0.0);
-			ctx.line_to(0.0,graph_height);
-			ctx.stroke();
-
-			ctx.line_to(0.0, graph_height+(graph_height/range)*(min_value));
-			ctx.line_to(graph_width, graph_height+(graph_height/range)*(min_value));
-			ctx.stroke();
+			/*****
+			 * Draw Grid 
+			 **/
+			draw_grid(ctx,layout, graph_width, graph_height, min_value, max_value, elapsed_time);
 
 
 			/* Draw the graph */
@@ -684,34 +733,6 @@ namespace Gpx
 			}
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw graph");
-
-			iter = track.points.first();
-
-			ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-			fd.set_absolute_size(12*1024);
-			layout.set_font_description(fd);
-			uint interval = (uint)elapsed_time/((uint)(graph_width/(5*12.0)));
-			int current = 0;
-			for(uint i=0; i < elapsed_time && interval > 0; i+= interval)
-			{
-				if(graph_width*(1-(i/elapsed_time)) > 2.5*12 ){
-					int w,h;
-					var text = "%02i:%02i".printf((int)i/3600, ((int)i%3600)/60);
-					layout.set_text(text,-1);
-					layout.get_pixel_size(out w, out h);
-					ctx.move_to(graph_width*(double)(i/elapsed_time)-w/2.0, graph_height+10);
-					Pango.cairo_layout_path(ctx, layout);
-					ctx.fill();
-
-					log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Set time tick: %s",
-							text);
-
-					ctx.move_to(graph_width*(double)(i/elapsed_time), graph_height);
-					ctx.line_to(graph_width*(double)(i/elapsed_time), graph_height+5);
-					ctx.stroke();
-				}
-				current++;
-			}
 
 			/* Draw average speed */
 			if(this._mode == GraphMode.SPEED)
