@@ -609,7 +609,7 @@ namespace Gpx
 							graph_height);
 				}
 				// if this one is  stopped, draw line at 0. 
-				if(iter.next.data.stopped)
+				if(this._mode == GraphMode.SPEED && iter.next.data.stopped)
 				{
 					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
 							graph_height);
