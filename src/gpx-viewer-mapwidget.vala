@@ -34,6 +34,32 @@ namespace Gpx
 			/*  Marker  */
 			private Champlain.Label click_marker = null;
 
+
+
+
+			public Champlain.Label? create_marker(Gpx.Point p, string icon, int size)
+			{
+				Champlain.Label? marker = null;
+				var info = Gtk.IconTheme.get_default().lookup_icon(
+						icon,
+						size,0);
+				if(info != null)
+				{
+					var path = info.get_filename();
+					if(path != null){
+						try {
+							marker = new Champlain.Label.from_file(path);
+						} catch (GLib.Error e) {
+							GLib.warning ("%s", e.message);
+						}
+						marker.set_draw_background(false);
+					}
+				}
+				marker.set_size((float)size, (float)size);
+				marker.set_anchor_point((float)size/2.0f, (float)size/2.0f);
+				marker.set_location((float)p.lat_dec,(float)p.lon_dec);
+				return marker;
+			}
 			/**
 			 * Show marker at Point
 			 */
@@ -41,27 +67,13 @@ namespace Gpx
 			{
 				if(click_marker == null) 
 				{
-					var info = Gtk.IconTheme.get_default().lookup_icon(
-							"pin-red",
-							100,0);
-					if(info != null)
-					{
-						var path = info.get_filename();
-						if(path != null){
-							try {
-								click_marker = new Champlain.Label.from_file(path);
-							} catch (GLib.Error e) {
-								GLib.warning ("%s", e.message);
-							}
-							click_marker.set_draw_background(false);
-						}
-					}
-					click_marker.set_size(100f,100f);
-					click_marker.set_anchor_point(50f, 50f);
+					click_marker = create_marker(p, "pin-blue",100);
 					this.add_marker(click_marker);
-				}            
-				click_marker.set_location((float)p.lat_dec,(float)p.lon_dec);
-				click_marker.show();
+					click_marker.show();
+				}else{         
+					click_marker.set_location((float)p.lat_dec,(float)p.lon_dec);
+					click_marker.show();
+				}
 			}
 			public void click_marker_hide()
 			{
@@ -164,7 +176,9 @@ namespace Gpx
 							view.max_zoom_level);
 						});
 				view.add_layer(waypoint_layer);
+				waypoint_layer.set_depth(0);
 				view.add_layer(marker_layer);
+				marker_layer.set_depth(1);
 				marker_layer.show();
 				/* Set it to recieve signals */
 				view.reactive = true;

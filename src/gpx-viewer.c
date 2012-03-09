@@ -486,6 +486,7 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
     champlain_path_layer_set_stroke_width(route->path, 4.0);
     champlain_path_layer_set_stroke_color(route->path, &normal_track_color);
     champlain_view_add_layer(CHAMPLAIN_VIEW(view), CHAMPLAIN_LAYER(route->path));
+	clutter_actor_set_depth(CLUTTER_ACTOR(route->path), -10);
     if(!route->visible) champlain_path_layer_set_visible(route->path, FALSE);
 }
 
@@ -882,23 +883,11 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         if(start && stop)
         {
             /* create start marker */
-            start_point_color = clutter_color_new(0, 255, 0, 255);
-            route->start = (ChamplainMarker *)champlain_point_new_full(15, start_point_color);
-            clutter_color_free(start_point_color);
-            /* Create the marker */
-            champlain_location_set_location (CHAMPLAIN_LOCATION (route->start),
-                ((GpxPoint*)start->data)->lat_dec,
-                ((GpxPoint*)start->data)->lon_dec);
+            route->start = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),start->data, "pin-green", 25);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
 
             /* create end marker */
-            stop_point_color = clutter_color_new(255, 0, 0, 255);
-            route->stop = (ChamplainMarker *)champlain_point_new_full(15, stop_point_color);
-            clutter_color_free(stop_point_color);
-            /* Create the marker */
-            champlain_location_set_location (CHAMPLAIN_LOCATION (route->stop),
-                (stop)->lat_dec,
-                (stop)->lon_dec);
+            route->stop = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),stop, "pin-red",25);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
 
             clutter_actor_hide(CLUTTER_ACTOR(route->stop));
