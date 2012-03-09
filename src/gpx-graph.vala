@@ -291,8 +291,6 @@ namespace Gpx
 			this.get_allocation(out alloc);
 			/* Draw the actual surface on the widget */
 			ctx.set_source_surface(this.surf, 0, 0);
-//			Gdk.cairo_region(ctx, event.region);
-//			ctx.clip();
 			ctx.paint();
 
 			ctx.translate(LEFT_OFFSET,20);
@@ -470,8 +468,8 @@ namespace Gpx
 
 					ctx.set_line_width(1.5);
 					ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
-					ctx.move_to(graph_width*(double)(i/elapsed_time), graph_height+(graph_height/range)*(min_value));//graph_height);
-					ctx.line_to(graph_width*(double)(i/elapsed_time), graph_height+(graph_height/range)*(min_value)+5);//graph_height+5);
+					ctx.move_to(graph_width*(double)(i/elapsed_time), graph_height+(graph_height/range)*(min_value));
+					ctx.line_to(graph_width*(double)(i/elapsed_time), graph_height+(graph_height/range)*(min_value)+5);
 					ctx.stroke();
 
 				}
@@ -490,9 +488,9 @@ namespace Gpx
 				value = ii.data.elevation;
 			}else if(this._mode == GraphMode.DISTANCE){
 				value = Gpx.Track.calculate_distance(ii.data, ii.first().data);
-			}else if(this._mode == GraphMode.ACCELERATION_H){
+			}else if(this._mode == GraphMode.ACCELERATION_H && ii.prev != null){
 				value = (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
-			}else if(this._mode == GraphMode.SPEED_V){
+			}else if(this._mode == GraphMode.SPEED_V && ii.prev != null){
 				value = (ii.data.elevation- ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
 			}
 			return value;
@@ -544,56 +542,50 @@ namespace Gpx
 			/* Paint background white */
 			ctx.set_source_rgba(1,1,1,1);
 			ctx.paint();
-			if(this.track == null) {
+
+			if(this.track == null || this.track.points == null) {
 				return;
 			}
-			if(this.track.points == null) {
-				return;
-			}
-			if(this.track == null) return;
 			double max_value = 0;
 			double min_value = 0;
 			double range = 0;
 			if(this._mode == GraphMode.SPEED || this._mode == GraphMode.DISTANCE)
 			{
-                weak List<Point?> iter = this.track.points.first();
+				weak List<Point?> iter = this.track.points.first();
 				while(iter.next != null)
 				{
 					weak List<Point?> ii = iter.next;
 					double speed = calculate_graph_point_smooth_value(ii)-min_value;
-                    max_value = (speed > max_value )?speed:max_value;
+					max_value = (speed > max_value )?speed:max_value;
 					iter = iter.next;
 				}
 			}else if (this._mode == GraphMode.ELEVATION){
 				max_value = track.max_elevation;
 				min_value = track.min_elevation;
-            }else if (this._mode == GraphMode.SPEED_V || this._mode == GraphMode.ACCELERATION_H) {
-                weak List<Point?> iter = this.track.points.first();
+			}else if (this._mode == GraphMode.SPEED_V || this._mode == GraphMode.ACCELERATION_H) {
+				weak List<Point?> iter = this.track.points.first();
 				while(iter.next != null)
 				{
 					weak List<Point?> ii = iter.next;
 					double speed = calculate_graph_point_smooth_value(ii)-min_value;
-                    max_value = (speed > max_value )?speed:max_value;
-                    min_value = (speed < min_value)?speed:min_value;
+					max_value = (speed > max_value )?speed:max_value;
+					min_value = (speed < min_value)?speed:min_value;
 					iter = iter.next;
 				}
-            }
-            max_value = GLib.Math.ceil(max_value);
+			}
+			max_value = GLib.Math.ceil(max_value);
 			range = max_value-min_value;
 			double elapsed_time = track.get_total_time();
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis");
 
-			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Max speed: %f, elapsed_time: %f",
-					max_value,
-					elapsed_time);
-
+			// Set the top left x,y coordinate as 0,0
 			ctx.translate(LEFT_OFFSET,20);
 			Point f = track.points.data;
 
 			double graph_width = alloc.width-LEFT_OFFSET-10;
 			double graph_height = alloc.height-20-BOTTOM_OFFSET;
-            if(graph_height < 50 ) return;
+			if(graph_height < 50 ) return;
 			var layout = Pango.cairo_create_layout(ctx);
 			/*****
 			 * Draw Grid 
@@ -607,31 +599,17 @@ namespace Gpx
 			weak List<Point?> iter = track.points.first();
 
 			// Move to start point of graph.
-            if(min_value < 0 && max_value > 0) {
-                ctx.move_to(0.0, graph_height*((max_value)/range));
-            }else {
-                ctx.move_to(0.0, graph_height);
-            }
+			if(min_value < 0 && max_value > 0) {
+				ctx.move_to(0.0, graph_height*((max_value)/range));
+			}else {
+				ctx.move_to(0.0, graph_height);
+			}
 
-
-            double start_speed = 0;
-            if(this._mode == GraphMode.SPEED) {
-                start_speed = iter.data.speed;
-            }else if(this._mode == GraphMode.ELEVATION){
-                start_speed = iter.data.elevation-min_value;
-            }else if(this._mode == GraphMode.DISTANCE){
-                start_speed = iter.data.distance;
-            }else if (this._mode == GraphMode.ACCELERATION_H) {
-                start_speed = -min_value;
-            }else if (this._mode == GraphMode.SPEED_V) {
-                start_speed = -min_value;
-            }
-            ctx.line_to(0.0, graph_height*(1-(start_speed)/range));
 
 			while(iter.next != null)
 			{
 				double time_offset = (iter.data.get_time()-f.get_time());
-                double speed = calculate_graph_point_smooth_value(iter)-min_value;
+				double speed = calculate_graph_point_smooth_value(iter)-min_value;
 				if(this._mode == GraphMode.SPEED)
 				{
 					// if previous one is stopped, start at 0 
@@ -661,12 +639,14 @@ namespace Gpx
 				}
 				iter = iter.next;
 			}
-            if(min_value < 0 && max_value > 0) {
+			// back to 0 line.. 
+			if(min_value < 0 && max_value > 0) {
 				ctx.line_to(graph_width, graph_height*((max_value)/range));
 			}else{
-                ctx.line_to(graph_width, graph_height*1);
-            }
-            ctx.close_path();
+				ctx.line_to(graph_width, graph_height*1);
+			}
+			// Close the path.
+			ctx.close_path();
 			ctx.stroke_preserve();
 
 			ctx.set_source_rgba(0.1, 0.2, 0.8, 0.5);
@@ -697,9 +677,9 @@ namespace Gpx
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw graph");
 
-			/* Draw average speed */
 			if(this._mode == GraphMode.SPEED)
 			{
+				/* Draw average speed */
 				ctx.set_line_width(2.5);
 				var avg = track.get_track_average();
 				ctx.set_source_rgba(0.0, 0.7, 0.0, 0.7);
