@@ -55,6 +55,10 @@ namespace Gpx
 						marker.set_draw_background(false);
 					}
 				}
+				else stdout.printf("Info is null: %s\n", icon);
+				if(marker == null) {
+					marker = new Champlain.Label();
+				}
 				marker.set_size((float)size, (float)size);
 				marker.set_anchor_point((float)size/2.0f, (float)size/2.0f);
 				marker.set_location((float)p.lat_dec,(float)p.lon_dec);

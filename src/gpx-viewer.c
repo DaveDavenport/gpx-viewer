@@ -27,9 +27,6 @@
 #include <champlain-gtk/champlain-gtk.h>
 #include <clutter-gtk/clutter-gtk.h>
 
-#ifdef HAVE_UNIQUE
-#include <unique/unique.h>
-#endif
 
 #include <gdl/gdl.h>
 #include "gpx-viewer.h"
@@ -41,14 +38,6 @@ static GdlDockLayout    *dock_layout = NULL;
 
 static GpxViewerSettings  *settings = NULL;
 
-#ifdef HAVE_UNIQUE
-UniqueApp           *app                    = NULL;
-#endif
-
-typedef enum
-{
-    OPEN_URIS   =   1
-}AppCommands;
 /* List of gpx files */
 GList               *files                  = NULL;
 /* The Map view widget */
@@ -879,15 +868,15 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     if(route->track)
     {
         const GList *start = g_list_first(route->track->points);
-        GpxPoint *stop = gpx_track_get_last(route->track);/*g_list_last(route->track->points);*/
+        GpxPoint *stop = gpx_track_get_last(route->track);
         if(start && stop)
         {
             /* create start marker */
-            route->start = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),start->data, "pin-green", 25);
+            route->start = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),start->data, "pin-green", 64);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
 
             /* create end marker */
-            route->stop = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),stop, "pin-red",25);
+            route->stop = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),stop, "pin-red",64);
             gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
 
             clutter_actor_hide(CLUTTER_ACTOR(route->stop));
@@ -1093,6 +1082,7 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
     g_free(uri);
     files = g_list_append(files, file);
 
+
     basename = g_file_get_basename(file->file);
     gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
     gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
@@ -1243,7 +1233,7 @@ static void graph_mode_changed(GpxGraph *graph, GParamSpec *sp, gpointer data)
 
 
 /* Create the interface */
-static void create_interface(void)
+static void create_interface(GtkApplication *gtk_app)
 {
     ChamplainView *view;
     GList *fiter,*iter;
@@ -1494,6 +1484,7 @@ static void create_interface(void)
 
         champlain_bounding_box_free(bounding_box);
     }
+    gtk_window_set_application(GTK_WINDOW(gtk_builder_get_object(builder,"gpx_viewer_window")), gtk_app);
 }
 
 
@@ -1589,148 +1580,163 @@ void open_gpx_file(GtkMenu *item)
 }
 
 
-#ifdef HAVE_UNIQUE
-/**
- * IPC: Handle commands gpx-viewer gets via UniqueApp.
- */
-static UniqueResponse unique_response(UniqueApp *uapp, gint command, UniqueMessageData *data, guint time_)
+/************************************************************
+ *  GPX-Viewer                                              *
+ ************************************************************/
+typedef GtkApplication 		GpxViewer;
+typedef GtkApplicationClass GpxViewerClass;
+
+G_DEFINE_TYPE (GpxViewer, gpx_viewer, GTK_TYPE_APPLICATION)
+
+void gpx_viewer_activate (GpxViewer *object)
 {
-    switch(command)
-    {
-        case OPEN_URIS:
-        {
-            GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
-            int i;
-            gchar ** uris = unique_message_data_get_uris(data);
-            g_debug("Asked to open uris\n");
-            for (i = 0; uris != NULL && uris[i] != NULL ; i++)
-            {
-                GpxFile *file;
-                GFile *afile = g_file_new_for_commandline_arg(uris[i]);
-                gchar *basename;
-                GtkTreeIter liter;
-                double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
-                /* Create a GFile */
-                /* Try to open the gpx file */
-                file = gpx_file_new(afile);
-                files = g_list_append(files, file);
-                g_object_unref(afile);
-                /* Add entry to recent manager */
-				gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)file->file);
+	if(settings == NULL)
+	{
+		/* Setup responding to commands */
+		settings = gpx_viewer_settings_new();
 
-                basename = g_file_get_basename(file->file);
-                gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
-                gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
-                    0, basename,
-                    1, NULL,
-                    2, FALSE,
-                    3, FALSE,
-                    -1);
-                g_free(basename);
-                if (file->tracks)
-                {
-                    GList *track_iter;
-                    for (track_iter = g_list_first(file->tracks); track_iter; track_iter = g_list_next(track_iter))
-                    {
-                        interface_plot_add_track(&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
-                    }
-                }
-                if(file->routes)
-                {
-                    GList *route_iter;
-                    for (route_iter = g_list_first(file->routes); route_iter; route_iter = g_list_next(route_iter))
-                    {
-                        interface_plot_add_track(&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
-                    }
-                }
-                interface_create_fake_master_track(file, &liter);
-            }
-            g_strfreev(uris);
-            return UNIQUE_RESPONSE_OK;
-        }
-        default:
-            break;
-    }
-    return UNIQUE_RESPONSE_INVALID;
+		/* REcent manager */
+		recent_man = gtk_recent_manager_get_default();
+
+		/* Create playback option */
+		playback = gpx_playback_new(NULL);
+		/* Connect settings */
+		gpx_viewer_settings_add_object_property(settings,
+				G_OBJECT(playback), "speedup");
+		/* Watch signals */
+		g_signal_connect(GPX_PLAYBACK(playback),
+				"tick",
+				G_CALLBACK(route_playback_tick),
+				NULL);
+		g_signal_connect(GPX_PLAYBACK(playback),
+				"state-changed",
+				G_CALLBACK(route_playback_state_changed),
+				NULL);
+
+		/* Create interface */
+		create_interface(GTK_APPLICATION(object));
+	}
 }
-#endif
 
+static void
+gpx_viewer_finalize (GObject *object)
+{
+	/* unref playback object */
+	g_debug("Destroying playback");
+	if(playback) {
+		g_object_unref(playback);
+	}
+	/* Destroy the files */
+	g_debug("Cleaning up files");
+	g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
+	g_list_free(files);
 
-int main(int argc, char **argv)
+	/* Destroy the settings object */
+	g_debug("destroying Settings");
+	if(settings) {
+		g_object_unref(settings);
+	}
+
+	/* Class */
+	G_OBJECT_CLASS (gpx_viewer_parent_class)->finalize (object);
+}
+
+static void
+gpx_viewer_init (GpxViewer *app)
+{
+
+}
+
+static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, const gchar *hint)
 {
 	int i = 0;
-	gchar *website;
-	GOptionContext *context = NULL;
-	GError *error = NULL;
+
+	gpx_viewer_activate(app);
+	GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+
+	for(i=0; i < n_files;i++)
+	{
+		GpxFile *file;
+		gchar *basename;
+		gchar *filename;
+		GtkTreeIter liter;
+		double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
+		/* Create a GFile */
+		/* Try to open the gpx file */
+		file = gpx_file_new(input_files[i]);
+		files = g_list_append(files, file);
+		/* Add entry to recent manager */
+		filename = g_file_get_uri(file->file);
+		gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man),filename); 
+
+		basename = g_file_get_basename(file->file);
+		gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+		gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
+				0, basename,
+				1, NULL,
+				2, FALSE,
+				3, FALSE,
+				-1);
+		g_free(basename);
+		g_free(filename);
+		if (file->tracks)
+		{
+			GList *track_iter;
+			for (track_iter = g_list_first(file->tracks); track_iter; track_iter = g_list_next(track_iter))
+			{
+				interface_plot_add_track(&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
+			}
+		}
+		if(file->routes)
+		{
+			GList *route_iter;
+			for (route_iter = g_list_first(file->routes); route_iter; route_iter = g_list_next(route_iter))
+			{
+				interface_plot_add_track(&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
+			}
+		}
+		interface_create_fake_master_track(file, &liter);
+	}
+}
+
+static void
+gpx_viewer_class_init (GpxViewerClass *class)
+{
+  G_OBJECT_CLASS (class)->finalize= gpx_viewer_finalize;
+  G_OBJECT_CLASS (class)->constructed = gpx_viewer_init;
+
+  G_APPLICATION_CLASS (class)->activate = gpx_viewer_activate;
+  G_APPLICATION_CLASS (class)->open = gpx_viewer_open;
+}
+
+
+
+
+GpxViewer *
+gpx_viewer_new (void)
+{
+  return g_object_new (gpx_viewer_get_type (),
+                       "application-id", "nl.sarine.gpx-viewer",
+                       "flags", G_APPLICATION_HANDLES_OPEN,
+                       NULL);
+}
+
+/*******************************************************************
+ * Main program
+ *******************************************************************/
+int main(int argc, char **argv)
+{
+	int retv;
+	GpxViewer *app = NULL;
 	gchar *path;
 
 	/* setup translation */
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset(PACKAGE, "UTF-8");
 	textdomain(PACKAGE);
-//	gtk_set_locale();
 	setlocale (LC_ALL, "");
 
 	gtk_clutter_init(&argc, &argv);
-	/* Setup the commandline parser */
-	context = g_option_context_new(
-			_("[FILE...] - GPX Viewer"));
-
-	/* summary */
-	g_option_context_set_summary(context, 
-			_("A simple program to visualize one or more gpx files."));
-	/* website */
-	website = g_strconcat(_("Website: "), PACKAGE_URL, NULL);
-	g_option_context_set_description(context, website);
-	g_free(website);
-
-	g_option_context_add_group(context, gtk_get_option_group(TRUE));
-	g_option_context_parse(context, &argc, &argv, &error);
-	g_option_context_free(context);
-
-	if (error)
-	{
-		g_log(NULL, G_LOG_LEVEL_ERROR, "Failed to parse commandline options: %s", error->message);
-		g_error_free(error);
-		error = NULL;
-		return EXIT_FAILURE;
-	}
-	if(!g_thread_supported())
-	{
-		g_thread_init(NULL);
-	}
-
-
-#ifdef HAVE_UNIQUE
-	/* Setup unique app.  This enforces only one instance off the application is running. */
-	app = unique_app_new("nl.Sarine.gpx-viewer",NULL);
-	unique_app_add_command(app,"open-uris", OPEN_URIS);
-	g_signal_connect(G_OBJECT(app),"message-received", G_CALLBACK(unique_response), NULL);
-
-	/* Check if we are allready running */
-	if(unique_app_is_running(app))
-	{
-		/* Program is allready running */
-		UniqueMessageData *msd = unique_message_data_new();
-		g_debug("Program is allready running\n");
-		if(argc > 1)
-		{
-			unique_message_data_set_uris(msd,&argv[1]);
-			unique_app_send_message(app,1, msd);
-		}
-		/* free msd */
-		unique_message_data_free(msd);
-		/* Free app */
-		g_object_unref(app);
-		return EXIT_SUCCESS;
-	}
-#endif
-
-	/* Setup responding to commands */
-	settings = gpx_viewer_settings_new();
-
-	/* REcent manager */
-	recent_man = gtk_recent_manager_get_default();
 
 	/* Add own icon strucutre to the theme engine search */
 	path = g_build_filename(DATA_DIR, "icons", NULL);
@@ -1738,63 +1744,18 @@ int main(int argc, char **argv)
 			path);
 	g_free(path);
 
-	/* Open all the files given on the command line */
-	for (i = 1; i < argc; i++)
+	if(!g_thread_supported())
 	{
-		GpxFile *file;
-		GFile *afile = g_file_new_for_commandline_arg(argv[i]);
-		gchar *uri = g_file_get_uri(afile);
-
-		/* Try to open the gpx file */
-		gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), uri);
-		file = gpx_file_new(afile);
-		files = g_list_prepend(files, file);
-
-		g_free(uri);
-		g_object_unref(afile);
+		g_thread_init(NULL);
 	}
-	files = g_list_reverse(files);
 
-	/* Create playback option */
-	playback = gpx_playback_new(NULL);
-	/* Connect settings */
-	gpx_viewer_settings_add_object_property(settings,
-			G_OBJECT(playback), "speedup");
-	/* Watch signals */
-	g_signal_connect(GPX_PLAYBACK(playback),
-			"tick",
-			G_CALLBACK(route_playback_tick),
-			NULL);
-	g_signal_connect(GPX_PLAYBACK(playback),
-			"state-changed",
-			G_CALLBACK(route_playback_state_changed),
-			NULL);
-	/* Create the interface on main loop begin */
-//		gtk_init_add((GtkFunction)create_interface,NULL);
-	create_interface();
 
-	/* Start the main loop */
-	gtk_main();
+	app = gpx_viewer_new();	
 
-	/* unref playback object */
-	g_debug("Destroying playback");
-	g_object_unref(playback);
+	retv = g_application_run(G_APPLICATION(app), argc, argv);
 
-	/* Destroy the files */
-	g_debug("Cleaning up files");
-	g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
-	g_list_free(files);
-	/* Destroy the settings object */
-	g_debug("destroying Settings");
-	g_object_unref(settings);
-
-#ifdef HAVE_UNIQUE
-	/* Destroy unique app */
-	g_debug("Destroying unique session");
 	g_object_unref(app);
-#endif
-
-	return EXIT_SUCCESS;
+	return retv;
 }
 
 
