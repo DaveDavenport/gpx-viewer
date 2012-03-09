@@ -283,7 +283,7 @@ namespace Gpx
 				}
 				var pdf =
 				(1/Math.sqrt(2*Math.PI*deviation))*GLib.Math.exp(-((pspeed-mean)*(pspeed-mean))/(2*deviation));
-				if((num_points*pdf) < 0.1) {
+				if((num_points*pdf) < 0.1 && !iter.data.stopped) {
 					/* Remove point, fix speed off the next point, as it should */
 					weak List<Point> temp = iter.prev;
 					list_copy.remove_link(iter);	
