@@ -480,6 +480,52 @@ namespace Gpx
 
 
 		}
+		private double calculate_graph_point_value(List<Point?> ii)
+		{
+			double value =0;
+
+			if(this._mode == GraphMode.SPEED) {
+				value = ii.data.speed;
+			}else if(this._mode == GraphMode.ELEVATION){
+				value = ii.data.elevation;
+			}else if(this._mode == GraphMode.DISTANCE){
+				value = Gpx.Track.calculate_distance(ii.data, ii.first().data);
+			}else if(this._mode == GraphMode.ACCELERATION_H){
+				value = (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
+			}else if(this._mode == GraphMode.SPEED_V){
+				value = (ii.data.elevation- ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
+			}
+			return value;
+		}
+		private double calculate_graph_point_smooth_value(List<Point?> iter)
+		{
+			if(this._smooth_factor == 1)
+			{
+				return calculate_graph_point_value(iter);
+			}
+			else
+			{
+				double speed = 0;
+				weak List<Point?> ii = iter;
+				int sf = (ii.data.stopped && this._mode == GraphMode.SPEED)?1:this._smooth_factor;
+				int i,items = 0;
+				for(i=0;i< sf && ii.prev != null; i++)
+				{
+					speed += calculate_graph_point_value(ii);
+					items++;
+					ii = ii.prev;
+				}
+				ii = iter.next;
+				for(i=1;i< sf && ii != null &&  ii.next != null; i++)
+				{
+					speed += calculate_graph_point_value(ii);
+					items++;
+					ii = ii.next;
+				}
+				speed = speed/items;
+				return speed;
+			}
+		}
 		private void update_surface(Gtk.Widget win)
 		{
 			var ctx = Gdk.cairo_create(win.get_window());
@@ -508,76 +554,29 @@ namespace Gpx
 			double max_value = 0;
 			double min_value = 0;
 			double range = 0;
-			if(this._mode == GraphMode.SPEED)
+			if(this._mode == GraphMode.SPEED || this._mode == GraphMode.DISTANCE)
 			{
-				if(this._smooth_factor != 1)
+                weak List<Point?> iter = this.track.points.first();
+				while(iter.next != null)
 				{
-					weak List<Point?> iter = this.track.points.first();
-					while(iter.next != null)
-					{
-						weak List<Point?> ii = iter.next;
-						double speed = 0;
-						int i=0;
-						int sf = this._smooth_factor;
-						for(i=0;i<sf && ii.prev != null; i++)
-						{
-							speed += ii.data.speed;
-							ii = ii.prev;
-						}
-						speed = speed/i;
-						max_value = (speed > max_value )?speed:max_value;
-						iter = iter.next;
-					}
+					weak List<Point?> ii = iter.next;
+					double speed = calculate_graph_point_smooth_value(ii)-min_value;
+                    max_value = (speed > max_value )?speed:max_value;
+					iter = iter.next;
 				}
-				else
-					max_value = track.max_speed;
 			}else if (this._mode == GraphMode.ELEVATION){
 				max_value = track.max_elevation;
 				min_value = track.min_elevation;
-			}else if (this._mode == GraphMode.DISTANCE){
-				/* Get the max absolute distance */ 
-                weak List<Point?> first = this.track.points.first();
-				foreach(Point? p in this.track.points) {
-					var d = Gpx.Track.calculate_distance(first.data, p);
-					if(d>max_value) max_value = d;
+            }else if (this._mode == GraphMode.SPEED_V || this._mode == GraphMode.ACCELERATION_H) {
+                weak List<Point?> iter = this.track.points.first();
+				while(iter.next != null)
+				{
+					weak List<Point?> ii = iter.next;
+					double speed = calculate_graph_point_smooth_value(ii)-min_value;
+                    max_value = (speed > max_value )?speed:max_value;
+                    min_value = (speed < min_value)?speed:min_value;
+					iter = iter.next;
 				}
-				min_value = 0;
-            }else if (this._mode == GraphMode.ACCELERATION_H) {
-                weak List<Point?> iter = this.track.points.first();
-                while(iter.next != null)
-                {
-                    weak List<Point?> ii = iter.next;
-                    double speed = 0;
-                    int i=0;
-                    int sf = this._smooth_factor;
-                    for(i=0;i<sf && ii.prev != null; i++)
-                    {
-                        speed += (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
-                        ii = ii.prev;
-                    }
-                    speed = speed/i;
-                    max_value = (speed > max_value )?speed:max_value;
-                    min_value = (speed < min_value)?speed:min_value;
-                    iter = iter.next;
-                }
-            }else if (this._mode == GraphMode.SPEED_V) {
-                weak List<Point?> iter = this.track.points.first();
-                while(iter != null && iter.next != null)
-                {
-                    weak List<Point?> ii = iter.next;
-                    double speed = 0;
-                    int i=0;
-                    int sf = this._smooth_factor;
-                    for(i=0;i<sf && ii.prev != null; i++)
-                    {
-                        speed += (ii.data.elevation- ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
-                        ii = ii.prev;
-                    }
-                    speed = speed/i;
-                    max_value = (speed > max_value )?speed:max_value;
-                    min_value = (speed < min_value)?speed:min_value;
-                    iter = iter.next;
-                }
             }
             max_value = GLib.Math.ceil(max_value);
 			range = max_value-min_value;
@@ -607,6 +606,7 @@ namespace Gpx
 			ctx.set_line_width(1);
 			weak List<Point?> iter = track.points.first();
 
+			// Move to start point of graph.
             if(min_value < 0 && max_value > 0) {
                 ctx.move_to(0.0, graph_height*((max_value)/range));
             }else {
@@ -630,55 +630,36 @@ namespace Gpx
 
 			while(iter.next != null)
 			{
-				weak List<Point?> ii = iter.next;
-				double time_offset = (ii.data.get_time()-f.get_time());
-				int i=0;
-                double speed = 0;
-				int sf = this._smooth_factor;
-				for(i=0;i< sf && ii.prev != null; i++)
+				double time_offset = (iter.data.get_time()-f.get_time());
+                double speed = calculate_graph_point_smooth_value(iter)-min_value;
+				if(this._mode == GraphMode.SPEED)
 				{
-					if(this._mode == GraphMode.SPEED) {
-						speed += ii.data.speed;
-					}else if(this._mode == GraphMode.ELEVATION){
-						speed += ii.data.elevation-min_value;
-					}else if(this._mode == GraphMode.DISTANCE){
-						speed += Gpx.Track.calculate_distance(ii.data, ii.first().data);//.distance;
-					}else if (this._mode == GraphMode.ACCELERATION_H) {
-                        speed += (ii.data.speed - ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
-					}else if (this._mode == GraphMode.SPEED_V) {
-                        speed += (ii.data.elevation - ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
-                    }
-					ii = ii.prev;
-				}
-				speed = speed/i;
+					// if previous one is stopped, start at 0 
+					if(iter.prev != null && iter.prev.data.stopped) {
+						ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+								graph_height);
+					}
+					// if this one is  stopped, draw line at 0. 
+					if(iter.data.stopped)
+					{
+						ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+								graph_height);
+					}else{
+						ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+								graph_height*(double)(1.0-speed/(range)));
+					}
 
-                // if previous one is stopped, start at 0 
-				if(this._mode == GraphMode.SPEED && iter.data.stopped) {
-					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-							graph_height);
-				}
-				// if this one is  stopped, draw line at 0. 
-				if(this._mode == GraphMode.SPEED && iter.next.data.stopped)
-				{
-					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-							graph_height);
+					// if next point is stopped. goto 0. 
+					if(iter.next != null && iter.next.data.stopped) {
+						ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
+								graph_height*(double)1.0);
+					}
 				}else{
 					ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
 							graph_height*(double)(1.0-speed/(range)));
-				}
 
-                // if speed on next point was very low, go to 0
-				// TODO: Does not work, why?
-				if(iter.next.next != null) {
-					if(this._mode == GraphMode.SPEED && iter.next.next.data.stopped) {
-						GLib.debug("test123");
-						ctx.line_to(graph_width*(double)(time_offset/(double)elapsed_time),
-								graph_height*(double)1.0);
-
-					}
 				}
 				iter = iter.next;
-
 			}
             if(min_value < 0 && max_value > 0) {
 				ctx.line_to(graph_width, graph_height*((max_value)/range));
@@ -700,26 +681,8 @@ namespace Gpx
 				{
 					weak List<Point?> ii = iter.next;
 					double time_offset = (ii.data.get_time()-f.get_time());
-					double speed = 0;
-					int i=0;
-					int sf = this._smooth_factor;
-					for(i=0;i< sf && ii.prev != null; i++)
-					{
-						if(this._mode == GraphMode.SPEED) {
-							speed += ii.data.speed;//track.calculate_point_to_point_speed(ii.prev.data, ii.data)-min_value;
-						}else if(this._mode == GraphMode.ELEVATION){
-							speed += ii.data.elevation-min_value;
-						}else if(this._mode == GraphMode.DISTANCE){
-							speed += Gpx.Track.calculate_distance(ii.data, ii.first().data);//ii.data.distance;
-						}else if(this._mode == GraphMode.ACCELERATION_H){
-							speed += (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
-						}else if(this._mode == GraphMode.SPEED_V){
-							speed += (ii.data.elevation- ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()))-min_value;
-                        }
-						ii = ii.prev;
-					}
-					speed = speed/i;
-					if(iter.next.data.stopped) {
+					double speed = calculate_graph_point_smooth_value(ii)-min_value;
+					if(ii.data.stopped) {
 						ctx.set_source_rgba(1.0, 0.0, 0.0, 1.0);
 					}else{
 						ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
