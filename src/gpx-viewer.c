@@ -216,7 +216,6 @@ static void free_Route(Route *route)
 void on_destroy(void)
 {
     g_debug("Quit...");
-    gtk_main_quit();
 
     save_layout();
 
