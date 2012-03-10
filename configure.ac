@@ -50,17 +50,6 @@ PKG_CHECK_MODULES([champlain], [
         champlain-0.12 >= 0.12.0
 ])
 
-# Check for unique. This is optional.
-#PKG_CHECK_MODULES([unique], 
-#	[unique-1.0],
-#	[ 
-#		have_unique="yes"
-#		AC_DEFINE(HAVE_UNIQUE,1,[unique support enabled])],
-#	 have_unique="no"
-#)
-AC_SUBST(unique_LIBS)
-AC_SUBST(unique_CFLAGS)
-
 AC_CONFIG_FILES([
 	Makefile
 	po/Makefile.in

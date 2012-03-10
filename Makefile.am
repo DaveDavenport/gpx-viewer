@@ -56,7 +56,6 @@ gpx_viewer_VALAFLAGS= --pkg=config --pkg=clutter-1.0 --pkg=gtk+-3.0 --pkg=libxml
 
 LIBS=\
 	@gtk_LIBS@\
-	@unique_LIBS@\
 	@champlain_LIBS@\
 	@libxml_LIBS@\
 	@libgdl_LIBS@\
@@ -64,7 +63,6 @@ LIBS=\
 
 AM_CFLAGS=\
 	@gtk_CFLAGS@\
-	@unique_CFLAGS@\
 	@champlain_CFLAGS@\
 	@libxml_CFLAGS@\
 	@libgdl_CFLAGS@\
