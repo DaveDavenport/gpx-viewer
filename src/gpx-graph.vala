@@ -649,7 +649,7 @@ namespace Gpx
 			ctx.close_path();
 			ctx.stroke_preserve();
 
-			ctx.set_source_rgba(0.1, 0.2, 0.8, 0.5);
+			ctx.set_source_rgba(0.6, 0.8, 0.9, 0.8);
 			ctx.fill();
 
 			if (this.show_points) {
@@ -680,18 +680,19 @@ namespace Gpx
 			if(this._mode == GraphMode.SPEED)
 			{
 				/* Draw average speed */
-				ctx.set_line_width(2.5);
 				var avg = track.get_track_average();
-				ctx.set_source_rgba(0.0, 0.7, 0.0, 0.7);
 				ctx.move_to(0.0, graph_height*(1-avg/max_value));
 				ctx.line_to(graph_width, graph_height*(1-avg/max_value));
+
+				ctx.set_line_width(2.5);
+				ctx.set_source_rgba(1.00,0.33, 0.00, 1.0);
 				ctx.stroke();
 				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw average speed line @ %.02f km/h", avg);
 
 				/* Draw moving speed */
 				time_t moving_time;
 				avg = track.calculate_moving_average(this.track.points.first().data, this.track.points.last().data,out moving_time);
-				ctx.set_source_rgba(0.7, 0.0, 0.0, 0.7);
+				ctx.set_source_rgba(0.7, 0.0, 0.0, 1.0);
 				ctx.move_to(0.0, graph_height*(1-avg/max_value));
 				ctx.line_to(graph_width, graph_height*(1-avg/max_value));
 				ctx.stroke();
