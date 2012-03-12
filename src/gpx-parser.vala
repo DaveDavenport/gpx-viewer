@@ -165,6 +165,15 @@ namespace Gpx
 				}
 			}
 			this.recalculate();
+			double avg = this.get_track_average()/20;
+			avg = (avg >  2)?2:avg;
+			for(unowned List<Point> ?iter = this.points.first() ; iter != null;iter = iter.next)
+			{
+				weak Gpx.Point? p = iter.data;
+				if(p.distance < 0.01 || p.speed  < avg) {
+					p.stopped = true;
+				}
+			}
 			GLib.debug("Removed %i points",this.filtered_points);
 		}
 		/**
@@ -236,9 +245,6 @@ namespace Gpx
                     if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
                     if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
 
-					if(distance < 0.01 && point.speed < 1) {
-						point.stopped = true;
-					}
                 }
 
             }
@@ -380,7 +386,8 @@ namespace Gpx
                 while((iter = iter.next) != null && iter.prev.data != stop)
                 {
                     Point b  = iter.data;
-                    if(((b.distance-iter.prev.data.distance)*3600)/(b.get_time()-iter.prev.data.get_time()) > 1.0)
+//                    if(((b.distance-iter.prev.data.distance)*3600)/(b.get_time()-iter.prev.data.get_time()) > 1.0)
+					if(!b.stopped)
                     {
                         time += (b.get_time()-(iter.prev.data).get_time());
                         distance += b.distance-iter.prev.data.distance;
