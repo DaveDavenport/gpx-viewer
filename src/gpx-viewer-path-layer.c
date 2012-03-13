@@ -426,7 +426,7 @@ gpx_viewer_path_layer_init (GpxViewerPathLayer *self)
  * Since: 0.10
  */
 GpxViewerPathLayer *
-gpx_viewer_path_layer_new ()
+gpx_viewer_path_layer_new (void)
 {
   return g_object_new (GPX_VIEWER_TYPE_PATH_LAYER, NULL);
 }
@@ -477,79 +477,78 @@ relocate_cb (G_GNUC_UNUSED GObject *gobject,
 }
 
 
-static gboolean
-redraw_path (GpxViewerPathLayer *layer)
+static gboolean redraw_path (GpxViewerPathLayer *layer)
 {
-  GpxViewerPathLayerPrivate *priv = layer->priv;
-  cairo_t *cr;
-  gfloat width, height;
-  GList *elem;
-  ChamplainView *view = priv->view;
-  gint x, y;
-  guint last_width, last_height;
+	double min_elv, max_elv, range;
+	int old_val = -1;
+	GpxViewerPathLayerPrivate *priv = layer->priv;
+	cairo_t *cr;
+	gfloat width, height;
+	GList *elem;
+	ChamplainView *view = priv->view;
+	gint x, y;
+	guint last_width, last_height;
 
-  priv->redraw_scheduled = FALSE;
+	priv->redraw_scheduled = FALSE;
 
-  /* layer not yet added to the view */
-  if (view == NULL || !priv->content_group)
-    return FALSE;
+	/* layer not yet added to the view */
+	if (view == NULL || !priv->content_group)
+		return FALSE;
 
-  clutter_actor_get_size (CLUTTER_ACTOR (view), &width, &height);
+	clutter_actor_get_size (CLUTTER_ACTOR (view), &width, &height);
 
-  if (!priv->visible || width == 0.0 || height == 0.0)
-    return FALSE;
+	if (!priv->visible || width == 0.0 || height == 0.0)
+		return FALSE;
 
-  clutter_cairo_texture_get_surface_size (CLUTTER_CAIRO_TEXTURE (priv->path_actor), &last_width, &last_height);
+	clutter_cairo_texture_get_surface_size (CLUTTER_CAIRO_TEXTURE (priv->path_actor), &last_width, &last_height);
 
-  if ((guint) width != last_width || (guint) height != last_height)
-    clutter_cairo_texture_set_surface_size (CLUTTER_CAIRO_TEXTURE (priv->path_actor), width, height);
+	if ((guint) width != last_width || (guint) height != last_height)
+		clutter_cairo_texture_set_surface_size (CLUTTER_CAIRO_TEXTURE (priv->path_actor), width, height);
 
-  champlain_view_get_viewport_origin (priv->view, &x, &y);
-  clutter_actor_set_position (priv->path_actor, x, y);
+	champlain_view_get_viewport_origin (priv->view, &x, &y);
+	clutter_actor_set_position (priv->path_actor, x, y);
 
-  cr = clutter_cairo_texture_create (CLUTTER_CAIRO_TEXTURE (priv->path_actor));
+	cr = clutter_cairo_texture_create (CLUTTER_CAIRO_TEXTURE (priv->path_actor));
 
-  /* Clear the drawing area */
-  cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
-  cairo_paint (cr);
-  cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
+	/* Clear the drawing area */
+	cairo_set_operator (cr, CAIRO_OPERATOR_CLEAR);
+	cairo_paint (cr);
+	cairo_set_operator (cr, CAIRO_OPERATOR_OVER);
 
 	// For colouring.. only > 50 meters difference.
-  double min_elv = priv->track->min_elevation; 
-  double max_elv = priv->track->max_elevation; 
-  double range = MAX(250,max_elv-min_elv);
+	min_elv = priv->track->min_elevation; 
+	max_elv = priv->track->max_elevation; 
+	range = MAX(250,max_elv-min_elv);
 
 
-  cairo_set_line_width (cr, priv->stroke_width);
-  cairo_set_dash(cr, priv->dash, priv->num_dashes, 0);
-  double r,g,b=0;
-  int old_val = -1;
-  for (elem = g_list_first(priv->track->points); elem != NULL; elem = elem->next)
-  {
-	  GpxPoint *location = GPX_POINT (elem->data);
-	  gfloat x, y;
+	cairo_set_line_width (cr, priv->stroke_width);
+	cairo_set_dash(cr, priv->dash, priv->num_dashes, 0);
+	for (elem = g_list_first(priv->track->points); elem != NULL; elem = elem->next)
+	{
+		GpxPoint *location = GPX_POINT (elem->data);
+		int val = round((max_height_colors-1)*(location->elevation-min_elv)/(range));
+		gfloat c_x, c_y;
 
-	  x = champlain_view_longitude_to_x (view, location->lon_dec); 
-	  y = champlain_view_latitude_to_y (view, location->lat_dec); 
-	  int val = round((max_height_colors-1)*(location->elevation-min_elv)/(range));
-	  if(val != old_val)
-	  {		
-		  cairo_line_to (cr, x, y);
-		  cairo_stroke(cr);
-		  cairo_set_source_rgb (cr,
-				 height_colors[val].r, 
-				 height_colors[val].g, 
-				 height_colors[val].b);
-		 old_val = (val);
-	  }
-	  cairo_line_to (cr, x, y);
-  }
+		c_x = champlain_view_longitude_to_x (view, location->lon_dec); 
+		c_y = champlain_view_latitude_to_y (view, location->lat_dec); 
+		if(val != old_val)
+		{		
+			cairo_line_to (cr, c_x, c_y);
+			cairo_stroke(cr);
+			cairo_set_source_rgb (cr,
+					height_colors[val].r, 
+					height_colors[val].g, 
+					height_colors[val].b);
+			old_val = (val);
+		}
+		cairo_line_to (cr, c_x, c_y);
+	}
 
-  cairo_stroke(cr);
+	cairo_stroke(cr);
 
-  cairo_destroy (cr);
+	cairo_destroy (cr);
 
-  return FALSE;
+	return FALSE;
 }
 
 
@@ -580,9 +579,11 @@ static void
 set_view (ChamplainLayer *layer,
     ChamplainView *view)
 {
+  GpxViewerPathLayer *path_layer;
+
   g_return_if_fail (GPX_VIEWER_IS_PATH_LAYER (layer) && (CHAMPLAIN_IS_VIEW (view) || view == NULL));
 
-  GpxViewerPathLayer *path_layer = GPX_VIEWER_PATH_LAYER (layer);
+  path_layer = GPX_VIEWER_PATH_LAYER (layer);
 
   if (path_layer->priv->view != NULL)
     {
@@ -663,20 +664,20 @@ void
 gpx_viewer_path_layer_set_stroke_color (GpxViewerPathLayer *layer,
     const ClutterColor *color)
 {
-  g_return_if_fail (GPX_VIEWER_IS_PATH_LAYER (layer));
+	GpxViewerPathLayerPrivate *priv ;
+	g_return_if_fail (GPX_VIEWER_IS_PATH_LAYER (layer));
+	priv = layer->priv;
 
-  GpxViewerPathLayerPrivate *priv = layer->priv;
+	if (priv->stroke_color != NULL)
+		clutter_color_free (priv->stroke_color);
 
-  if (priv->stroke_color != NULL)
-    clutter_color_free (priv->stroke_color);
+	if (color == NULL)
+		color = &DEFAULT_STROKE_COLOR;
 
-  if (color == NULL)
-    color = &DEFAULT_STROKE_COLOR;
+	priv->stroke_color = clutter_color_copy (color);
+	g_object_notify (G_OBJECT (layer), "stroke-color");
 
-  priv->stroke_color = clutter_color_copy (color);
-  g_object_notify (G_OBJECT (layer), "stroke-color");
-
-  schedule_redraw (layer);
+	schedule_redraw (layer);
 }
 
 
@@ -802,11 +803,12 @@ void
 gpx_viewer_path_layer_set_dash (GpxViewerPathLayer *layer,
     GList *dash_pattern)
 {
-  g_return_if_fail (GPX_VIEWER_IS_PATH_LAYER (layer));
-
-  GpxViewerPathLayerPrivate *priv = layer->priv;
   GList *iter;
   guint i;
+  GpxViewerPathLayerPrivate *priv;
+  g_return_if_fail (GPX_VIEWER_IS_PATH_LAYER (layer));
+
+  priv = layer->priv;
 
   if (priv->dash)
     g_free (priv->dash);
@@ -836,11 +838,12 @@ gpx_viewer_path_layer_set_dash (GpxViewerPathLayer *layer,
 GList *
 gpx_viewer_path_layer_get_dash (GpxViewerPathLayer *layer)
 {
-  g_return_val_if_fail (GPX_VIEWER_IS_PATH_LAYER (layer), NULL);
-  
-  GpxViewerPathLayerPrivate *priv = layer->priv;
+  GpxViewerPathLayerPrivate *priv;
   GList *list = NULL;
   guint i;
+  g_return_val_if_fail (GPX_VIEWER_IS_PATH_LAYER (layer), NULL);
+  priv = layer->priv;
+
   
   for (i = 0; i < priv->num_dashes; i++)
     list = g_list_append(list, GUINT_TO_POINTER((guint)(priv->dash)[i]));
