@@ -191,14 +191,12 @@ namespace Gpx
 
 			private bool button_press_callback(Clutter.ButtonEvent event)
 			{
-				stdout.printf("button release event\n");
 				if(event.button == 2 || event.button == 3)
 				{
 					double lat,lon;
 					lat = view.y_to_latitude (event.y);
 					lon = view.x_to_longitude (event.x);
 					clicked(lat,lon);
-					stdout.printf("button release event: %f %f\n",lat,lon);
 					return true;
 				}
 				return false;

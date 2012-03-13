@@ -27,7 +27,7 @@ namespace Gpx
      * Represents a point in the track or a waypoint.
      */
 	
-    public class Point
+    public class Point : Object
     {
         /* Waypoint name */
         public string name {get; set; default=null;}

@@ -31,6 +31,7 @@
 #include <gdl/gdl.h>
 #include "gpx-viewer.h"
 #include "gpx.h"
+#include "gpx-viewer-path-layer.h"
 
 
 static GtkWidget        *dock_items[3];
@@ -71,7 +72,7 @@ typedef struct Route
 {
     GpxFile *file;
     GpxTrack *track;
-    ChamplainPathLayer *path;
+    GpxViewerPathLayer *path;
     ChamplainMarker *start;
     ChamplainMarker *stop;
     gboolean visible;
@@ -464,18 +465,13 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
         g_warning("Route allready has a path.\n");
         return;
     }
-    route->path = champlain_path_layer_new();
-    for (iter = g_list_first(route->track->points); iter; iter = iter->next)
-    {
-        GpxPoint *p = iter->data;
-        ChamplainCoordinate *coord = champlain_coordinate_new_full(p->lat_dec, p->lon_dec);
-        champlain_path_layer_add_node(route->path, CHAMPLAIN_LOCATION (coord));
-    }
-    champlain_path_layer_set_stroke_width(route->path, 4.0);
-    champlain_path_layer_set_stroke_color(route->path, &normal_track_color);
+    route->path = gpx_viewer_path_layer_new();
+    gpx_viewer_path_layer_set_stroke_width(route->path, 5.0);
+    gpx_viewer_path_layer_set_stroke_color(route->path, &normal_track_color);
+	gpx_viewer_path_layer_set_track(route->path,route->track);
     champlain_view_add_layer(CHAMPLAIN_VIEW(view), CHAMPLAIN_LAYER(route->path));
 	clutter_actor_set_depth(CLUTTER_ACTOR(route->path), -10);
-    if(!route->visible) champlain_path_layer_set_visible(route->path, FALSE);
+    if(!route->visible) gpx_viewer_path_layer_set_visible(route->path, FALSE);
 }
 
 
@@ -540,7 +536,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             /* Give it ' non-active' colour */
 			if(active_route->path != NULL)
 			{
-				champlain_path_layer_set_stroke_color(active_route->path, &normal_track_color);
+				gpx_viewer_path_layer_set_stroke_color(active_route->path, &normal_track_color);
 			}
 			/* Hide stop marker */
             if(active_route->stop)
@@ -558,7 +554,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 //            gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 			/* if not visible hide track again */
 			if(!active_route->visible) {
-                champlain_path_layer_set_visible(active_route->path, FALSE);
+                gpx_viewer_path_layer_set_visible(active_route->path, FALSE);
 			}
         }
 
@@ -569,11 +565,11 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 
             gpx_playback_set_track(playback, active_route->track);
             if(route->path != NULL)
-                champlain_path_layer_set_stroke_color(route->path, &highlight_track_color);
+                gpx_viewer_path_layer_set_stroke_color(route->path, &highlight_track_color);
 
             if(route->path /*&& route->visible*/)
 			{
-				champlain_path_layer_set_visible(route->path, TRUE);
+				gpx_viewer_path_layer_set_visible(route->path, TRUE);
             }
             if (route->track->top && route->track->bottom)
             {
@@ -933,11 +929,11 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
             route->visible = active;
             if (active)
             {
-                champlain_path_layer_set_visible(route->path, TRUE);
+                gpx_viewer_path_layer_set_visible(route->path, TRUE);
             }
             else
             {
-                champlain_path_layer_set_visible(route->path, FALSE);
+                gpx_viewer_path_layer_set_visible(route->path, FALSE);
             }
         }
     }

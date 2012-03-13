@@ -49,6 +49,7 @@ gpx_viewer_SOURCES=\
     src/gpx-track-treemodel.vala\
     src/gpx-settings.vala\
     src/gpx-viewer-mapwidget.vala\
+	src/gpx-viewer-path-layer.c\
 	src/gpx-viewer.c
 
 
@@ -82,6 +83,7 @@ EXTRA_DIST+=\
     vapi/config.vapi\
     vapi/champlain-0.12.vapi\
     vapi/champlain-gtk-0.12.vapi\
+	src/gpx-viewer-path-layer.h\
     src/gpx-viewer.h
 
 ##
