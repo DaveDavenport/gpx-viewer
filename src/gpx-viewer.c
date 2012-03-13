@@ -882,25 +882,6 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
     routes = g_list_append(routes, route);
 }
 
-
-static void main_window_pane_pos_changed(GtkWidget * panel, GParamSpec * arg1, gpointer data)
-{
-    gint position = 0;
-    g_object_get(G_OBJECT(panel), "position", &position, NULL);
-    gpx_viewer_settings_set_integer(settings, "Window", "main_view_pane_pos", position);
-    g_debug("Position: %i\n", position);
-}
-
-
-static void main_window_pane2_pos_changed(GtkWidget * panel, GParamSpec * arg1, gpointer data)
-{
-    gint position = 0;
-    g_object_get(G_OBJECT(panel), "position", &position, NULL);
-    gpx_viewer_settings_set_integer(settings, "Window", "main_view_pane2_pos", position);
-    g_debug("Position2: %i\n", position);
-}
-
-
 void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer data)
 {
     if(alloc)
@@ -1707,8 +1688,7 @@ gpx_viewer_class_init (GpxViewerClass *class)
 
 
 
-GpxViewer *
-gpx_viewer_new (void)
+static GpxViewer * gpx_viewer_new (void)
 {
   return g_object_new (gpx_viewer_get_type (),
                        "application-id", "nl.sarine.gpx-viewer",
