@@ -107,29 +107,29 @@ gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format)
 	{
 		case DISTANCE:
 			if(do_miles)
-				retv = g_strdup_printf( "%.2f %s", speed/KM_IN_MILE, _("Miles"));
+				retv = g_strdup_printf( "%' '.2f %s", speed/KM_IN_MILE, _("Miles"));
 			else
-				retv = g_strdup_printf( "%.2f %s", speed, _("km"));
+				retv = g_strdup_printf( "%' '.2f %s", speed, _("km"));
 			break;
 		case SPEED:
 			if(do_miles)
-				retv = g_strdup_printf( "%.2f %s", speed/KM_IN_MILE, _("Miles/h"));
+				retv = g_strdup_printf( "%' '.2f %s", speed/KM_IN_MILE, _("Miles/h"));
 			else
-				retv = g_strdup_printf( "%.2f %s", speed, _("km/h"));
+				retv = g_strdup_printf( "%' '.2f %s", speed, _("km/h"));
 			break;
 		case ELEVATION:
 			if(do_miles)
 				/* TODO: */
-				retv = g_strdup_printf( "%.2f %s", speed/M_IN_FEET, _("ft"));
+				retv = g_strdup_printf( "%' '.2f %s", speed/M_IN_FEET, _("ft"));
 			else
-				retv = g_strdup_printf( "%.2f %s", speed, _("m"));
+				retv = g_strdup_printf( "%' '.2f %s", speed, _("m"));
 			break;
 		case ACCEL:
 			if(do_miles)
 				/* TODO: */
-				retv = g_strdup_printf( "%.2f %s", speed/M_IN_FEET, _("ft/s²"));
+				retv = g_strdup_printf( "%' '.2f %s", speed/M_IN_FEET, _("ft/s²"));
 			else
-				retv = g_strdup_printf( "%.2f %s", speed, _("m/s²"));
+				retv = g_strdup_printf( "%' '.2f %s", speed, _("m/s²"));
 			break;
 		case NA:
 		default:
