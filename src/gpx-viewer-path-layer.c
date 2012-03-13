@@ -523,6 +523,7 @@ static gboolean redraw_path (GpxViewerPathLayer *layer)
 
 	cairo_set_line_width (cr, priv->stroke_width);
 	cairo_set_dash(cr, priv->dash, priv->num_dashes, 0);
+	cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 	for (elem = g_list_first(priv->track->points); elem != NULL; elem = elem->next)
 	{
 		GpxPoint *location = GPX_POINT (elem->data);
@@ -540,8 +541,10 @@ static gboolean redraw_path (GpxViewerPathLayer *layer)
 					height_colors[val].g, 
 					height_colors[val].b);
 			old_val = (val);
+			cairo_move_to(cr, c_x, c_y);
 		}
-		cairo_line_to (cr, c_x, c_y);
+		else
+			cairo_line_to (cr, c_x, c_y);
 	}
 
 	cairo_stroke(cr);
