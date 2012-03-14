@@ -18,6 +18,9 @@ LT_INIT
 m4_defun([_LT_AC_LANG_CXX_CONFIG], [:])
 m4_defun([_LT_AC_LANG_F77_CONFIG], [:])
 
+dnl Checks for libm 
+AC_CHECK_LIB([m],[floor])
+
 #intltool, libtool. Check for CC compiler
 IT_PROG_INTLTOOL([0.21])
 ALL_LINGUAS="ar cs de es hu it ru uk zh_CN"
