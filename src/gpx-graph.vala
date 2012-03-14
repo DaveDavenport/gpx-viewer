@@ -337,14 +337,9 @@ namespace Gpx
 					var text = "";
 					var x_pos =0.0;
 
-					if(this._mode == GraphMode.SPEED) {
-						text = Gpx.Viewer.Misc.convert(this.draw_current.speed, Gpx.Viewer.Misc.SpeedFormat.SPEED);
-					}else if (this._mode == GraphMode.ELEVATION) {
-						text = Gpx.Viewer.Misc.convert(this.draw_current.elevation, Gpx.Viewer.Misc.SpeedFormat.ELEVATION);
-					}else if (this._mode == GraphMode.DISTANCE) {
-						text = Gpx.Viewer.Misc.convert(Gpx.Track.calculate_distance(this.track.points.first().data,this.draw_current), 
-								Gpx.Viewer.Misc.SpeedFormat.DISTANCE);
-					}else return false;
+					text = _("Speed")+":\t"+       Gpx.Viewer.Misc.convert(this.draw_current.speed, 	Gpx.Viewer.Misc.SpeedFormat.SPEED);
+					text += "\n"+_("Elevation")+":\t"+ Gpx.Viewer.Misc.convert(this.draw_current.elevation, Gpx.Viewer.Misc.SpeedFormat.ELEVATION);
+					text += "\n"+_("Distance")+":\t"+Gpx.Viewer.Misc.convert(this.draw_current.distance,  Gpx.Viewer.Misc.SpeedFormat.DISTANCE);
 
 					fd.set_absolute_size(12*1024);
 					layout.set_font_description(fd);
@@ -356,19 +351,19 @@ namespace Gpx
 					if(x_pos < -LEFT_OFFSET) x_pos = 0.0;
 					else if(hl+(w+8)/2.0 >= graph_width) x_pos = (double)graph_width - (double)(w+8.0);
 
-					ctx.rectangle(x_pos, -h-2, w+8, h+4);
+					ctx.rectangle(x_pos, double.max(-h-2,-18), w+8, h+4);
 					ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 					ctx.stroke_preserve();
-					ctx.set_source_rgba(0.8, 0.8, 0.8, 0.8);
+					ctx.set_source_rgba(0.7, 0.7, 0.7, 0.9);
 					ctx.fill();
 
-					ctx.move_to(x_pos+4,-h);
+					ctx.move_to(x_pos+4,double.max(-h,-16));
 
 
 					Pango.cairo_layout_path(ctx, layout);
 
-					ctx.set_source_rgba(1.0, 1.0, 1.0, 1.0);
-					ctx.stroke_preserve();
+//					ctx.set_source_rgba(1.0, 1.0, 1.0, 1.0);
+//					ctx.stroke_preserve();
 					ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 					ctx.fill();
 				}
