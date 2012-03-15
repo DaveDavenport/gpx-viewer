@@ -9,7 +9,8 @@ void on_view_menu_files_dock_toggled(GtkCheckMenuItem *item, gpointer data);
 void on_view_menu_track_info_dock_toggled(GtkCheckMenuItem *item, gpointer data);
 void on_view_menu_settings_dock_toggled(GtkCheckMenuItem *item, gpointer data);
 
-void on_destroy(GtkWidget *widget, gpointer gpx_viewer);
+void on_destroy(GtkWidget *widget,GdkEvent *event, gpointer gpx_viewer);
+void on_destroy_menu(GtkMenuItem *item , gpointer gpx_viewer);
 void about_menuitem_activate_cb(void);
 
 void show_marker_layer_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer user_data);
