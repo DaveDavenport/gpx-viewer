@@ -32,12 +32,12 @@ namespace Gpx
 			private Clutter.Color waypoint_color;
 
 			/*  Marker  */
-			private Champlain.Label click_marker = null;
+			private Champlain.Marker click_marker = null;
 
 
 
 
-			public Champlain.Label? create_marker(Gpx.Point p, string icon, int size)
+			public Champlain.Marker? create_marker(Gpx.Point p, string icon, int size)
 			{
 				Champlain.Label? marker = null;
 				var info = Gtk.IconTheme.get_default().lookup_icon(

@@ -34,34 +34,38 @@
 #include "gpx-viewer-path-layer.h"
 
 
+/************************************************************
+ *  GPX-Viewer                                              *
+ ************************************************************/
+typedef struct _GpxViewerPrivate {
+	int id;
+	GpxViewerSettings	*settings;
+	/* Recent manager */
+	GtkRecentManager    *recent_man;
+	/* Track playback widget */
+	GpxPlayback *playback;
+	/* */
+	guint click_marker_source;
+	/* List of gpx files */
+	GList               *files;
+	/* The interface builder */
+	GtkBuilder          *builder;
+	/* The graph */
+	GpxGraph            *gpx_graph;
+
+} GpxViewerPrivate;
+
+G_DEFINE_TYPE (GpxViewer, gpx_viewer, GTK_TYPE_APPLICATION)
+#define GPX_VIEWER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GPX_TYPE_VIEWER, GpxViewerPrivate))
+
+#define GPX_TYPE_VIEWER  (gpx_viewer_get_type())
+
+
 static GtkWidget        *dock_items[3];
 static GdlDockLayout    *dock_layout = NULL;
 
-static GpxViewerSettings  *settings = NULL;
-
-/* List of gpx files */
-GList               *files                  = NULL;
 /* The Map view widget */
 GtkWidget           *champlain_view         = NULL;
-/* The interface builder */
-GtkBuilder          *builder                = NULL;
-/* The graph */
-GpxGraph            *gpx_graph              = NULL;
-/* The container holding the graph */
-GtkWidget           *gpx_graph_container    = NULL;
-/* Recent manager */
-GtkRecentManager    *recent_man             = NULL;
-/* Track playback widget */
-GpxPlayback *playback               = NULL;
-/* */
-guint click_marker_source           = 0;
-
-
-/* Clutter  collors */
-ClutterColor waypoint               = { 0xf3, 0x94, 0x07, 0xff };
-ClutterColor highlight_track_color  = { 0xf3, 0x94, 0x07, 0xff };
-ClutterColor normal_track_color     = { 0x00, 0x00, 0xff, 0x66 };
-
 /**
  * This structure holds all information related to
  * a track.
@@ -214,14 +218,16 @@ static void free_Route(Route *route)
 /**
  * This is called when the main window is destroyed
  */
-void on_destroy(void)
+void on_destroy(GtkWidget *widget, gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     g_debug("Quit...");
 
     save_layout();
 
-    gtk_widget_destroy(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
-    g_object_unref(builder);
+    gtk_widget_destroy(GTK_WIDGET(gtk_builder_get_object(priv->builder, "gpx_viewer_window")));
+    g_object_unref(priv->builder);
+	priv->builder = NULL;
 
     g_debug("Cleanup routes");
     g_list_foreach(g_list_first(routes), (GFunc)free_Route, NULL);
@@ -307,14 +313,15 @@ static GString *misc_get_time(time_t temp)
  * Update on track changes
  * TODO: This function is _way_ to long.
  */
-static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, GpxPoint *start, GpxPoint *stop)
+static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, GpxPoint *start, GpxPoint *stop, gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     GtkWidget *label = NULL;
     time_t temp = 0;
     gdouble gtemp = 0, max_speed = 0;
 
     /* Duration */
-    label = (GtkWidget *) gtk_builder_get_object(builder, "duration_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "duration_label");
     if(start && stop)
     {
         temp = gpx_point_get_time(stop) - gpx_point_get_time(start);
@@ -330,7 +337,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         gtk_label_set_text(GTK_LABEL(label), _("n/a"));
     }
     /* Start time */
-    label = (GtkWidget *) gtk_builder_get_object(builder, "start_time_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "start_time_label");
     if(start)
     {
         char buffer[128];
@@ -346,7 +353,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
 
     /* Stop time */
-    label = (GtkWidget *) gtk_builder_get_object(builder, "stop_time_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "stop_time_label");
     if(stop)
     {
         char buffer[128];
@@ -361,7 +368,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         gtk_label_set_text(GTK_LABEL(label), _("n/a"));
     }
     /* Distance */
-    label = (GtkWidget *) gtk_builder_get_object(builder, "distance_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "distance_label");
     gtemp = 0;
     if(start && stop)
     {
@@ -370,7 +377,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
 	gv_set_speed_label(label, gtemp, DISTANCE);
 
     /* Average */
-    label = (GtkWidget *) gtk_builder_get_object(builder, "average_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "average_label");
     gtemp = 0;
     if(start && stop)
     {
@@ -379,7 +386,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
 	gv_set_speed_label(label, gtemp, SPEED);
 
     /* Moving Average */
-    label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "moving_average_label");
     gtemp = 0;
     temp = 0;
     if(start && stop)
@@ -389,7 +396,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
 	gv_set_speed_label(label, gtemp, SPEED);
 
-    label = (GtkWidget *) gtk_builder_get_object(builder, "moving_average_time_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "moving_average_time_label");
     if (gtemp > 0)
     {
         GString *string = misc_get_time(temp);
@@ -410,14 +417,14 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
             max_speed = MAX(max_speed, ((GpxPoint *)list->data)->speed);
         }
     }
-    label = (GtkWidget *) gtk_builder_get_object(builder, "max_speed_label");
+    label = (GtkWidget *) gtk_builder_get_object(priv->builder, "max_speed_label");
 	gv_set_speed_label(label, max_speed, SPEED);
 
     /* Gradient */
     {
         gdouble elevation_diff = 0;
         gdouble distance_diff = 0;
-        label = (GtkWidget *) gtk_builder_get_object(builder, "gradient_label");
+        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "gradient_label");
 
         if (start && stop)
         {
@@ -440,7 +447,7 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         }
 
         /* Elevation Difference */
-        label = (GtkWidget *) gtk_builder_get_object(builder, "elevation_difference_label");
+        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "elevation_difference_label");
 
         elevation_diff = 0;
         if (start && stop)
@@ -458,7 +465,6 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
  */
 static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 {
-    GList *iter;
     /* If Route has allready a route, exit */
     if(route->path != NULL)
     {
@@ -467,7 +473,8 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
     }
     route->path = gpx_viewer_path_layer_new();
     gpx_viewer_path_layer_set_stroke_width(route->path, 5.0);
-    gpx_viewer_path_layer_set_stroke_color(route->path, &normal_track_color);
+	// TODO: Set track not sensitive.
+    //gpx_viewer_path_layer_set_stroke_color(route->path, &normal_track_color);
 	gpx_viewer_path_layer_set_track(route->path,route->track);
     champlain_view_add_layer(CHAMPLAIN_VIEW(view), CHAMPLAIN_LAYER(route->path));
 	clutter_actor_set_depth(CLUTTER_ACTOR(route->path), -10);
@@ -486,10 +493,11 @@ static void interface_map_file_waypoints(ChamplainView *view, GpxFile *file)
 }
 
 
-static void interface_map_make_waypoints(ChamplainView * view)
+static void interface_map_make_waypoints(ChamplainView * view, gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     GList *iter;
-    for (iter = g_list_first(files); iter != NULL; iter = g_list_next(iter))
+    for (iter = g_list_first(priv->files); iter != NULL; iter = g_list_next(iter))
     {
         GpxFile *file = iter->data;
         interface_map_file_waypoints(view, file);
@@ -523,6 +531,7 @@ static void show_waypoints_layer_changed(GpxViewerMapView *view, GParamSpec * go
  */
 void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     GtkTreeView *tree = gtk_tree_selection_get_tree_view(sel);
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree));
     GtkTreeIter iter;
@@ -536,7 +545,8 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             /* Give it ' non-active' colour */
 			if(active_route->path != NULL)
 			{
-				gpx_viewer_path_layer_set_stroke_color(active_route->path, &normal_track_color);
+				// Todo set track not sensitive.
+				//gpx_viewer_path_layer_set_stroke_color(active_route->path, &normal_track_color);
 			}
 			/* Hide stop marker */
             if(active_route->stop)
@@ -547,11 +557,10 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
                 clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
 
             /* Stop playback */
-            gpx_playback_stop(playback);
+            gpx_playback_stop(priv->playback);
             /* Clear graph */
-            gpx_graph_set_track(gpx_graph, NULL);
+            gpx_graph_set_track(priv->gpx_graph, NULL);
             /* Hide graph */
-//            gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
 			/* if not visible hide track again */
 			if(!active_route->visible) {
                 gpx_viewer_path_layer_set_visible(active_route->path, FALSE);
@@ -563,9 +572,11 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
         {
             ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 
-            gpx_playback_set_track(playback, active_route->track);
-            if(route->path != NULL)
-                gpx_viewer_path_layer_set_stroke_color(route->path, &highlight_track_color);
+            gpx_playback_set_track(priv->playback, active_route->track);
+            if(route->path != NULL) {
+				// TODO: set track sensitive.
+//                gpx_viewer_path_layer_set_stroke_color(route->path, &highlight_track_color);
+			}
 
             if(route->path /*&& route->visible*/)
 			{
@@ -586,13 +597,11 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 
             if (gpx_track_get_total_time(active_route->track) > 5)
             {
-                gpx_graph_set_track(gpx_graph, active_route->track);
-//                gtk_widget_show(GTK_WIDGET(gpx_graph_container));
+                gpx_graph_set_track(priv->gpx_graph, active_route->track);
             }
             else
             {
-                gpx_graph_set_track(gpx_graph, NULL);
-//                gtk_widget_hide(GTK_WIDGET(gpx_graph_container));
+                gpx_graph_set_track(priv->gpx_graph, NULL);
             }
 
             if(route->stop){
@@ -610,7 +619,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
     }
 	else
 	{
-		gpx_graph_set_track(gpx_graph, NULL);
+		gpx_graph_set_track(priv->gpx_graph, NULL);
 	}
 }
 
@@ -651,11 +660,12 @@ static void smooth_factor_changed(GpxGraph * graph, GParamSpec * gobject, GtkSpi
 
 void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
 {
-    int current = gpx_graph_get_smooth_factor(gpx_graph);
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
+    int current = gpx_graph_get_smooth_factor(priv->gpx_graph);
     int new = gtk_spin_button_get_value_as_int(spin);
     if (current != new)
     {
-        gpx_graph_set_smooth_factor(gpx_graph, new);
+        gpx_graph_set_smooth_factor(priv->gpx_graph, new);
     }
 }
 
@@ -663,14 +673,15 @@ void smooth_factor_change_value_cb(GtkSpinButton * spin, gpointer user_data)
 /* Show and hide points on graph */
 void graph_show_points_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     gboolean new = gtk_switch_get_active(button);
-    gpx_graph_set_show_points(gpx_graph, new);
+    gpx_graph_set_show_points(priv->gpx_graph, new);
 }
 
 
-static void graph_show_points_changed(GpxGraph *graph, GParamSpec *sp, GtkWidget *toggle)
+static void graph_show_points_changed(GtkWidget *graph, GParamSpec *sp, GtkWidget *toggle)
 {
-    int current = gpx_graph_get_show_points(gpx_graph);
+    int current = gpx_graph_get_show_points(GPX_GRAPH(graph));
     if(current != gtk_switch_get_active(GTK_SWITCH(toggle)))
     {
         gtk_switch_set_active(GTK_SWITCH(toggle),current);
@@ -690,17 +701,19 @@ void map_zoom_level_change_value_cb(GtkSpinButton * spin, gpointer user_data)
 }
 
 
-static gboolean graph_point_remove(ClutterActor * marker)
+static gboolean graph_point_remove(gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
 	gpx_viewer_map_view_click_marker_hide(GPX_VIEWER_MAP_VIEW(champlain_view));
-	gpx_graph_highlight_point(gpx_graph, NULL);
+	gpx_graph_highlight_point(priv->gpx_graph, NULL);
     return FALSE;
 }
 
 
-static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *start, GpxPoint *stop)
+static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *start, GpxPoint *stop, gpointer gpx_viewer)
 {
-    interface_update_heading(builder, track, start, stop);
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
+    interface_update_heading(priv->builder, track, start, stop, gpx_viewer);
     if(active_route && active_route->track->points != NULL)
     {
         if(start)
@@ -716,70 +729,74 @@ static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *s
 }
 
 
-static void graph_point_clicked(GpxGraph *graph, GpxPoint *point)
+static void graph_point_clicked(GpxGraph *graph, GpxPoint *point, gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
-    ChamplainPoint *marker[2] = {NULL, NULL};
 
 	gpx_viewer_map_view_click_marker_show(GPX_VIEWER_MAP_VIEW(champlain_view), point);
-    if(click_marker_source >0)
+    if(priv->click_marker_source >0)
     {
-        g_source_remove(click_marker_source);
+        g_source_remove(priv->click_marker_source);
     }
 
-	gpx_graph_highlight_point(gpx_graph, point);
-    gpx_graph_show_info(gpx_graph, point);
+	gpx_graph_highlight_point(priv->gpx_graph, point);
+    gpx_graph_show_info(priv->gpx_graph, point);
 
 	// Center map on this point.
 	champlain_view_center_on(view, point->lat_dec, point->lon_dec);
 
 
-    click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, NULL);
+    priv->click_marker_source = g_timeout_add_seconds(5, (GSourceFunc) graph_point_remove, gpx_viewer);
 }
 
 
-void playback_play_clicked(void)
+void playback_play_clicked(GtkWidget *widget, gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     if(active_route)
     {
-        gpx_playback_start(playback);
+        gpx_playback_start(priv->playback);
     }
 }
 
 
-void playback_pause_clicked(void)
+void playback_pause_clicked(GtkWidget *widget, gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     if(active_route)
     {
-        gpx_playback_pause(playback);
+        gpx_playback_pause(priv->playback);
     }
 }
 
 
-void playback_stop_clicked(void)
+void playback_stop_clicked(GtkWidget *widget, gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     if(active_route)
     {
-        gpx_playback_stop(playback);
+        gpx_playback_stop(priv->playback);
     }
 }
 
 
-static void route_playback_tick(GpxPlayback *route_playback, GpxPoint *current)
+static void route_playback_tick(GpxPlayback *route_playback, GpxPoint *current, gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     if(current != NULL)
     {
-        time_t ptime = gpx_point_get_time(current);
-        graph_point_clicked(gpx_graph, current);
+        graph_point_clicked(priv->gpx_graph, current,gpx_viewer);
     }
 }
 
 
-static void route_playback_state_changed(GpxPlayback *route_playback, GpxPlaybackState state)
+static void route_playback_state_changed(GpxPlayback *route_playback, GpxPlaybackState state, gpointer gpx_viewer)
 {
-    GtkWidget *w_stopped =(GtkWidget *) gtk_builder_get_object(builder, "eventbox2");
-    GtkWidget *w_play = (GtkWidget *)gtk_builder_get_object(builder, "eventbox3");
-    GtkWidget *w_paused = (GtkWidget *)gtk_builder_get_object(builder, "eventbox1");
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
+    GtkWidget *w_stopped =(GtkWidget *) gtk_builder_get_object(priv->builder, "eventbox2");
+    GtkWidget *w_play = (GtkWidget *)gtk_builder_get_object(priv->builder, "eventbox3");
+    GtkWidget *w_paused = (GtkWidget *)gtk_builder_get_object(priv->builder, "eventbox1");
     if(state == GPX_PLAYBACK_STATE_STOPPED)
     {
         g_debug("playback stopped");
@@ -806,17 +823,17 @@ static void route_playback_state_changed(GpxPlayback *route_playback, GpxPlaybac
 
 
 static gboolean first = TRUE;
-static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
+static void interface_plot_add_track(GpxViewer *gpx_viewer, GtkTreeIter *parent, GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
+
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     /* Plot all tracks, and get total bounding box */
     GtkTreeIter liter;
-    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
-    ClutterColor *start_point_color;
-    ClutterColor *stop_point_color;
+    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
     struct Route *route = g_new0(Route, 1);
     /* Route */
-    if(gpx_viewer_settings_get_integer(settings,"Track", "Cleanup", 0) > 0)
+    if(gpx_viewer_settings_get_integer(priv->settings,"Track", "Cleanup", 0) > 0)
     {
         route->track = gpx_track_cleanup_speed(track);
     }
@@ -853,7 +870,7 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         GtkTreePath *path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &liter);
         if(path != NULL)
         {
-            gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")), path);
+            gtk_tree_view_expand_to_path(GTK_TREE_VIEW(gtk_builder_get_object(priv->builder, "TracksTreeView")), path);
             gtk_tree_path_free(path);
         }
 
@@ -868,11 +885,11 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
         {
             /* create start marker */
             route->start = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),start->data, "pin-green", 64);
-            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->start);
+            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), CHAMPLAIN_MARKER(route->start));
 
             /* create end marker */
             route->stop = gpx_viewer_map_view_create_marker(GPX_VIEWER_MAP_VIEW(champlain_view),stop, "pin-red",64);
-            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), route->stop);
+            gpx_viewer_map_view_add_marker(GPX_VIEWER_MAP_VIEW(champlain_view), CHAMPLAIN_MARKER(route->stop));
 
             clutter_actor_hide(CLUTTER_ACTOR(route->stop));
             clutter_actor_hide(CLUTTER_ACTOR(route->start));
@@ -884,19 +901,21 @@ static void interface_plot_add_track(GtkTreeIter *parent, GpxTrack *track, doubl
 
 void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(data);
     if(alloc)
     {
-        gpx_viewer_settings_set_integer(settings, "Window", "width", alloc->width);
-        gpx_viewer_settings_set_integer(settings, "Window", "height", alloc->height);
+        gpx_viewer_settings_set_integer(priv->settings, "Window", "width", alloc->width);
+        gpx_viewer_settings_set_integer(priv->settings, "Window", "height", alloc->height);
         g_debug("size: %i - %i\n", alloc->width, alloc->height);
     }
 
 }
 
 
-void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpointer data)
+void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpointer gpx_viewer)
 {
-    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
+    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
     GtkTreeIter iter;
     struct Route *route;
 
@@ -921,62 +940,68 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
 }
 
 
-void show_elevation(GtkMenuItem item, gpointer user_data)
+void show_elevation(GtkMenuItem *item, gpointer user_data)
 {
-    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_ELEVATION)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);	
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_ELEVATION)
     {
         g_debug("switch to elevation\n");
-        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_ELEVATION);
     }
 }
 
 
-void show_speed(GtkMenuItem item, gpointer user_data)
+void show_speed(GtkMenuItem *item, gpointer user_data)
 {
-    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_SPEED)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);	
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_SPEED)
     {
         g_debug("switch to speed\n");
-        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED);
     }
 }
 
 
-void show_distance(GtkMenuItem item, gpointer user_data)
+void show_distance(GtkMenuItem *item, gpointer user_data)
 {
-    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_DISTANCE)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);	
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_DISTANCE)
     {
         g_debug("switch to distance\n");
-        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_DISTANCE);
     }
 }
 
 
-void show_acceleration_h(GtkMenuItem item, gpointer user_data)
+void show_acceleration_h(GtkMenuItem *item, gpointer user_data)
 {
-    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_ACCELERATION_H)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);	
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_ACCELERATION_H)
     {
         g_debug("switch to acceleration\n");
-        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_ACCELERATION_H);
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_ACCELERATION_H);
     }
 }
 
 
-void show_vertical_speed(GtkMenuItem item, gpointer user_data)
+void show_vertical_speed(GtkMenuItem *item, gpointer user_data)
 {
-    if(gpx_graph_get_mode(gpx_graph) != GPX_GRAPH_GRAPH_MODE_SPEED_V)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);	
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_SPEED_V)
     {
         g_debug("switch to vertical speed\n");
-        gpx_graph_set_mode(gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED_V);
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_SPEED_V);
     }
 }
 
 
-static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter)
+static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter, gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     GList *iter;
     ClutterColor *start_point_color;
     ClutterColor *stop_point_color;
-    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
     struct Route *route = g_new0(Route, 1);
     route->visible = TRUE;
     route->path = NULL;
@@ -1044,19 +1069,20 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
 }
 
 
-static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
+static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     GtkTreeIter liter;
     double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
     GList *iter;
-    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+    GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
     gchar *basename,*uri = gtk_recent_chooser_get_current_uri(grc);
     GFile *afile = g_file_new_for_uri(uri);
     /* Try to open the gpx file */
     GpxFile *file = gpx_file_new(afile);
     g_object_unref(afile);
     g_free(uri);
-    files = g_list_append(files, file);
+    priv->files = g_list_append(priv->files, file);
 
 
     basename = g_file_get_basename(file->file);
@@ -1072,28 +1098,29 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer data)
     {
         for (iter = g_list_first(file->tracks); iter; iter = g_list_next(iter))
         {
-            interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+            interface_plot_add_track(gpx_viewer,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
         }
     }
     if(file->routes)
     {
         for (iter = g_list_first(file->routes); iter; iter = g_list_next(iter))
         {
-            interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+            interface_plot_add_track(gpx_viewer,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
         }
     }
-    interface_create_fake_master_track(file, &liter);
+    interface_create_fake_master_track(file, &liter,gpx_viewer);
 }
 
 
 static void
 view_state_changed (ChamplainView *view,
 GParamSpec *gobject,
-GtkImage *image)
+gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     static guint sb_context = 0;
     ChamplainState state;
-    GtkWidget *sb = GTK_WIDGET(gtk_builder_get_object(builder, "statusbar2"));
+    GtkWidget *sb = GTK_WIDGET(gtk_builder_get_object(priv->builder, "statusbar2"));
     if(sb_context == 0)
     {
         sb_context = gtk_statusbar_get_context_id(GTK_STATUSBAR(sb), "loadingstatecontext");
@@ -1111,10 +1138,11 @@ GtkImage *image)
     }
 }
 
-static void map_view_clicked(GpxViewerMapView *view, double lat, double lon)
+static void map_view_clicked(GpxViewerMapView *view, double lat, double lon, gpointer gpx_viewer)
 {
 	if(active_route)
 	{
+		GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
 		/* Check if the clicked point is within the bounding box of the current track */
 		if(active_route->track->top->lon_dec > lon && active_route->track->top->lat_dec > lat && 
 			active_route->track->bottom->lon < lon && active_route->track->bottom->lat_dec < lat)
@@ -1137,7 +1165,7 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon)
 				}
 				if(distance < 0.5)
 				{
-			        graph_point_clicked(gpx_graph, d);
+			        graph_point_clicked(priv->gpx_graph, d, gpx_viewer);
 				}
 			}
 	}
@@ -1175,31 +1203,32 @@ void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data)
 
 
 /* React when graph mode changes */
-static void graph_mode_changed(GpxGraph *graph, GParamSpec *sp, gpointer data)
+static void graph_mode_changed(GpxGraph *graph, GParamSpec *sp, gpointer gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     int mode = gpx_graph_get_mode(graph);
     g_debug("Graph mode switched: %i\n", mode);
     switch(mode)
     {
         case GPX_GRAPH_GRAPH_MODE_ELEVATION:
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_elevation")), TRUE);
+                gtk_builder_get_object(priv->builder, "view_menu_elevation")), TRUE);
             break;
         case GPX_GRAPH_GRAPH_MODE_SPEED:
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_speed")), TRUE);
+                gtk_builder_get_object(priv->builder, "view_menu_speed")), TRUE);
             break;
         case GPX_GRAPH_GRAPH_MODE_DISTANCE:
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_distance")), TRUE);
+                gtk_builder_get_object(priv->builder, "view_menu_distance")), TRUE);
             break;
         case GPX_GRAPH_GRAPH_MODE_ACCELERATION_H:
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_acceleration")), TRUE);
+                gtk_builder_get_object(priv->builder, "view_menu_acceleration")), TRUE);
             break;
         case GPX_GRAPH_GRAPH_MODE_SPEED_V:
             gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(
-                gtk_builder_get_object(builder, "view_menu_vertical_speed")), TRUE);
+                gtk_builder_get_object(priv->builder, "view_menu_vertical_speed")), TRUE);
             break;
         default:
             break;
@@ -1211,8 +1240,10 @@ static void graph_mode_changed(GpxGraph *graph, GParamSpec *sp, gpointer data)
 /* Create the interface */
 static void create_interface(GtkApplication *gtk_app)
 {
+	GpxViewerPrivate *  priv = GPX_VIEWER_GET_PRIVATE(gtk_app);
     ChamplainView *view;
     GList *fiter,*iter;
+	GtkWidget *gpx_graph_container;
     double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
     GError *error = NULL;
     GtkWidget *sp = NULL;
@@ -1220,36 +1251,35 @@ static void create_interface(GtkApplication *gtk_app)
     GtkTreeSelection *selection;
     GtkWidget *sw,*item,*rc;
     int current;
-    int pos;
     gint w,h;
     GtkRecentFilter *grf;
 	GtkWidget *dock;
 	GtkWidget *map_dock_item, *graph_dock_item;
 
     /* Open UI description file */
-    builder = gtk_builder_new();
-    if (!gtk_builder_add_from_file(builder, path, &error))
+    priv->builder = gtk_builder_new();
+    if (!gtk_builder_add_from_file(priv->builder, path, &error))
     {
         g_error("Failed to create ui: %s\n", error->message);
     }
     g_free(path);
 
     item = gtk_menu_item_new_with_mnemonic(_("_Recent file"));
-    gtk_menu_shell_insert(GTK_MENU_SHELL(gtk_builder_get_object(builder, "menu1")),
+    gtk_menu_shell_insert(GTK_MENU_SHELL(gtk_builder_get_object(priv->builder, "menu1")),
         item,1);
     rc = gtk_recent_chooser_menu_new();
-    g_signal_connect(G_OBJECT(rc), "item-activated", G_CALLBACK(recent_chooser_file_picked), NULL);
+    g_signal_connect(G_OBJECT(rc), "item-activated", G_CALLBACK(recent_chooser_file_picked), gtk_app);
     grf = gtk_recent_filter_new();
     gtk_recent_filter_add_pattern(GTK_RECENT_FILTER(grf), "*.gpx");
     gtk_recent_chooser_add_filter(GTK_RECENT_CHOOSER(rc),grf);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), rc);
 
-    w =gpx_viewer_settings_get_integer(settings,"Window", "width", 400);
-    h =gpx_viewer_settings_get_integer(settings,"Window", "height", 300);
-    gtk_window_resize(GTK_WINDOW(gtk_builder_get_object(builder,"gpx_viewer_window")), w,h);
+    w =gpx_viewer_settings_get_integer(priv->settings,"Window", "width", 400);
+    h =gpx_viewer_settings_get_integer(priv->settings,"Window", "height", 300);
+    gtk_window_resize(GTK_WINDOW(gtk_builder_get_object(priv->builder,"gpx_viewer_window")), w,h);
 
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(builder, "TracksTreeView")));
-    g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(routes_list_changed_cb), NULL);
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(priv->builder, "TracksTreeView")));
+    g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(routes_list_changed_cb), gtk_app);
 
 
 	
@@ -1262,7 +1292,7 @@ static void create_interface(GtkApplication *gtk_app)
     sw = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
     gtk_container_add(GTK_CONTAINER(sw), champlain_view);
-	g_signal_connect(G_OBJECT(champlain_view), "clicked", G_CALLBACK(map_view_clicked), NULL);
+	g_signal_connect(G_OBJECT(champlain_view), "clicked", G_CALLBACK(map_view_clicked), gtk_app);
 
 	map_dock_item = gdl_dock_item_new("Map", "Map",
 				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
@@ -1277,12 +1307,12 @@ static void create_interface(GtkApplication *gtk_app)
 
 
     /* graph */
-    gpx_graph = gpx_graph_new();
+    priv->gpx_graph = gpx_graph_new();
     gpx_graph_container = gtk_frame_new(NULL);
     gtk_widget_set_size_request(gpx_graph_container, -1, 120);
     gtk_frame_set_shadow_type(GTK_FRAME(gpx_graph_container), GTK_SHADOW_IN);
-    gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(gpx_graph));
-    gtk_widget_show(GTK_WIDGET(gpx_graph));
+    gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(priv->gpx_graph));
+    gtk_widget_show(GTK_WIDGET(priv->gpx_graph));
     //gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
 
 	graph_dock_item = gdl_dock_item_new("Graph", "Graph",
@@ -1295,19 +1325,19 @@ static void create_interface(GtkApplication *gtk_app)
 	gtk_widget_show_all(graph_dock_item);
 
     /* show the interface */
-    gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(builder, "gpx_viewer_window")));
+    gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(priv->builder, "gpx_viewer_window")));
 
 
     view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
     g_signal_connect (view, "notify::state", G_CALLBACK (view_state_changed),
-        NULL);
+        gtk_app);
 
-    interface_map_make_waypoints(view);
+    interface_map_make_waypoints(view,gtk_app);
 
-    for (fiter = g_list_first(files); fiter; fiter = g_list_next(fiter))
+    for (fiter = g_list_first(priv->files); fiter; fiter = g_list_next(fiter))
     {
         GpxFile *file = fiter->data;
-        GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+        GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
         GtkTreeIter liter;
         gchar *basename = g_file_get_basename(file->file);
         gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
@@ -1322,55 +1352,55 @@ static void create_interface(GtkApplication *gtk_app)
         {
             for (iter = g_list_first(file->tracks); iter; iter = g_list_next(iter))
             {
-                interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+                interface_plot_add_track(gtk_app,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
             }
         }
         if(file->routes)
         {
             for (iter = g_list_first(file->routes); iter; iter = g_list_next(iter))
             {
-                interface_plot_add_track(&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+                interface_plot_add_track(gtk_app,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
             }
         }
-        interface_create_fake_master_track(file, &liter);
+        interface_create_fake_master_track(file, &liter, gtk_app);
     }
     /* Set up the zoom widget */
-    sp = GTK_WIDGET(gtk_builder_get_object(builder, "map_zoom_level"));
+    sp = GTK_WIDGET(gtk_builder_get_object(priv->builder, "map_zoom_level"));
     current = champlain_view_get_zoom_level(view);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
     g_signal_connect(G_OBJECT(champlain_view), "zoom-level-changed", G_CALLBACK(map_view_zoom_level_changed), sp);
 
     /* Set up the smooth widget */
-    sp = GTK_WIDGET(gtk_builder_get_object(builder, "smooth_factor"));
-    gpx_viewer_settings_add_object_property(settings, G_OBJECT(gpx_graph), "smooth-factor");
-    current = gpx_graph_get_smooth_factor(gpx_graph);
+    sp = GTK_WIDGET(gtk_builder_get_object(priv->builder, "smooth_factor"));
+    gpx_viewer_settings_add_object_property(priv->settings, G_OBJECT(priv->gpx_graph), "smooth-factor");
+    current = gpx_graph_get_smooth_factor(priv->gpx_graph);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(sp), (double)current);
-    g_signal_connect(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
+    g_signal_connect(priv->gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), sp);
 
     /* */
-    sp = GTK_WIDGET(gtk_builder_get_object(builder, "show_waypoints_layer"));
+    sp = GTK_WIDGET(gtk_builder_get_object(priv->builder, "show_waypoints_layer"));
     g_signal_connect(G_OBJECT(champlain_view), "notify::show-waypoints", G_CALLBACK(show_waypoints_layer_changed), sp);
-    gpx_viewer_settings_add_object_property(settings, G_OBJECT(champlain_view), "show-waypoints");
+    gpx_viewer_settings_add_object_property(priv->settings, G_OBJECT(champlain_view), "show-waypoints");
     show_waypoints_layer_changed(NULL, NULL, sp);
 
-    g_signal_connect(gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), NULL);
-    g_signal_connect(gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), NULL);
+    g_signal_connect(priv->gpx_graph, "point-clicked", G_CALLBACK(graph_point_clicked), gtk_app);
+    g_signal_connect(priv->gpx_graph, "selection-changed", G_CALLBACK(graph_selection_changed), gtk_app);
 
     /* Set up show points checkbox. Load state from config */
-    sp = GTK_WIDGET(gtk_builder_get_object(builder, "graph_show_points"));
-    g_signal_connect(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), sp);
-    gpx_viewer_settings_add_object_property(settings, G_OBJECT(gpx_graph), "show-points");
+    sp = GTK_WIDGET(gtk_builder_get_object(priv->builder, "graph_show_points"));
+    g_signal_connect(priv->gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), sp);
+    gpx_viewer_settings_add_object_property(priv->settings, G_OBJECT(priv->gpx_graph), "show-points");
 
     /**
      * Restore/Set graph mode
      */
-    g_signal_connect(gpx_graph, "notify::mode", G_CALLBACK(graph_mode_changed), NULL);
-    gpx_viewer_settings_add_object_property(settings, G_OBJECT(gpx_graph), "mode");
+    g_signal_connect(priv->gpx_graph, "notify::mode", G_CALLBACK(graph_mode_changed), gtk_app);
+    gpx_viewer_settings_add_object_property(priv->settings, G_OBJECT(priv->gpx_graph), "mode");
 
     /* Setup the map selector widget */
     {
-        GtkWidget *combo = GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo"));
-        GtkCellRenderer *renderer = (GtkCellRenderer *)gtk_builder_get_object(builder, "cellrenderertext3");
+        GtkWidget *combo = GTK_WIDGET(gtk_builder_get_object(priv->builder, "map_selection_combo"));
+        GtkCellRenderer *renderer = (GtkCellRenderer *)gtk_builder_get_object(priv->builder, "cellrenderertext3");
         GtkTreeModel *model = gpx_viewer_map_view_get_model(GPX_VIEWER_MAP_VIEW(champlain_view));
         /* hack to work around GtkBuilder limitation that it cannot set expand
             on packing a cell renderer */
@@ -1380,14 +1410,14 @@ static void create_interface(GtkApplication *gtk_app)
         gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo), renderer, "text", 0,NULL);
         g_object_unref(renderer);
 
-        gtk_combo_box_set_model(GTK_COMBO_BOX(gtk_builder_get_object(builder, "map_selection_combo")),model);
+        gtk_combo_box_set_model(GTK_COMBO_BOX(gtk_builder_get_object(priv->builder, "map_selection_combo")),model);
     }
 
     {
 
-        GtkWidget *flw = (GtkWidget *)gtk_builder_get_object(builder, "FileListWidget");
-        GtkWidget *tiw = (GtkWidget *)gtk_builder_get_object(builder, "TrackInfoWidget");
-        GtkWidget *swi = (GtkWidget *)gtk_builder_get_object(builder, "SettingWidget");
+        GtkWidget *flw = (GtkWidget *)gtk_builder_get_object(priv->builder, "FileListWidget");
+        GtkWidget *tiw = (GtkWidget *)gtk_builder_get_object(priv->builder, "TrackInfoWidget");
+        GtkWidget *swi = (GtkWidget *)gtk_builder_get_object(priv->builder, "SettingWidget");
 
         /* Dock item */
         dock_items[0] = item = gdl_dock_item_new(
@@ -1428,23 +1458,23 @@ static void create_interface(GtkApplication *gtk_app)
 		gtk_widget_show(bar);
         gtk_box_pack_start(GTK_BOX(gtk_builder_get_object(builder, "main_view_hpane")), bar, FALSE, FALSE, 0);
 		*/
-        gtk_box_pack_end(GTK_BOX(gtk_builder_get_object(builder, "main_view_hpane")), dock, TRUE, TRUE, 0);
+        gtk_box_pack_end(GTK_BOX(gtk_builder_get_object(priv->builder, "main_view_hpane")), dock, TRUE, TRUE, 0);
 
         dock_layout = gdl_dock_layout_new(GDL_DOCK(dock));
         restore_layout();
 
     }
-    gpx_viewer_settings_add_object_property(settings, G_OBJECT(champlain_view), "map-source");
+    gpx_viewer_settings_add_object_property(priv->settings, G_OBJECT(champlain_view), "map-source");
     map_view_map_source_changed(GPX_VIEWER_MAP_VIEW(champlain_view), NULL,
-        GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo")));
+        GTK_WIDGET(gtk_builder_get_object(priv->builder, "map_selection_combo")));
     g_signal_connect(G_OBJECT(champlain_view),
         "notify::map-source",
         G_CALLBACK(map_view_map_source_changed),
-        GTK_WIDGET(gtk_builder_get_object(builder, "map_selection_combo"))
+        GTK_WIDGET(gtk_builder_get_object(priv->builder, "map_selection_combo"))
         );
 
     /* Connect signals */
-    gtk_builder_connect_signals(builder, NULL);
+    gtk_builder_connect_signals(priv->builder, gtk_app);
 
     /* Try to center the track on map correctly */
     if (lon1 < 1000.0 && lon2 < 1000.0)
@@ -1460,12 +1490,13 @@ static void create_interface(GtkApplication *gtk_app)
 
         champlain_bounding_box_free(bounding_box);
     }
-    gtk_window_set_application(GTK_WINDOW(gtk_builder_get_object(builder,"gpx_viewer_window")), gtk_app);
+    gtk_window_set_application(GTK_WINDOW(gtk_builder_get_object(priv->builder,"gpx_viewer_window")), gtk_app);
 }
 
 
-void open_gpx_file(GtkMenu *item)
+void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     GtkWidget *dialog;
     GtkBuilder *fbuilder = gtk_builder_new();
     /* Show dialog */
@@ -1478,7 +1509,7 @@ void open_gpx_file(GtkMenu *item)
 
     dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser"));
 
-    path = gpx_viewer_settings_get_string(settings, "open-dialog", "last-dir", NULL);
+    path = gpx_viewer_settings_get_string(priv->settings, "open-dialog", "last-dir", NULL);
     if(path)
     {
         gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),path);
@@ -1495,7 +1526,7 @@ void open_gpx_file(GtkMenu *item)
     {
         case 1:
         {
-            GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+            GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
             GSList *iter, *choosen_files = gtk_file_chooser_get_uris(GTK_FILE_CHOOSER(dialog));
             for (iter = choosen_files; iter; iter = g_slist_next(iter))
             {
@@ -1506,10 +1537,10 @@ void open_gpx_file(GtkMenu *item)
                 /* Create a GFile */
                 GFile *afile = g_file_new_for_uri((gchar*)iter->data);
                 /* Add entry to recent manager */
-				gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man), (gchar *)iter->data);
+				gtk_recent_manager_add_item(GTK_RECENT_MANAGER(priv->recent_man), (gchar *)iter->data);
                 /* Try to open the gpx file */
                 file = gpx_file_new(afile);
-                files = g_list_append(files, file);
+                priv->files = g_list_append(priv->files, file);
                 g_object_unref(afile);
 
                 basename = g_file_get_basename(file->file);
@@ -1526,7 +1557,7 @@ void open_gpx_file(GtkMenu *item)
                     GList *track_iter;
                     for (track_iter = g_list_first(file->tracks); track_iter; track_iter = g_list_next(track_iter))
                     {
-                        interface_plot_add_track(&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
+                        interface_plot_add_track(gpx_viewer,&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
                     }
                 }
                 if(file->routes)
@@ -1534,10 +1565,10 @@ void open_gpx_file(GtkMenu *item)
                     GList *route_iter;
                     for (route_iter = g_list_first(file->routes); route_iter; route_iter = g_list_next(route_iter))
                     {
-                        interface_plot_add_track(&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
+                        interface_plot_add_track(gpx_viewer,&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
                     }
                 }
-                interface_create_fake_master_track(file, &liter);
+                interface_create_fake_master_track(file, &liter,gpx_viewer);
             }
             g_slist_foreach(choosen_files, (GFunc) g_free, NULL);
             g_slist_free(choosen_files);
@@ -1548,7 +1579,7 @@ void open_gpx_file(GtkMenu *item)
     path = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(dialog));
     if(path)
     {
-        gpx_viewer_settings_set_string(settings, "open-dialog" , "last-dir" , path);
+        gpx_viewer_settings_set_string(priv->settings, "open-dialog" , "last-dir" , path);
         g_free(path);
     }
     gtk_widget_destroy(dialog);
@@ -1556,38 +1587,31 @@ void open_gpx_file(GtkMenu *item)
 }
 
 
-/************************************************************
- *  GPX-Viewer                                              *
- ************************************************************/
-typedef GtkApplication 		GpxViewer;
-typedef GtkApplicationClass GpxViewerClass;
-
-G_DEFINE_TYPE (GpxViewer, gpx_viewer, GTK_TYPE_APPLICATION)
-
-void gpx_viewer_activate (GpxViewer *object)
+static void gpx_viewer_activate (GpxViewer *object)
 {
-	if(settings == NULL)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(object);
+	if(priv->settings == NULL)
 	{
 		/* Setup responding to commands */
-		settings = gpx_viewer_settings_new();
+		priv->settings = gpx_viewer_settings_new();
 
 		/* REcent manager */
-		recent_man = gtk_recent_manager_get_default();
+		priv->recent_man = gtk_recent_manager_get_default();
 
 		/* Create playback option */
-		playback = gpx_playback_new(NULL);
+		priv->playback = gpx_playback_new(NULL);
 		/* Connect settings */
-		gpx_viewer_settings_add_object_property(settings,
-				G_OBJECT(playback), "speedup");
+		gpx_viewer_settings_add_object_property(priv->settings,
+				G_OBJECT(priv->playback), "speedup");
 		/* Watch signals */
-		g_signal_connect(GPX_PLAYBACK(playback),
+		g_signal_connect(GPX_PLAYBACK(priv->playback),
 				"tick",
 				G_CALLBACK(route_playback_tick),
-				NULL);
-		g_signal_connect(GPX_PLAYBACK(playback),
+				object);
+		g_signal_connect(GPX_PLAYBACK(priv->playback),
 				"state-changed",
 				G_CALLBACK(route_playback_state_changed),
-				NULL);
+				object);
 
 		/* Create interface */
 		create_interface(GTK_APPLICATION(object));
@@ -1597,38 +1621,56 @@ void gpx_viewer_activate (GpxViewer *object)
 static void
 gpx_viewer_finalize (GObject *object)
 {
-	/* unref playback object */
-	g_debug("Destroying playback");
-	if(playback) {
-		g_object_unref(playback);
-	}
-	/* Destroy the files */
-	g_debug("Cleaning up files");
-	g_list_foreach(g_list_first(files), (GFunc) g_object_unref, NULL);
-	g_list_free(files);
+	GpxViewerPrivate * priv = GPX_VIEWER_GET_PRIVATE(object);
 
 	/* Destroy the settings object */
 	g_debug("destroying Settings");
-	if(settings) {
-		g_object_unref(settings);
+	if(priv->settings) {
+		g_object_unref(priv->settings);
+		priv->settings = NULL;
 	}
-
+	if(priv->recent_man) {
+		// Do not free
+		priv->recent_man = NULL;
+	}
+	/* unref playback object */
+	g_debug("Destroying playback");
+	if(priv->playback) {
+		g_object_unref(priv->playback);
+		priv->playback = NULL;
+	}
+	/* Destroy the files */
+	g_debug("Cleaning up files");
+	if(priv->files)
+	{
+		g_list_foreach(g_list_first(priv->files), (GFunc) g_object_unref, NULL);
+		g_list_free(priv->files);
+		priv->files = NULL;
+	}
 	/* Class */
 	G_OBJECT_CLASS (gpx_viewer_parent_class)->finalize (object);
 }
 
-static void
-gpx_viewer_init (GpxViewer *app)
+static void gpx_viewer_init (GpxViewer *app)
 {
-
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(app);
+	priv->settings = NULL;
+	priv->recent_man = NULL;
+	priv->playback = NULL;
+	priv->click_marker_source= 0;
+	priv->files = NULL;
+	priv->builder = NULL;
+	priv->gpx_graph = NULL;
 }
 
 static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, const gchar *hint)
 {
 	int i = 0;
+	GtkTreeModel *model;
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(app);
 
 	gpx_viewer_activate(app);
-	GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(builder, "routes_store");
+	model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
 
 	for(i=0; i < n_files;i++)
 	{
@@ -1640,10 +1682,10 @@ static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, c
 		/* Create a GFile */
 		/* Try to open the gpx file */
 		file = gpx_file_new(input_files[i]);
-		files = g_list_append(files, file);
+		priv->files = g_list_append(priv->files, file);
 		/* Add entry to recent manager */
 		filename = g_file_get_uri(file->file);
-		gtk_recent_manager_add_item(GTK_RECENT_MANAGER(recent_man),filename); 
+		gtk_recent_manager_add_item(GTK_RECENT_MANAGER(priv->recent_man),filename); 
 
 		basename = g_file_get_basename(file->file);
 		gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
@@ -1660,7 +1702,7 @@ static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, c
 			GList *track_iter;
 			for (track_iter = g_list_first(file->tracks); track_iter; track_iter = g_list_next(track_iter))
 			{
-				interface_plot_add_track(&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
+				interface_plot_add_track(app,&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
 			}
 		}
 		if(file->routes)
@@ -1668,21 +1710,22 @@ static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, c
 			GList *route_iter;
 			for (route_iter = g_list_first(file->routes); route_iter; route_iter = g_list_next(route_iter))
 			{
-				interface_plot_add_track(&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
+				interface_plot_add_track(app,&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
 			}
 		}
-		interface_create_fake_master_track(file, &liter);
+		interface_create_fake_master_track(file, &liter, app);
 	}
 }
 
 static void
 gpx_viewer_class_init (GpxViewerClass *class)
 {
-  G_OBJECT_CLASS (class)->finalize= gpx_viewer_finalize;
-  G_OBJECT_CLASS (class)->constructed = gpx_viewer_init;
+	g_type_class_add_private(class, sizeof(GpxViewerPrivate));
+	G_OBJECT_CLASS (class)->finalize= gpx_viewer_finalize;
+	G_OBJECT_CLASS (class)->constructed = gpx_viewer_init;
 
-  G_APPLICATION_CLASS (class)->activate = gpx_viewer_activate;
-  G_APPLICATION_CLASS (class)->open = gpx_viewer_open;
+	G_APPLICATION_CLASS (class)->activate = gpx_viewer_activate;
+	G_APPLICATION_CLASS (class)->open = gpx_viewer_open;
 }
 
 
@@ -1738,17 +1781,18 @@ int main(int argc, char **argv)
  * Track list viewer
  */
 
-void close_show_current_track(GtkWidget *widget,gint response_id, GtkBuilder *fbuilder)
+void close_show_current_track(GtkWidget *widget,gint response_id,gpointer user_data) 
 {
 
-	GtkWidget *dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
-	gtk_widget_destroy(dialog);
+//	GtkWidget *dialog = GTK_WIDGET(gtk_builder_get_object(fbuilder, "track_list_dialog"));
+	gtk_widget_destroy(widget);
 
-	g_object_unref(fbuilder);
+	// TODO: How to free these now?
+//	g_object_unref(fbuilder);
 }
 
 
-void show_current_track(void)
+void show_current_track(GtkWidget *menu_item, gpointer user_data)
 {
 	if(active_route && active_route->track)
 	{
@@ -1769,8 +1813,9 @@ void show_current_track(void)
 
 		gtk_tree_view_set_model(tree, model);
 		g_object_unref(model);
-		gtk_builder_connect_signals(fbuilder, fbuilder);
+		gtk_builder_connect_signals(fbuilder, user_data);
 		gtk_widget_show(GTK_WIDGET(dialog));
+		g_object_unref(fbuilder);
 	}
 }
 
@@ -1778,22 +1823,25 @@ void show_current_track(void)
 /**
  * Settings
  */
-void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, GtkBuilder *fbuilder)
+void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, gpointer user_data) 
 {
 	gtk_widget_destroy(dialog);
-	g_object_unref(fbuilder);
+	// TODO: How to free these now?
+//	g_object_unref(fbuilder);
 }
 
 
-void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp)
+void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp, gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
 	gint value = gtk_spin_button_get_value_as_int(sp);
-	gpx_playback_set_speedup(playback, value);
+	gpx_playback_set_speedup(priv->playback, value);
 }
 
 
-void gpx_viewer_show_preferences_dialog(void)
+void gpx_viewer_show_preferences_dialog(GtkWidget *menu_item, gpointer user_data)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
 	ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_view));
 	GtkWidget *dialog;
 	GtkTreeModel *model;
@@ -1844,21 +1892,22 @@ void gpx_viewer_show_preferences_dialog(void)
 	/** Graph **/
 	/* smooth factor */
 	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"spin_button_smooth_factor");
-	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), (double)gpx_graph_get_smooth_factor(gpx_graph));
-	g_signal_connect_object(gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), widget,0);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), (double)gpx_graph_get_smooth_factor(priv->gpx_graph));
+	g_signal_connect_object(priv->gpx_graph, "notify::smooth-factor", G_CALLBACK(smooth_factor_changed), widget,0);
 
 	/* Show points */
 	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"check_button_data_points");
-	g_signal_connect_object(gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
-	graph_show_points_changed(NULL, NULL, widget);
+	g_signal_connect_object(priv->gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
+	graph_show_points_changed(widget, NULL, widget);
 
 	/* speedup */
 	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),
-			(double)gpx_playback_get_speedup(playback));
+			(double)gpx_playback_get_speedup(priv->playback));
 
-	gtk_builder_connect_signals(fbuilder, fbuilder);
+	gtk_builder_connect_signals(fbuilder, user_data);
 	gtk_widget_show(GTK_WIDGET(dialog));
+	g_object_unref(fbuilder);
 }
 
 

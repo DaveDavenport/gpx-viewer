@@ -196,6 +196,11 @@ namespace Gpx
                     if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
                     if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
 					if(point.speed > this.max_speed) this.max_speed = point.speed;
+				}else{
+					unowned Gpx.Point point = iter.data;
+                    if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
+                    if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
+					point.distance = 0;
 				}
 				last = iter;
 			}
