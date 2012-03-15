@@ -34,6 +34,24 @@
 #include "gpx-viewer-path-layer.h"
 
 
+
+
+/**
+ * This structure holds all information related to
+ * a track.
+ * The file the track belongs to, the path on the map start/stop marker
+ * and the visible state.
+ */
+typedef struct Route
+{
+    GpxFile *file;
+    GpxTrack *track;
+    GpxViewerPathLayer *path;
+    ChamplainMarker *start;
+    ChamplainMarker *stop;
+    gboolean visible;
+} Route;
+
 /************************************************************
  *  GPX-Viewer                                              *
  ************************************************************/
@@ -56,6 +74,16 @@ typedef struct _GpxViewerPrivate {
 	/* The Map view widget */
 	GtkWidget           *champlain_view;
 
+	GtkWidget        *dock_items[3];
+	GdlDockLayout    *dock_layout;
+	/* List of routes GList<Route> *routes */
+	GList *routes;
+
+	/**
+	 * This points to the currently active Route.
+	 */
+	Route *active_route;
+
 } GpxViewerPrivate;
 
 G_DEFINE_TYPE (GpxViewer, gpx_viewer, GTK_TYPE_APPLICATION)
@@ -64,33 +92,28 @@ G_DEFINE_TYPE (GpxViewer, gpx_viewer, GTK_TYPE_APPLICATION)
 #define GPX_TYPE_VIEWER  (gpx_viewer_get_type())
 
 
-static GtkWidget        *dock_items[3];
-static GdlDockLayout    *dock_layout = NULL;
 
-/**
- * This structure holds all information related to
- * a track.
- * The file the track belongs to, the path on the map start/stop marker
- * and the visible state.
- */
-typedef struct Route
+static void gpx_viewer_init (GpxViewer *app)
 {
-    GpxFile *file;
-    GpxTrack *track;
-    GpxViewerPathLayer *path;
-    ChamplainMarker *start;
-    ChamplainMarker *stop;
-    gboolean visible;
-} Route;
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(app);
+	priv->settings            = NULL;
+	priv->recent_man          = NULL;
+	priv->playback            = NULL;
+	priv->click_marker_source = 0;
+	priv->files               = NULL;
+	priv->builder             = NULL;
+	priv->gpx_graph           = NULL;
+	priv->champlain_view      = NULL;
 
-/* List of routes GList<Route> *routes */
-GList *routes                       = NULL;
+	priv->routes              = NULL;
+	priv->active_route        = NULL;
 
-/**
- * This points to the currently active Route.
- */
-Route *active_route                 = NULL;
+	priv->dock_layout         = NULL;
+	priv->dock_items[0]		  = NULL;
+	priv->dock_items[1]		  = NULL;
+	priv->dock_items[2]		  = NULL;
 
+}
 
 /* TODO get correct values */
 #define KM_IN_MILE 0.621371192
@@ -147,8 +170,9 @@ gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format)
  * Dock loading/restoring
  */
 
-static void restore_layout(void)
+static void restore_layout(GpxViewer *gpx_viewer)
 {
+	GpxViewerPrivate *  priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     const gchar *config_dir = g_get_user_config_dir();
     gchar *layout_path = NULL;
     g_assert(config_dir != NULL);
@@ -156,13 +180,13 @@ static void restore_layout(void)
     layout_path = g_build_filename(config_dir, "gpx-viewer", "dock-layout2.xml",NULL);
     if(g_file_test(layout_path, G_FILE_TEST_EXISTS))
     {
-        gdl_dock_layout_load_from_file(dock_layout, layout_path);
-        gdl_dock_layout_load_layout(dock_layout, "my_layout");
+        gdl_dock_layout_load_from_file(priv->dock_layout, layout_path);
+        gdl_dock_layout_load_layout(priv->dock_layout, "my_layout");
     }else
 	{
 		gchar *path = g_build_filename(DATA_DIR, "default-layout.xml", NULL);
-        gdl_dock_layout_load_from_file(dock_layout, path);
-        gdl_dock_layout_load_layout(dock_layout, "my_layout");
+        gdl_dock_layout_load_from_file(priv->dock_layout, path);
+        gdl_dock_layout_load_layout(priv->dock_layout, "my_layout");
 		g_free(path);
 	}
     g_free(layout_path);
@@ -172,8 +196,9 @@ static void restore_layout(void)
 /**
  * Stores the layout off the docks. 
  */
-static void save_layout(void)
+static void save_layout(GpxViewer *gpx_viewer)
 {
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     gchar *layout_path = NULL;
     const gchar *config_dir = g_get_user_config_dir();
     g_assert(config_dir != NULL);
@@ -193,11 +218,11 @@ static void save_layout(void)
  	 * Save dock layout 
 	 */
     layout_path = g_build_filename(config_dir, "gpx-viewer", "dock-layout2.xml",NULL);
-    if(dock_layout)
+    if(priv->dock_layout)
     {
         g_debug("Saving layout: %s", layout_path);
-        gdl_dock_layout_save_layout(dock_layout, "my_layout");
-        gdl_dock_layout_save_to_file(dock_layout, layout_path);
+        gdl_dock_layout_save_layout(priv->dock_layout, "my_layout");
+        gdl_dock_layout_save_to_file(priv->dock_layout, layout_path);
     }
     g_free(layout_path);
 }
@@ -218,7 +243,7 @@ static void free_Route(Route *route)
 
 void on_destroy_menu(GtkMenuItem *item , gpointer gpx_viewer)
 {
-	on_destroy(item, NULL, gpx_viewer);
+	on_destroy(GTK_WIDGET(item), NULL, gpx_viewer);
 }
 /**
  * This is called when the main window is destroyed
@@ -228,15 +253,12 @@ void on_destroy(GtkWidget *widget,GdkEvent *event, gpointer gpx_viewer)
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
     g_debug("Quit...");
 
-    save_layout();
+    save_layout((GpxViewer *)(gpx_viewer));
+
 
     gtk_widget_destroy(GTK_WIDGET(gtk_builder_get_object(priv->builder, "gpx_viewer_window")));
     g_object_unref(priv->builder);
 	priv->builder = NULL;
-
-    g_debug("Cleanup routes");
-    g_list_foreach(g_list_first(routes), (GFunc)free_Route, NULL);
-    g_list_free(routes); routes = NULL;
 }
 
 
@@ -523,7 +545,7 @@ void show_waypoints_layer_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpoint
 }
 
 
-static void show_waypoints_layer_changed(GpxViewerMapView *view, GParamSpec * gobject, GtkWidget *sp)
+static void show_waypoints_layer_changed(GtkWidget *view, GParamSpec * gobject, GtkWidget *sp)
 {
     gboolean active = gpx_viewer_map_view_get_show_waypoints(GPX_VIEWER_MAP_VIEW(view));
     if(gtk_switch_get_active(GTK_SWITCH(sp)) != active)
@@ -547,21 +569,21 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
         Route *route = NULL;
         gtk_tree_model_get(model, &iter, 1, &route, -1);
         /* Unset active route */
-        if (active_route)
+        if (priv->active_route)
         {
             /* Give it ' non-active' colour */
-			if(active_route->path != NULL)
+			if(priv->active_route->path != NULL)
 			{
 				// Todo set track not sensitive.
 				//gpx_viewer_path_layer_set_stroke_color(active_route->path, &normal_track_color);
 			}
 			/* Hide stop marker */
-            if(active_route->stop)
-                clutter_actor_hide(CLUTTER_ACTOR(active_route->stop));
+            if(priv->active_route->stop)
+                clutter_actor_hide(CLUTTER_ACTOR(priv->active_route->stop));
 
             /* Hide start marker */
-            if(active_route->start)
-                clutter_actor_hide(CLUTTER_ACTOR(active_route->start));
+            if(priv->active_route->start)
+                clutter_actor_hide(CLUTTER_ACTOR(priv->active_route->start));
 
             /* Stop playback */
             gpx_playback_stop(priv->playback);
@@ -569,17 +591,17 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             gpx_graph_set_track(priv->gpx_graph, NULL);
             /* Hide graph */
 			/* if not visible hide track again */
-			if(!active_route->visible) {
-                gpx_viewer_path_layer_set_visible(active_route->path, FALSE);
+			if(!priv->active_route->visible) {
+                gpx_viewer_path_layer_set_visible(priv->active_route->path, FALSE);
 			}
         }
 
-        active_route = route;
+        priv->active_route = route;
         if (route)
         {
             ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(priv->champlain_view));
 
-            gpx_playback_set_track(priv->playback, active_route->track);
+            gpx_playback_set_track(priv->playback, priv->active_route->track);
             if(route->path != NULL) {
 				// TODO: set track sensitive.
 //                gpx_viewer_path_layer_set_stroke_color(route->path, &highlight_track_color);
@@ -602,9 +624,9 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
                 champlain_bounding_box_free(track_bounding_box);
             }
 
-            if (gpx_track_get_total_time(active_route->track) > 5)
+            if (gpx_track_get_total_time(priv->active_route->track) > 5)
             {
-                gpx_graph_set_track(priv->gpx_graph, active_route->track);
+                gpx_graph_set_track(priv->gpx_graph, priv->active_route->track);
             }
             else
             {
@@ -722,16 +744,16 @@ static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *s
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
     interface_update_heading(priv->builder, track, start, stop, gpx_viewer);
-    if(active_route && active_route->track->points != NULL)
+    if(priv->active_route && priv->active_route->track->points != NULL)
     {
         if(start)
         {
-            champlain_location_set_location (CHAMPLAIN_LOCATION (active_route->start), start->lat_dec, start->lon_dec);
+            champlain_location_set_location (CHAMPLAIN_LOCATION (priv->active_route->start), start->lat_dec, start->lon_dec);
         }
 
         if(stop)
         {
-            champlain_location_set_location (CHAMPLAIN_LOCATION (active_route->stop), stop->lat_dec, stop->lon_dec);
+            champlain_location_set_location (CHAMPLAIN_LOCATION (priv->active_route->stop), stop->lat_dec, stop->lon_dec);
         }
     }
 }
@@ -762,7 +784,7 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point, gpointer gpx_v
 void playback_play_clicked(GtkWidget *widget, gpointer user_data)
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
-    if(active_route)
+    if(priv->active_route)
     {
         gpx_playback_start(priv->playback);
     }
@@ -772,7 +794,7 @@ void playback_play_clicked(GtkWidget *widget, gpointer user_data)
 void playback_pause_clicked(GtkWidget *widget, gpointer user_data)
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
-    if(active_route)
+    if(priv->active_route)
     {
         gpx_playback_pause(priv->playback);
     }
@@ -782,7 +804,7 @@ void playback_pause_clicked(GtkWidget *widget, gpointer user_data)
 void playback_stop_clicked(GtkWidget *widget, gpointer user_data)
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
-    if(active_route)
+    if(priv->active_route)
     {
         gpx_playback_stop(priv->playback);
     }
@@ -904,7 +926,7 @@ static void interface_plot_add_track(GpxViewer *gpx_viewer, GtkTreeIter *parent,
         }
     }
 
-    routes = g_list_append(routes, route);
+    priv->routes = g_list_append(priv->routes, route);
 }
 
 void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer data)
@@ -1072,7 +1094,7 @@ static void interface_create_fake_master_track(GpxFile *file, GtkTreeIter *liter
             clutter_actor_hide(CLUTTER_ACTOR(route->start));
         }
     }
-    routes = g_list_append(routes, route);
+    priv->routes = g_list_append(priv->routes, route);
     gtk_tree_store_set(GTK_TREE_STORE(model), liter, 1, route, -1);
 }
 
@@ -1148,12 +1170,12 @@ gpointer gpx_viewer)
 
 static void map_view_clicked(GpxViewerMapView *view, double lat, double lon, gpointer gpx_viewer)
 {
-	if(active_route)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
+	if(priv->active_route)
 	{
-		GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
 		/* Check if the clicked point is within the bounding box of the current track */
-		if(active_route->track->top->lon_dec > lon && active_route->track->top->lat_dec > lat && 
-			active_route->track->bottom->lon < lon && active_route->track->bottom->lat_dec < lat)
+		if(priv->active_route->track->top->lon_dec > lon && priv->active_route->track->top->lat_dec > lat && 
+			priv->active_route->track->bottom->lon < lon && priv->active_route->track->bottom->lat_dec < lat)
 			{
 				double lat_r = lat*M_PI/180;
 				double lon_r = lon*M_PI/180;
@@ -1161,7 +1183,7 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon, gpo
 				GpxPoint *d = NULL;
 				double distance = 0;
 				/* Find closest point */
-				GList *iter = g_list_first(active_route->track->points);
+				GList *iter = g_list_first(priv->active_route->track->points);
 				for(;iter;iter = g_list_next(iter))
 				{
 					GpxPoint *a = iter->data;
@@ -1429,7 +1451,7 @@ static void create_interface(GtkApplication *gtk_app)
         GtkWidget *swi = (GtkWidget *)gtk_builder_get_object(priv->builder, "SettingWidget");
 
         /* Dock item */
-        dock_items[0] = item = gdl_dock_item_new(
+        priv->dock_items[0] = item = gdl_dock_item_new(
             "Files",
             "File and track list",
             GDL_DOCK_ITEM_BEH_CANT_CLOSE
@@ -1440,7 +1462,7 @@ static void create_interface(GtkApplication *gtk_app)
         gtk_widget_show(item);
 
         /* Dock item */
-        dock_items[1] =     item = gdl_dock_item_new(
+        priv->dock_items[1] =     item = gdl_dock_item_new(
             "Information",
             "Detailed track information",
             GDL_DOCK_ITEM_BEH_CANT_CLOSE
@@ -1451,7 +1473,7 @@ static void create_interface(GtkApplication *gtk_app)
         gtk_widget_show(item);
 
         /* Dock item */
-        dock_items[2] =item = gdl_dock_item_new(
+        priv->dock_items[2] =item = gdl_dock_item_new(
             "Settings",
             "Map and graph settings",
             GDL_DOCK_ITEM_BEH_CANT_CLOSE
@@ -1469,8 +1491,8 @@ static void create_interface(GtkApplication *gtk_app)
 		*/
         gtk_box_pack_end(GTK_BOX(gtk_builder_get_object(priv->builder, "main_view_hpane")), dock, TRUE, TRUE, 0);
 
-        dock_layout = gdl_dock_layout_new(GDL_DOCK(dock));
-        restore_layout();
+        priv->dock_layout = gdl_dock_layout_new(GDL_DOCK(dock));
+        restore_layout(gtk_app);
 
     }
     gpx_viewer_settings_add_object_property(priv->settings, G_OBJECT(priv->champlain_view), "map-source");
@@ -1658,21 +1680,14 @@ static void gpx_viewer_finalize (GObject *object)
 
 	priv->champlain_view = NULL;
 
+    g_debug("Cleanup routes");
+    g_list_foreach(g_list_first(priv->routes), (GFunc)free_Route, NULL);
+    g_list_free(priv->routes);
+	priv->routes = NULL;
+
+	priv->active_route = NULL;
 	/* Class */
 	G_OBJECT_CLASS (gpx_viewer_parent_class)->finalize (object);
-}
-
-static void gpx_viewer_init (GpxViewer *app)
-{
-	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(app);
-	priv->settings            = NULL;
-	priv->recent_man          = NULL;
-	priv->playback            = NULL;
-	priv->click_marker_source = 0;
-	priv->files               = NULL;
-	priv->builder             = NULL;
-	priv->gpx_graph           = NULL;
-	priv->champlain_view      = NULL;
 }
 
 static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, const gchar *hint)
@@ -1806,11 +1821,12 @@ void close_show_current_track(GtkWidget *widget,gint response_id,gpointer user_d
 
 void show_current_track(GtkWidget *menu_item, gpointer user_data)
 {
-	if(active_route && active_route->track)
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
+	if(priv->active_route && priv->active_route->track)
 	{
 		GtkWidget *dialog;
 		GtkTreeView *tree;
-		GtkTreeModel *model = (GtkTreeModel *)gpx_track_tree_model_new(active_route->track);
+		GtkTreeModel *model = (GtkTreeModel *)gpx_track_tree_model_new(priv->active_route->track);
 		GtkBuilder *fbuilder = gtk_builder_new();
 		/* Show dialog */
 		gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-tracklist.ui", NULL);
