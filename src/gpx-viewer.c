@@ -1926,7 +1926,7 @@ void gpx_viewer_show_preferences_dialog(GtkWidget *menu_item, gpointer user_data
 	/* Show points */
 	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"check_button_data_points");
 	g_signal_connect_object(priv->gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
-	graph_show_points_changed(widget, NULL, widget);
+	graph_show_points_changed(priv->gpx_graph, NULL, widget);
 
 	/* speedup */
 	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
