@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx
+  version="1.0"
+  creator="GPSBabel - http://www.gpsbabel.org"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.topografix.com/GPX/1/0"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">
+<time>2012-03-25T08:47:22Z</time>
+<bounds minlat="53.0" minlon="17.0" maxlat="54.0" maxlon="17.0"/>
+<trk>
+<trkseg>
+<trkpt lat="53.0" lon="17.0">
+  <ele>20.0</ele>
+  <time>2012-03-17T14:03:03Z</time>
+  <course>322.100006</course>
+  <speed>0.000000</speed>
+  <hdop>1.600000</hdop>
+</trkpt>
+<trkpt lat="54.0" lon="17.0">
+  <ele>30.0</ele>
+  <time>2012-03-17T14:03:04Z</time>
+  <course>322.100006</course>
+  <speed>0.000000</speed>
+  <hdop>1.600000</hdop>
+</trkpt>
+</trkseg>
+</trk>
+</gpx>
