@@ -190,12 +190,23 @@
           </packing>
         </child>
         <child>
+          <object class="GtkFrame" id="map_frame">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+          </object>
+          <packing>
+		  <property name="pack_type">start</property>
+		  <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkHBox" id="main_view_hpane">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
           </object>
           <packing>
-            <property name="position">1</property>
+		  <property name="pack_type">start</property>
+		  <property name="position">2</property>
           </packing>
         </child>
         <child>
@@ -216,7 +227,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="pack_type">end</property>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>

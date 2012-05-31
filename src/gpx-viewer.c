@@ -1320,11 +1320,11 @@ static void create_interface(GtkApplication *gtk_app)
     priv->champlain_view = (GtkWidget *)gpx_viewer_map_view_new();
 
     gtk_widget_set_size_request(priv->champlain_view, 640, 280);
-    sw = gtk_frame_new(NULL);
+    sw = gtk_builder_get_object(priv->builder, "map_frame");//gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
     gtk_container_add(GTK_CONTAINER(sw), priv->champlain_view);
 	g_signal_connect(G_OBJECT(priv->champlain_view), "clicked", G_CALLBACK(map_view_clicked), gtk_app);
-
+/*
 	map_dock_item = gdl_dock_item_new("Map", "Map",
 				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
 				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
@@ -1333,8 +1333,9 @@ static void create_interface(GtkApplication *gtk_app)
 	gtk_container_add(GTK_CONTAINER(map_dock_item), sw);
 	gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(map_dock_item), GDL_DOCK_RIGHT);
 	gtk_widget_show_all(map_dock_item);
-
-
+*/
+	
+//	gtk_box_pack_start(gtk_builder_get_object(priv->builder, "gpx_viewer_vbox"),sw, TRUE, TRUE, 0);
 
 
     /* graph */
