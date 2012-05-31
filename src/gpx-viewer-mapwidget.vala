@@ -191,7 +191,7 @@ namespace Gpx
 
 			private bool button_press_callback(Clutter.ButtonEvent event)
 			{
-				if(event.button == 2 || event.button == 3)
+				if(event.button == 3) 
 				{
 					double lat,lon;
 					lat = view.y_to_latitude (event.y);
