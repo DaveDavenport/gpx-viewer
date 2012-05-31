@@ -1337,6 +1337,9 @@ static void create_interface(GtkApplication *gtk_app)
 	
 //	gtk_box_pack_start(gtk_builder_get_object(priv->builder, "gpx_viewer_vbox"),sw, TRUE, TRUE, 0);
 
+    gpx_viewer_settings_add_object_property(priv->settings, 
+			G_OBJECT(gtk_builder_get_object(priv->builder, "main_vpane")), 
+			"position");
 
     /* graph */
     priv->gpx_graph = gpx_graph_new();
