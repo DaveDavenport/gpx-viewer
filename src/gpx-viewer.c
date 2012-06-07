@@ -1349,7 +1349,7 @@ static void create_interface(GtkApplication *gtk_app)
     gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(priv->gpx_graph));
     gtk_widget_show(GTK_WIDGET(priv->gpx_graph));
     //gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
-
+/*
 	graph_dock_item = gdl_dock_item_new("Graph", "Graph",
 				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
 				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
@@ -1358,7 +1358,9 @@ static void create_interface(GtkApplication *gtk_app)
 	gtk_container_add(GTK_CONTAINER(graph_dock_item), GTK_WIDGET(gpx_graph_container));
 	gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(graph_dock_item), GDL_DOCK_BOTTOM);
 	gtk_widget_show_all(graph_dock_item);
+*/
 
+	gtk_paned_add2(GTK_PANED(gtk_builder_get_object(priv->builder, "main_vpane")), GTK_WIDGET(gpx_graph_container));
     /* show the interface */
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(priv->builder, "gpx_viewer_window")));
 
@@ -1499,6 +1501,11 @@ static void create_interface(GtkApplication *gtk_app)
         restore_layout(gtk_app);
 
     }
+    gpx_viewer_settings_add_object_property(priv->settings,
+			gtk_builder_get_object(priv->builder, "main_vpane"), "position");
+    gpx_viewer_settings_add_object_property(priv->settings,
+			gtk_builder_get_object(priv->builder, "main_hpane"), "position");
+
     gpx_viewer_settings_add_object_property(priv->settings, G_OBJECT(priv->champlain_view), "map-source");
     map_view_map_source_changed(GPX_VIEWER_MAP_VIEW(priv->champlain_view), NULL,
         GTK_WIDGET(gtk_builder_get_object(priv->builder, "map_selection_combo")));

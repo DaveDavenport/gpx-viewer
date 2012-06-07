@@ -190,20 +190,27 @@
           </packing>
         </child>
         <child>
-          <object class="GtkVPaned" id="main_vpane">
-            <child>
-              <object class="GtkFrame" id="map_frame">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-              </object>
-            </child>
+          <object class="GtkHPaned" id="main_hpane">
             <child>
               <object class="GtkHBox" id="main_view_hpane">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
               </object>
             </child>
+		  <child>
+		  <object class="GtkVPaned" id="main_vpane">
+            <child>
+              <object class="GtkFrame" id="map_frame">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+            </child>
+			<child>
+				<placeholder />
+			</child>
           </object>
+			</child>
+			</object>
           <packing>
             <property name="expand">True</property>
             <property name="position">1</property>
