@@ -781,7 +781,7 @@ static void graph_point_clicked(GpxGraph *graph, GpxPoint *point, gpointer gpx_v
 }
 
 
-void playback_play_clicked(GtkWidget *widget, gpointer user_data)
+void playback_play_clicked(GtkWidget *widget,GdkEvent *event, gpointer user_data)
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     if(priv->active_route)
@@ -791,7 +791,7 @@ void playback_play_clicked(GtkWidget *widget, gpointer user_data)
 }
 
 
-void playback_pause_clicked(GtkWidget *widget, gpointer user_data)
+void playback_pause_clicked(GtkWidget *widget,GdkEvent *event, gpointer user_data)
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     if(priv->active_route)
@@ -801,7 +801,7 @@ void playback_pause_clicked(GtkWidget *widget, gpointer user_data)
 }
 
 
-void playback_stop_clicked(GtkWidget *widget, gpointer user_data)
+void playback_stop_clicked(GtkWidget *widget,GdkEvent *event, gpointer user_data)
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);
     if(priv->active_route)
