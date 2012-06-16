@@ -9,6 +9,9 @@ desktop_in_files = data/gpx-viewer.desktop.in
 desktop_DATA=$(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
+update-desktop-cache:
+	update-desktop-database $(desktopdir)
+
 DISTCLEANFILES=\
    ${desktop_DATA} 
 
@@ -22,6 +25,17 @@ test_data_dir:
 	@-if test ! -d "$(top_builddir)/data"; then \
 	mkdir "$(top_builddir)/data"; \
 	fi
+
+##
+# Mime stuff.
+##
+xdgdatadir=@XDG_DATA_DIR@
+mimedir=$(xdgdatadir)/mime
+xmldir=$(mimedir)/packages
+xml_DATA = mime/gpx-viewer.xml
+
+update-mime-cache:
+	$(UPDATE_MIME_DATABASE) "$(mimedir)"
 
 ##
 # Interface files
@@ -123,8 +137,8 @@ dist_appiconsprivatescalable_DATA = \
 
 # Updating the icon cache
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
-install-data-hook: update-icon-cache
-uninstall-hook: update-icon-cache
+install-data-hook: update-icon-cache update-mime-cache update-desktop-cache
+uninstall-hook: update-icon-cache update-mime-cache update-desktop-cache
 update-icon-cache:
 	@-if test -z "$(DESTDIR)"; then \
 		echo "Updating Gtk icon cache."; \
