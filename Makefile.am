@@ -29,10 +29,11 @@ test_data_dir:
 ##
 # Mime stuff.
 ##
-xdgdatadir=@XDG_DATA_DIR@
-mimedir=$(xdgdatadir)/mime
+mimedir= $(datadir)/mime
 xmldir=$(mimedir)/packages
 xml_DATA = mime/gpx-viewer.xml
+
+EXTRA_DIST += $(xml_DATA)
 
 update-mime-cache:
 	$(UPDATE_MIME_DATABASE) "$(mimedir)"

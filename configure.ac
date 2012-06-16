@@ -56,8 +56,6 @@ PKG_CHECK_MODULES([champlain], [
 
 
 # mime
-XDG_DATA_DIR='${prefix}/share/'
-AC_SUBST(XDG_DATA_DIR)
 UPDATE_MIME_DATABASE=update-mime-database
 AC_SUBST(UPDATE_MIME_DATABASE)
 
