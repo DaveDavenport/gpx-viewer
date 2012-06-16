@@ -29,7 +29,7 @@ test_data_dir:
 ##
 # Mime stuff.
 ##
-mimedir= $(datadir)/mime
+mimedir= $(DESTDIR)$(datadir)/mime
 xmldir=$(mimedir)/packages
 xml_DATA = mime/gpx-viewer.xml
 
