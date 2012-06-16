@@ -29,14 +29,14 @@ test_data_dir:
 ##
 # Mime stuff.
 ##
-mimedir= $(DESTDIR)$(datadir)/mime
+mimedir= $(datadir)/mime
 xmldir=$(mimedir)/packages
 xml_DATA = mime/gpx-viewer.xml
 
 EXTRA_DIST += $(xml_DATA)
 
 update-mime-cache:
-	$(UPDATE_MIME_DATABASE) "$(mimedir)"
+	$(UPDATE_MIME_DATABASE) $(DESTDIR)"$(mimedir)"
 
 ##
 # Interface files
