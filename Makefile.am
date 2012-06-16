@@ -4,7 +4,7 @@ SUBDIRS=po
 ##
 # GPX Viewer
 ##
-desktopdir = $(datadir)/applications
+desktopdir = $(DESTDIR)/$(datadir)/applications
 desktop_in_files = data/gpx-viewer.desktop.in
 desktop_DATA=$(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
