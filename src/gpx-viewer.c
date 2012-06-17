@@ -135,29 +135,29 @@ gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format)
 	{
 		case DISTANCE:
 			if(do_miles)
-				retv = g_strdup_printf( "%' '.2f %s", speed/KM_IN_MILE, _("Miles"));
+				retv = g_strdup_printf( "% .2f %s", speed/KM_IN_MILE, _("Miles"));
 			else
-				retv = g_strdup_printf( "%' '.2f %s", speed, _("km"));
+				retv = g_strdup_printf( "% .2f %s", speed, _("km"));
 			break;
 		case SPEED:
 			if(do_miles)
-				retv = g_strdup_printf( "%' '.2f %s", speed/KM_IN_MILE, _("Miles/h"));
+				retv = g_strdup_printf( "% .2f %s", speed/KM_IN_MILE, _("Miles/h"));
 			else
-				retv = g_strdup_printf( "%' '.2f %s", speed, _("km/h"));
+				retv = g_strdup_printf( "% .2f %s", speed, _("km/h"));
 			break;
 		case ELEVATION:
 			if(do_miles)
 				/* TODO: */
-				retv = g_strdup_printf( "%' '.2f %s", speed/M_IN_FEET, _("ft"));
+				retv = g_strdup_printf( "% .2f %s", speed/M_IN_FEET, _("ft"));
 			else
-				retv = g_strdup_printf( "%' '.2f %s", speed, _("m"));
+				retv = g_strdup_printf( "% .2f %s", speed, _("m"));
 			break;
 		case ACCEL:
 			if(do_miles)
 				/* TODO: */
-				retv = g_strdup_printf( "%' '.2f %s", speed/M_IN_FEET, _("ft/s²"));
+				retv = g_strdup_printf( "% .2f %s", speed/M_IN_FEET, _("ft/s²"));
 			else
-				retv = g_strdup_printf( "%' '.2f %s", speed, _("m/s²"));
+				retv = g_strdup_printf( "% .2f %s", speed, _("m/s²"));
 			break;
 		case NA:
 		default:
@@ -1301,7 +1301,9 @@ static void create_interface(GtkApplication *gtk_app)
     rc = gtk_recent_chooser_menu_new();
     g_signal_connect(G_OBJECT(rc), "item-activated", G_CALLBACK(recent_chooser_file_picked), gtk_app);
     grf = gtk_recent_filter_new();
-    gtk_recent_filter_add_pattern(GTK_RECENT_FILTER(grf), "*.gpx");
+
+    // Filter based on the added Mime type.
+    gtk_recent_filter_add_mime_type(GTK_RECENT_FILTER(grf), "application/gpx+xml");
     gtk_recent_chooser_add_filter(GTK_RECENT_CHOOSER(rc),grf);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), rc);
 
@@ -1320,22 +1322,10 @@ static void create_interface(GtkApplication *gtk_app)
     priv->champlain_view = (GtkWidget *)gpx_viewer_map_view_new();
 
     gtk_widget_set_size_request(priv->champlain_view, 640, 280);
-    sw = gtk_builder_get_object(priv->builder, "map_frame");//gtk_frame_new(NULL);
+    sw = (GtkWidget *)gtk_builder_get_object(priv->builder, "map_frame");
     gtk_frame_set_shadow_type(GTK_FRAME(sw), GTK_SHADOW_IN);
     gtk_container_add(GTK_CONTAINER(sw), priv->champlain_view);
 	g_signal_connect(G_OBJECT(priv->champlain_view), "clicked", G_CALLBACK(map_view_clicked), gtk_app);
-/*
-	map_dock_item = gdl_dock_item_new("Map", "Map",
-				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
-				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
-				GDL_DOCK_ITEM_BEH_LOCKED|
-				GDL_DOCK_ITEM_BEH_NEVER_FLOATING);
-	gtk_container_add(GTK_CONTAINER(map_dock_item), sw);
-	gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(map_dock_item), GDL_DOCK_RIGHT);
-	gtk_widget_show_all(map_dock_item);
-*/
-	
-//	gtk_box_pack_start(gtk_builder_get_object(priv->builder, "gpx_viewer_vbox"),sw, TRUE, TRUE, 0);
 
     gpx_viewer_settings_add_object_property(priv->settings, 
 			G_OBJECT(gtk_builder_get_object(priv->builder, "main_vpane")), 
@@ -1760,10 +1750,12 @@ gpx_viewer_class_init (GpxViewerClass *class)
 {
 	g_type_class_add_private(class, sizeof(GpxViewerPrivate));
 	G_OBJECT_CLASS (class)->finalize= gpx_viewer_finalize;
-	G_OBJECT_CLASS (class)->constructed = gpx_viewer_init;
-
-	G_APPLICATION_CLASS (class)->activate = gpx_viewer_activate;
-	G_APPLICATION_CLASS (class)->open = gpx_viewer_open;
+    // Magic cast to stop gcc from complaining.
+	G_OBJECT_CLASS (class)->constructed = (void (*)(GObject *))gpx_viewer_init;
+    // More magic casts.
+	G_APPLICATION_CLASS (class)->activate = (void (*)(GApplication *))gpx_viewer_activate;
+    
+	G_APPLICATION_CLASS (class)->open =   (void (*)(GApplication *application, GFile **files, gint n_files, const gchar *hint))gpx_viewer_open;
 }
 
 
@@ -1799,12 +1791,6 @@ int main(int argc, char **argv)
 	gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
 			path);
 	g_free(path);
-
-	if(!g_thread_supported())
-	{
-		g_thread_init(NULL);
-	}
-
 
 	app = gpx_viewer_new();	
 
@@ -1937,7 +1923,7 @@ void gpx_viewer_show_preferences_dialog(GtkWidget *menu_item, gpointer user_data
 	/* Show points */
 	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"check_button_data_points");
 	g_signal_connect_object(priv->gpx_graph, "notify::show-points", G_CALLBACK(graph_show_points_changed), widget,0);
-	graph_show_points_changed(priv->gpx_graph, NULL, widget);
+	graph_show_points_changed(GTK_WIDGET(priv->gpx_graph), NULL, widget);
 
 	/* speedup */
 	widget = (GtkWidget *)gtk_builder_get_object(fbuilder,"playback_speedup_spinbutton");
