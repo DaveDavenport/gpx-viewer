@@ -1,5 +1,5 @@
 
-public class Tuple<G,Y> 
+public class Tuple<G,Y>
 {
  	public double x;
 	public double y;
@@ -28,8 +28,8 @@ public class Graph : Gtk.EventBox
 	}
 
     /* Do the actual drawing */
-	override bool expose_event(Gdk.EventExpose event)
-	{                          
+	bool expose_event(Gdk.EventExpose event)
+	{
 		var ctx = Gdk.cairo_create(this.window);
 		if(surf != null)
 		{
@@ -75,7 +75,7 @@ public class Graph : Gtk.EventBox
 			}
 		}
 		xscale = (this.allocation.width-xoff)/(double)(maxx-minx);
-		yscale = (this.allocation.height-yoff)/(double)(maxy-miny);     
+		yscale = (this.allocation.height-yoff)/(double)(maxy-miny);
 		draw_axis(Xaxis,true);
 		draw_axis(Yaxis,false);
 
@@ -151,7 +151,7 @@ public class Graph : Gtk.EventBox
 
 		/* Paint background white */
 		ctx.set_source_rgba(1,1,1,1);
-		ctx.paint();         
+		ctx.paint();
 		/* set fg color */
 		ctx.set_source_rgba(0,0,0,1);
 

@@ -9,11 +9,9 @@ desktop_in_files = data/gpx-viewer.desktop.in
 desktop_DATA=$(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
 
-update-desktop-cache:
-	update-desktop-database $(desktopdir)
 
 DISTCLEANFILES=\
-   ${desktop_DATA} 
+   ${desktop_DATA}
 
 EXTRA_DIST=${desktop_in_files}
 
@@ -35,8 +33,6 @@ xml_DATA = mime/gpx-viewer.xml
 
 EXTRA_DIST += $(xml_DATA)
 
-update-mime-cache:
-	$(UPDATE_MIME_DATABASE) $(DESTDIR)"$(mimedir)"
 
 ##
 # Interface files
@@ -93,7 +89,7 @@ AM_CFLAGS=\
 if MAINTAINER_MODE
 AM_CFLAGS+=-Wall -Wdeclaration-after-statement -Wshadow -fno-common -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wmissing-noreturn -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wnested-externs -Wmissing-format-attribute -Waggregate-return -Wundef -Wmissing-include-dirs -Winit-self -Wswitch-default -Wswitch-enum
 endif
-	
+
 EXTRA_DIST+=\
     vapi/config.vapi\
     vapi/champlain-0.12.vapi\
@@ -137,9 +133,15 @@ dist_appiconsprivatescalable_DATA = \
     data/icons/scalable/status/pin-yellow.svg
 
 # Updating the icon cache
+if DATABASE_UPDATES
 gtk_update_icon_cache = gtk-update-icon-cache -f -t $(DESTDIR)$(datadir)/icons/hicolor
+
 install-data-hook: update-icon-cache update-mime-cache update-desktop-cache
 uninstall-hook: update-icon-cache update-mime-cache update-desktop-cache
+
+update-desktop-cache:
+	update-desktop-database $(desktopdir)
+
 update-icon-cache:
 	@-if test -z "$(DESTDIR)"; then \
 		echo "Updating Gtk icon cache."; \
@@ -148,3 +150,7 @@ update-icon-cache:
 		echo "*** Icon cache not updated.  After (un)install, run this:"; \
 		echo "***   $(gtk_update_icon_cache)"; \
 		fi
+
+update-mime-cache:
+	$(UPDATE_MIME_DATABASE) $(DESTDIR)"$(mimedir)"
+endif

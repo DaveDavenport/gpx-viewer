@@ -18,8 +18,19 @@ LT_INIT
 m4_defun([_LT_AC_LANG_CXX_CONFIG], [:])
 m4_defun([_LT_AC_LANG_F77_CONFIG], [:])
 
-dnl Checks for libm 
+dnl Checks for libm
 AC_CHECK_LIB([m],[floor])
+
+
+dnl for fixing stuff.
+AC_ARG_ENABLE([database-updates],
+        AS_HELP_STRING([--disable-database-updates],
+			     [disable database updates (useful for distcheck and distribution packagers]))
+AM_CONDITIONAL(DATABASE_UPDATES,[test "$enable_database_updates" != "no"])
+DISTCHECK_CONFIGURE_FLAGS="${DISTCHECK_CONFIGURE_FLAGS} --disable-database-updates"
+
+AC_SUBST(DISTCHECK_CONFIGURE_FLAGS)
+
 
 #intltool, libtool. Check for CC compiler
 IT_PROG_INTLTOOL([0.21])
@@ -40,7 +51,7 @@ PKG_PROG_PKG_CONFIG
 
 PKG_CHECK_MODULES([gtk],[
         gtk+-3.0  >= 3.0
-        gmodule-2.0 
+        gmodule-2.0
         ])
 PKG_CHECK_MODULES([libxml], [
         libxml-2.0
