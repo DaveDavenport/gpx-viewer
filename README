@@ -6,9 +6,8 @@ Dependencies:
 * gmodule 2.0
 * libxml2
 * libgdl 1.0
-* libunique 1.0
 * libgdl
 
-The program is ment as a simple gpx viewer. It has no intention to become a full blown manager, editor or analyzer. 
+The program is ment as a simple gpx viewer. It has no intention to become a full blown manager, editor or analyzer.
 
 Patches with more features are welcome as long as they are maintained.
