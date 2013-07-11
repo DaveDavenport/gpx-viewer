@@ -86,7 +86,7 @@ namespace Gpx
             path.append_index (pos);
             return path;
         }
-        public void get_value (Gtk.TreeIter iter, int column, ref GLib.Value value)
+        public void get_value (Gtk.TreeIter iter, int column, out GLib.Value value)
         {
             assert (iter.user_data != null);
             Gpx.Point p = iter.user_data as Gpx.Point;
