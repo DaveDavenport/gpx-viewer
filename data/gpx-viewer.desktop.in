@@ -6,5 +6,5 @@ MimeType=application/gpx+xml;
 Terminal=false
 Type=Application
 Icon=gpx-viewer
-Categories=GNOME;GTK;Utility;
+Categories=GNOME;GTK;Utility;Maps;
 StartupNotify=true
