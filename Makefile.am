@@ -4,7 +4,7 @@ SUBDIRS=po
 ##
 # GPX Viewer
 ##
-desktopdir = $(DESTDIR)/$(datadir)/applications
+desktopdir = $(datadir)/applications
 desktop_in_files = data/gpx-viewer.desktop.in
 desktop_DATA=$(desktop_in_files:.desktop.in=.desktop)
 @INTLTOOL_DESKTOP_RULE@
@@ -140,7 +140,7 @@ install-data-hook: update-icon-cache update-mime-cache update-desktop-cache
 uninstall-hook: update-icon-cache update-mime-cache update-desktop-cache
 
 update-desktop-cache:
-	update-desktop-database $(desktopdir)
+	update-desktop-database $(DESTDIR)$(desktopdir)
 
 update-icon-cache:
 	@-if test -z "$(DESTDIR)"; then \
