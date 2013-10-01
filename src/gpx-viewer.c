@@ -1012,6 +1012,16 @@ void show_acceleration_h(GtkMenuItem *item, gpointer user_data)
         gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_ACCELERATION_H);
     }
 }
+void show_heartrate(GtkMenuItem *item, gpointer user_data)
+{
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);	
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_HEARTRATE)
+    {
+        g_debug("switch to heartrate\n");
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_HEARTRATE);
+    }
+}
+
 
 
 void show_vertical_speed(GtkMenuItem *item, gpointer user_data)

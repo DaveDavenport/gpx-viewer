@@ -138,6 +138,15 @@
                         <signal name="activate" handler="show_acceleration_h"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_heartrate">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Heart rate</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_heartrate"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

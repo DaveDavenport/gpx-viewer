@@ -23,6 +23,24 @@ using Xml;
 
 namespace Gpx
 {
+    public class TrackPointExtension
+    {
+        public int heartrate = 0;
+        
+
+        public void parse(Xml.Node *node)
+        {
+            var ext = node->children;
+            for(; ext != null; ext = ext->next)
+            {
+                if(ext->name == "hr") {
+                    var val= ext->get_content();
+                    heartrate = val.to_int();
+                }
+            } 
+        }
+
+    }
     /**
      * Represents a point in the track or a waypoint.
      */
@@ -48,6 +66,9 @@ namespace Gpx
 		public bool stopped = false;
 
         private time_t utime  = 0;
+
+
+        public TrackPointExtension tpe = new TrackPointExtension();
         /**
          * Make a clean copy off the point.
          * Only position and time is copied.
@@ -479,6 +500,7 @@ namespace Gpx
                             if(lat != null && lon != null)
                             {
                                 Point p = new Point();
+                                // TODO: Move parsing into Point class.
                                 double flat = lat.to_double();
                                 double flon = lon.to_double();
                                 p.set_position(flat, flon);
@@ -495,6 +517,16 @@ namespace Gpx
                                     else if (info->name == "time")
                                     {
                                         p.time = info->get_content();
+                                    }
+                                    else if (info->name == "extensions") 
+                                    {
+                                        var exts = info->children;
+                                        for(; exts != null; exts = exts->next) {
+                                            if(exts->name == "TrackPointExtension") {
+                                                p.tpe.parse(exts);
+                                            }
+                                        }
+
                                     }
                                     info = info->next;
                                 }
