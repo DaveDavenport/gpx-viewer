@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-using Gtk;
 using GLib;
 using Xml;
 
@@ -462,6 +461,57 @@ namespace Gpx
             if(a.lat == b.lat && a.lon == b.lon) return 0;
             return calculate_distance_coords(a.lon,a.lat, b.lon,b.lat);
         }
+
+
+        public uint heartrate_avg()
+        {
+            uint count = 0;
+            double total = 0;
+            double total_time = 0.0;
+            Point *prev = null;
+            foreach(var p in points) {
+                if(p.tpe.heartrate != 0) {
+                    if(prev == null) {
+                        prev = p;
+                    }else{
+                        double diff = (double)p.get_time()-(double)prev->get_time();
+                        count++;
+                        total+= prev->tpe.heartrate*diff;
+                        prev = p;
+                        total_time+=diff;
+                    }
+                }
+            }
+            return (count > 0)?(uint)(total/total_time):0;
+        }
+        public uint heartrate_calc_calories(bool male, 
+                double weight, double age)
+        {
+            double calories = 0.0;
+            Point *prev = null;
+            foreach(var p in points) {
+                if(p.tpe.heartrate != 0) {
+                   if(prev == null) prev = p;
+                   else {
+                       double diff = (double)p.get_time()-(double)prev->get_time();
+                       double HR = prev->tpe.heartrate;
+                       double cal = 0;
+                        if (male) {
+                            cal = ((-55.0969 + (0.6309 * HR) + (0.1988 * weight) + (0.2017 * age))/4.184) *
+                                (diff/60.0);
+                        } else {
+                            cal = ((-20.4022 + (0.4472 * HR) - (0.1263 * weight) + (0.074 * age))/4.184) *
+                                diff/60.0;
+                        }
+                        calories+=cal;
+                        prev = p;
+                   } 
+                }
+            }
+            return (uint)calories;
+        }
+
+
 
     }
 

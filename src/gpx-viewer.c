@@ -1796,7 +1796,7 @@ int main(int argc, char **argv)
 
 	gtk_clutter_init(&argc, &argv);
 
-	/* Add own icon strucutre to the theme engine search */
+	/* Add own icon structure to the theme engine search */
 	path = g_build_filename(DATA_DIR, "icons", NULL);
 	gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
 			path);
