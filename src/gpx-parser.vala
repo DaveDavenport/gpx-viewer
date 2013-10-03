@@ -69,6 +69,7 @@ namespace Gpx
             p.lon_dec = this.lon_dec;
             p.time = this.time;
             p.elevation = this.elevation;
+            p.tpe = this.tpe;
             return p;
         }
         public void set_position_lat(double lat_d)

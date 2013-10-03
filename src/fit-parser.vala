@@ -259,8 +259,15 @@ namespace Gpx
                 }
             }
             if(p.lat_dec != 1000 && p.lon_dec != 1000) {
-                track.add_point(p);
+                    track.add_point(p);
+            }else {
+                if(track.get_last() != null) {
+                    stdout.printf("Add hr point\n");
+                    p.set_position(track.get_last().lat_dec,  track.get_last().lon_dec);
+                    track.add_point(p);
+                }
             }
+
         }
         private void parse_data_record(DataInputStream fs, uint8 local_message_type)
         {
