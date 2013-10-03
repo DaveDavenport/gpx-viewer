@@ -263,7 +263,13 @@ namespace Gpx
             }else {
                 if(track.get_last() != null) {
                     stdout.printf("Add hr point\n");
-                    p.set_position(track.get_last().lat_dec,  track.get_last().lon_dec);
+                    var last = track.get_last();
+                    p.lat_dec = last.lat_dec;
+                    p.lon_dec = last.lon_dec;
+                    p.lat= last.lat;
+                    p.lon= last.lon;
+                    track.add_point(p);
+                } else {
                     track.add_point(p);
                 }
             }

@@ -380,7 +380,8 @@ namespace Gpx
             var ta = a.get_time();
             var tb = b.get_time();
             if((tb -ta) == 0) return 0;
-            return dist/((tb-ta)/(60.0*60.0));
+            double speed = (60.0*60.0)*dist/((tb-ta));
+            return speed;
         }
         public time_t get_total_time()
         {
