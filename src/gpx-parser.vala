@@ -18,26 +18,13 @@
  */
 
 using GLib;
-using Xml;
 
 namespace Gpx
 {
-    public class TrackPointExtension
+    public class HeartRateMonitorPoint 
     {
         public int heartrate = 0;
         
-
-        public void parse(Xml.Node *node)
-        {
-            var ext = node->children;
-            for(; ext != null; ext = ext->next)
-            {
-                if(ext->name == "hr") {
-                    var val= ext->get_content();
-                    heartrate = val.to_int();
-                }
-            } 
-        }
 
     }
     /**
@@ -67,7 +54,7 @@ namespace Gpx
         private time_t utime  = 0;
 
 
-        public TrackPointExtension tpe = new TrackPointExtension();
+        public HeartRateMonitorPoint tpe = new HeartRateMonitorPoint();
         /**
          * Make a clean copy off the point.
          * Only position and time is copied.
@@ -84,7 +71,16 @@ namespace Gpx
             p.elevation = this.elevation;
             return p;
         }
-
+        public void set_position_lat(double lat_d)
+        {
+            this.lat_dec = lat_d;
+            this.lat = (2*GLib.Math.PI*lat_d)/360.0;
+        }
+        public void set_position_lon(double lon_d)
+        {
+            this.lon_dec = lon_d;
+            this.lon = (2*GLib.Math.PI*lon_d)/360.0;
+        }
         /* Sets the poistion in degrees, automagically calculates radians */
         public void set_position(double lat, double lon)
         {
@@ -465,7 +461,6 @@ namespace Gpx
 
         public uint heartrate_avg()
         {
-            uint count = 0;
             double total = 0;
             double total_time = 0.0;
             Point *prev = null;
@@ -475,324 +470,108 @@ namespace Gpx
                         prev = p;
                     }else{
                         double diff = (double)p.get_time()-(double)prev->get_time();
-                        count++;
-                        total+= prev->tpe.heartrate*diff;
+                        if(!p.stopped) 
+                        {
+                            total+= prev->tpe.heartrate*diff;
+                            total_time+=diff;
+                        }
+
                         prev = p;
-                        total_time+=diff;
                     }
                 }
             }
-            return (count > 0)?(uint)(total/total_time):0;
+            return (total_time > 0)?(uint)(total/total_time):0;
         }
+
         public uint heartrate_calc_calories(bool male, 
                 double weight, double age)
         {
-            double calories = 0.0;
+            double total = 0;
+            double total_time = 0.0;
             Point *prev = null;
             foreach(var p in points) {
                 if(p.tpe.heartrate != 0) {
-                   if(prev == null) prev = p;
-                   else {
-                       double diff = (double)p.get_time()-(double)prev->get_time();
-                       double HR = prev->tpe.heartrate;
-                       double cal = 0;
-                        if (male) {
-                            cal = ((-55.0969 + (0.6309 * HR) + (0.1988 * weight) + (0.2017 * age))/4.184) *
-                                (diff/60.0);
-                        } else {
-                            cal = ((-20.4022 + (0.4472 * HR) - (0.1263 * weight) + (0.074 * age))/4.184) *
-                                diff/60.0;
-                        }
-                        calories+=cal;
+                    if(prev == null) {
                         prev = p;
-                   } 
+                    }else{
+                        double diff = (double)p.get_time()-(double)prev->get_time();
+                        if(!p.stopped) 
+                        {
+                            total+= ((prev->tpe.heartrate+p.tpe.heartrate)/2.0)*diff;
+                            total_time+=diff;
+                        }
+
+                        prev = p;
+                    }
                 }
             }
-            return (uint)calories;
+            double cal=0;
+            if (male) {
+                cal = ((-55.0969 + (0.6309 * total/total_time) + (0.1988 * weight) + (0.2017 * age))/4.184) *
+                    (total_time/60.0);
+            } else {
+                cal = ((-20.4022 + (0.4472 * total/total_time) - (0.1263 * weight) + (0.074 * age))/4.184) *
+                    total_time/60.0;
+            }
+            return (uint)cal;
         }
 
 
 
     }
 
+
     /**
      * This is the top level class representing the gpx file it self.
-     * This contains a list of tracks and waypoings.
+     * This contains a list of tracks and waypoints.
      */
-    public class File : GLib.Object
+    public abstract class FileBase : GLib.Object
     {
         /* A gpx file can contain multiple tracks, this supports it */
         public GLib.List<Gpx.Track> tracks = null;
         /* A gpx file can also contains a list of waypoints */
         public GLib.List<Gpx.Point> waypoints = null;
-
         /* A gpx file can also contains a list of Routes */
         public GLib.List<Gpx.Track> routes = null;
 
-        private Gpx.Track parse_track(Xml.Node *node)
-        {
-            /* Create new track here */
-            Gpx.Track track = new Gpx.Track();
+        /* The file behind it */
+        protected GLib.File file = null;
 
-            var trkseg = node->children;
-            /* iterretate over track segments */
-            while(trkseg != null)
-            {
-                if(trkseg->name == "trkseg")
-                {
-                    var point = trkseg->children;
-                    while(point != null)
-                    {
-                        if(point->name == "trkpt")
-                        {
-                            var lat = point->get_prop("lat");
-                            var lon = point->get_prop("lon");
-                            if(lat != null && lon != null)
-                            {
-                                Point p = new Point();
-                                // TODO: Move parsing into Point class.
-                                double flat = lat.to_double();
-                                double flon = lon.to_double();
-                                p.set_position(flat, flon);
-                                var info = point->children;
-                                while(info != null)
-                                {
-                                    /* height */
-                                    if(info->name == "ele")
-                                    {
-                                        var content = info->get_content();
-                                        if(content != null)
-                                            p.elevation = content.to_double();
-                                    }
-                                    else if (info->name == "time")
-                                    {
-                                        p.time = info->get_content();
-                                    }
-                                    else if (info->name == "extensions") 
-                                    {
-                                        var exts = info->children;
-                                        for(; exts != null; exts = exts->next) {
-                                            if(exts->name == "TrackPointExtension") {
-                                                p.tpe.parse(exts);
-                                            }
-                                        }
-
-                                    }
-                                    info = info->next;
-                                }
-
-                                track.add_point(p);
-                            }
-                            else
-                            {
-                                GLib.message("Failed to get point: %s\n", point->name);
-                            }
-                        }
-                        point = point->next;
-                    }
-                }
-                if(trkseg->name == "name")
-                {
-                    if(track.name == null)
-                    {
-                        track.name = trkseg->get_content();
-                    }
-                    else
-                    {
-                        GLib.warning("Track name allready set: %s\n", track.name);
-                    }
-                }
-
-                trkseg = trkseg->next;
-            
-			}
-			return track;        
-		}
-
-        private void parse_waypoint(Xml.Node *node)
-        {
-            var lat = node->get_prop("lat");
-            var lon = node->get_prop("lon");
-            if(lat != null && lon != null)
-            {
-                Point p = new Point();
-                double flat = lat.to_double();
-                double flon = lon.to_double();
-                p.set_position(flat, flon);
-                var info = node->children;
-                while(info != null)
-                {
-                    if(info->name == "name")
-                    {
-                        if(p.name == null)
-                        {
-                            p.name = info->get_content();
-                        }
-                        else
-                        {
-                            GLib.warning("Point name allready set: %s\n", p.name);
-                        }
-                    }
-                    info = info->next;
-                }
-                this.waypoints.append(p);
-            }
-        }
-
-        private Gpx.Track parse_route(Xml.Node *node)
-        {
-            /* Create new track here */
-            Gpx.Track track = new Gpx.Track();
-
-            var trkseg = node->children;
-            /* iterretate over track segments */
-            while(trkseg != null)
-            {
-                if(trkseg->name == "rtept")
-                {
-                    var lat = trkseg->get_prop("lat");
-                    var lon = trkseg->get_prop("lon");
-                    if(lat != null && lon != null)
-                    {
-                        Point p = new Point();
-                        double flat = lat.to_double();
-                        double flon = lon.to_double();
-                        p.set_position(flat, flon);
-                        var info = trkseg->children;
-                        while(info != null)
-                        {
-                            /* height */
-                            if(info->name == "ele")
-                            {
-                                var content = info->get_content();
-                                if(content != null)
-                                    p.elevation = content.to_double();
-                            }
-                            else if (info->name == "time")
-                            {
-                                p.time = info->get_content();
-                            }
-                            info = info->next;
-                        }
-
-                        track.add_point(p);
-                    }
-                    else
-                    {
-                        GLib.message("Failed to get trkseg: %s\n", trkseg->name);
-                    }
-                }
-                else if(trkseg->name == "name")
-                {
-                    if(track.name == null)
-                    {
-                        track.name = trkseg->get_content();
-                    }
-                    else
-                    {
-                        GLib.warning("Track name allready set: %s\n", track.name);
-                    }
-                }
-                trkseg = trkseg->next;
-            }
-			return track;
-        }
         /**
-         * Parse a file
+         * Helpers
          */
-
-        /* IO Functions */
-        /* Used for paring */
-        public GLib.File file = null;
-        private GLib.FileInputStream stream = null;
-        private int read_file(uint8[] buffer)
+        public string get_uri()
         {
-            try
-            {
-                var value = this.stream.read(buffer, null);
-                return (int)value;
-            }
-            catch (GLib.Error e)
-            {
-                GLib.critical("error reading from stream: %s\n", e.message);
-                return -1;
-            }
+            return file.get_uri();
         }
-        private int close_file()
+        
+
+        public string get_basename()
         {
-            GLib.log("GPX PARSER", GLib.LogLevelFlags.LEVEL_DEBUG, "Close_file()");
-            this.stream = null;
-            return 0;
+            return file.get_basename();
         }
 
-        public File (GLib.File file)
+        /** 
+         * Accessors
+         */
+        public unowned List<Gpx.Track> get_tracks()
         {
-            this.file = file;
-            try
-            {
-                this.stream = file.read(null);
-                Xml.TextReader reader = new Xml.TextReader.for_io(
-                    (Xml.InputReadCallback)read_file,
-                    (Xml.InputCloseCallback) close_file,this,
-                    this.file.get_uri(), "", 0);
-                if(reader != null)
-                {
-                    /* Start parsing the xml file */
-                    var doc = reader.read();
-                    while(doc == 1)
-                    {
-                        var name = reader.const_name();
-                        if(name == "gpx")
-                        {
-                            int doc2 = reader.read();
-                            while(doc2 == 1)
-                            {
-                                var name2 = reader.const_name();
-                                 /* Get the track element */
-                                if(name2 == "trk")
-                                {
-                                    /* Track */
-                                    var node = reader.expand();
-                                    var track = this.parse_track(node);
+            return tracks;
+        }
 
-									track.filter_points();
-									this.tracks.append(track);
-                                }
-                                else if (name2 == "wpt")
-                                {
-                                    /* Waypoint */
-                                    var node = reader.expand();
-                                    this.parse_waypoint(node);
-                                }
-                                else if (name2 == "rte")
-                                {
-                                    var node = reader.expand();
-                                    /* Route */
-                                    var track = this.parse_route(node);
-                                    this.routes.append(track);
-                                }
-                                doc2 = reader.next();
-                            }
-                        }
-                        else
-                            doc = reader.read();
-                    }
-                }
-                else
-                {
-                    /* Todo add error trower here 
-                		http://www.vala-project.org/doc/vala-draft/errors.html#exceptionsexamples*/
-                    GLib.message("Failed to open file");
-                }
-                reader.close();
-            }
-            catch (GLib.Error e)
-            {
-                GLib.critical("failed to open file: '%s' error: %s",this.file.get_uri(), e.message);
-            }
 
+        public unowned GLib.List <Gpx.Point> get_waypoints() 
+        {
+            return waypoints;
+        }
+
+
+        public unowned List<Gpx.Track> get_routes()
+        {
+            return routes;
         }
     }
+    
 }
 
 

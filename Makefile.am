@@ -55,6 +55,8 @@ bin_PROGRAMS=gpx-viewer
 
 gpx_viewer_SOURCES=\
 	src/gpx-parser.vala\
+	src/gpx-parser-xml.vala\
+    src/fit-parser.vala\
     src/gpx-graph.vala\
     src/gpx-playback.vala\
     src/gpx-track-treemodel.vala\
