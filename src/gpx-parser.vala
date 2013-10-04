@@ -21,9 +21,9 @@ using GLib;
 
 namespace Gpx
 {
-    public class HeartRateMonitorPoint 
+    public struct HeartRateMonitorPoint 
     {
-        public int heartrate = 0;
+        public int heartrate;
         
 
     }
@@ -54,7 +54,16 @@ namespace Gpx
         private time_t utime  = 0;
 
 
-        public HeartRateMonitorPoint tpe = new HeartRateMonitorPoint();
+        public HeartRateMonitorPoint tpe = HeartRateMonitorPoint() {
+            heartrate = 0
+        };
+
+
+        public bool has_position()
+        {
+            return !(lat == 1000 || lon == 1000);
+        }
+
         /**
          * Make a clean copy off the point.
          * Only position and time is copied.
@@ -118,13 +127,14 @@ namespace Gpx
 
         /* usefull info gathered during walking the list */
         public double total_distance = 0.0;
-        public double max_speed = 0;
-        public double max_elevation = 0.0;
-        public double min_elevation = 0.0;
-		
+        public double max_speed      = 0.0;
+        public double max_elevation  = 0.0;
+        public double min_elevation  = 0.0;
+	
 		/* All the Gpx.Points */
         public List<Point> points = null;
 		/* Keeping a last pointer allows us to add points to the list faster. */
+        /* No it doesn't :D */
         private Point? last = null;
 
         /* To get bounding box for view */
@@ -141,6 +151,7 @@ namespace Gpx
 		/** This function will try to remove useless points */
 		public void filter_points ()
 		{
+#if 0
 			unowned List<Point>? a = null;
 			unowned List<Point>? b = null;
 			unowned List<Point>? c = null;
@@ -150,7 +161,6 @@ namespace Gpx
 				if(b != null) c = b;
 				if(a != null) b = a;
 				a = iter;
-
 				if(a != null && b != null && c != null) 
 				{
 					double elapsed_ca = (double)(a.data.get_time() - c.data.get_time());
@@ -181,13 +191,14 @@ namespace Gpx
 					}
 				}
 			}
+#endif
 			this.recalculate();
 			double avg = this.get_track_average()/20;
 			avg = (avg >  2)?2:avg;
 			for(unowned List<Point> ?iter = this.points.first() ; iter != null;iter = iter.next)
 			{
 				weak Gpx.Point? p = iter.data;
-				if(p.distance < 0.01 || p.speed  < avg) {
+				if(p.distance < 0.01 || p.speed  < avg || !p.has_position()) {
 					p.stopped = true;
 				}
 			}
@@ -203,24 +214,27 @@ namespace Gpx
 			this.max_speed = 0;
 			this.max_elevation = 0.0;
 			this.min_elevation = 0.0;
-			for(unowned List<Point> ?iter = this.points.first() ; iter != null;iter = iter.next)
+            for(unowned List<Point> ?iter = this.points.first() ; iter != null;iter = iter.next)
 			{
-				if(last != null) {
-					unowned Gpx.Point point = iter.data;
-					total_distance += calculate_distance(last.data,point); 
-					point.distance = total_distance;
-					point.speed = calculate_point_to_point_speed(last.data,point); 
-                    if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
-                    if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
-					if(point.speed > this.max_speed) this.max_speed = point.speed;
-				}else{
-					unowned Gpx.Point point = iter.data;
+                unowned Gpx.Point point = iter.data;
+                if(last != null) {
+                    if(point.has_position()) {
+                        total_distance += calculate_distance(last.data,point); 
+                        point.distance = total_distance;
+                        point.speed = calculate_point_to_point_speed(last.data,point); 
+                        if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
+                        if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
+                        if(point.speed > this.max_speed) this.max_speed = point.speed;
+                    }
+                }else{
                     if(point.elevation > this.max_elevation) this.max_elevation = point.elevation;
                     if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
 					point.distance = 0;
 				}
-				last = iter;
-			}
+                if(point.has_position()) {
+                    last = iter;
+                }
+            }
 		}
 
 
@@ -260,7 +274,7 @@ namespace Gpx
                     bottom.lon_dec = point.lon_dec;
                     bottom.lon = point.lon;
                 }
-                if(last.time != null && point.time != null)
+                if(last.time != null && point.time != null && point.has_position())
                 {
                     point.speed = calculate_point_to_point_speed(last, point);
                     if(point.speed > this.max_speed) this.max_speed = point.speed;

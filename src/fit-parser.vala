@@ -258,16 +258,34 @@ namespace Gpx
                         break;
                 }
             }
-            if(p.lat_dec != 1000 && p.lon_dec != 1000) {
+            // Fix up some points.
+            // Ignore more tracks in one second.
+            var lastp = track.get_last();
+            if(lastp != null && lastp.get_time() == p.get_time()) {
+                stdout.printf("Remove point at same time.\n");
+                return;
+            }
+            if(p.has_position()) {
+                    if(lastp != null && !lastp.has_position())
+                    {
+                        weak List<Gpx.Point> ll = track.points.last();
+                        while(ll != null && !ll.data.has_position()){
+                            var last = ll.data ;
+                            last.lat_dec = p.lat_dec;
+                            last.lon_dec = p.lon_dec;
+                            last.lat= p.lat;
+                            last.lon= p.lon;
+                            ll = ll.prev;
+                        }
+                    }
                     track.add_point(p);
             }else {
-                if(track.get_last() != null) {
+                if(lastp != null) {
                     stdout.printf("Add hr point\n");
-                    var last = track.get_last();
-                    p.lat_dec = last.lat_dec;
-                    p.lon_dec = last.lon_dec;
-                    p.lat= last.lat;
-                    p.lon= last.lon;
+                    p.lat_dec = lastp.lat_dec;
+                    p.lon_dec = lastp.lon_dec;
+                    p.lat= lastp.lat;
+                    p.lon= lastp.lon;
                     track.add_point(p);
                 } else {
                     track.add_point(p);
