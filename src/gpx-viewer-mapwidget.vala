@@ -60,7 +60,7 @@ namespace Gpx
 					marker = new Champlain.Label();
 				}
 				marker.set_size((float)size, (float)size);
-				marker.set_translation(-(float)size/2.0f, -(float)size/2.0f, 0);
+				//marker.set_translation(-(float)size/2.0f, -(float)size/2.0f, 0);
 				marker.set_location((float)p.lat_dec,(float)p.lon_dec);
 				return marker;
 			}
@@ -180,9 +180,9 @@ namespace Gpx
 							view.max_zoom_level);
 						});
 				view.add_layer(waypoint_layer);
-				waypoint_layer.set_z_position(0);
+//				waypoint_layer.set_z_position(0);
 				view.add_layer(marker_layer);
-				marker_layer.set_z_position(1);
+//				marker_layer.set_z_position(1);
 				marker_layer.show();
 				/* Set it to recieve signals */
 				view.reactive = true;

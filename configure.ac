@@ -60,8 +60,8 @@ PKG_CHECK_MODULES([libgdl], [
         gdl-3.0
 ])
 PKG_CHECK_MODULES([champlain], [
-        champlain-gtk-0.12 >= 0.12.0
-        champlain-0.12 >= 0.12.0
+        champlain-gtk-0.12 >= 0.12.4
+        champlain-0.12 >= 0.12.4
 ])
 
 
