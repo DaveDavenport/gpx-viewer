@@ -151,10 +151,11 @@ namespace Gpx
 		/** This function will try to remove useless points */
 		public void filter_points ()
 		{
-#if 0
 			unowned List<Point>? a = null;
 			unowned List<Point>? b = null;
 			unowned List<Point>? c = null;
+
+			double davg = this.get_track_average();
 			/* We take three points.  A-B-C.  If B lays on the same lineair line as remove it. */
 			for(unowned List<Point> ?iter = this.points.first() ; iter != null;iter = iter.next)
 			{
@@ -178,7 +179,14 @@ namespace Gpx
 					double m = Math.fabs(1.0-lon_rico_ca/lon_rico_cb ) ;
 					double e = Math.fabs(1.0-elv_rico_ca/elv_rico_cb ) ;
 
-					if( l <= 0.2) 
+                    var abs_diff = Math.fabs(b.data.speed-a.data.speed)+Math.fabs(c.data.speed-b.data.speed);
+                    var diff = Math.fabs((b.data.speed-a.data.speed)+(c.data.speed-b.data.speed));
+                    if(  diff < 0.2*abs_diff &&  abs_diff > 3*davg) {
+                        stdout.printf("----- %f %f filter points\n", diff, abs_diff);
+                        points.remove_link(b); 
+                    }
+                    else
+                        if( l <= 0.2) 
 					{
 						if(m <= 0.2 /*&& e <= 0.8*/) 
 						{
@@ -191,7 +199,7 @@ namespace Gpx
 					}
 				}
 			}
-#endif
+
 			this.recalculate();
 			double avg = this.get_track_average()/20;
 			avg = (avg >  2)?2:avg;
