@@ -1120,40 +1120,40 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer gpx_viewe
     GFile *afile = g_file_new_for_uri(uri);
     GpxFileBase *file;
     /* Try to open the gpx file */
-    if (g_str_has_suffix(uri, "fit")) {
-        file = gpx_fit_file_new(afile, NULL);
-    }else {
-        file = gpx_xml_file_new(afile);
-    }
+
+    file = gpx_file_open(afile, NULL);
     g_object_unref(afile);
     g_free(uri);
-    priv->files = g_list_append(priv->files, file);
+    if(file != NULL) 
+    {
+        priv->files = g_list_append(priv->files, file);
 
 
-    basename = gpx_file_base_get_basename(file);
-    gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
-    gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
-        0, basename,
-        1, NULL,
-        2, FALSE,
-        3, FALSE,
-        -1);
-    g_free(basename);
-    if (gpx_file_base_get_tracks(file))
-    {
-        for (iter = g_list_first(gpx_file_base_get_tracks(file)); iter; iter = g_list_next(iter))
+        basename = gpx_file_base_get_basename(file);
+        gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+        gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
+                0, basename,
+                1, NULL,
+                2, FALSE,
+                3, FALSE,
+                -1);
+        g_free(basename);
+        if (gpx_file_base_get_tracks(file))
         {
-            interface_plot_add_track(gpx_viewer,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+            for (iter = g_list_first(gpx_file_base_get_tracks(file)); iter; iter = g_list_next(iter))
+            {
+                interface_plot_add_track(gpx_viewer,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+            }
         }
-    }
-    if(gpx_file_base_get_routes(file))
-    {
-        for (iter = g_list_first(gpx_file_base_get_routes(file)); iter; iter = g_list_next(iter))
+        if(gpx_file_base_get_routes(file))
         {
-            interface_plot_add_track(gpx_viewer,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+            for (iter = g_list_first(gpx_file_base_get_routes(file)); iter; iter = g_list_next(iter))
+            {
+                interface_plot_add_track(gpx_viewer,&liter, iter->data, &lat1, &lon1, &lat2, &lon2);
+            }
         }
+        interface_create_fake_master_track(file, &liter,gpx_viewer);
     }
-    interface_create_fake_master_track(file, &liter,gpx_viewer);
 }
 
 
@@ -1567,6 +1567,7 @@ void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer)
         GtkFileFilter *filter =
             (GtkFileFilter *) gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser_filter");
         gtk_file_filter_add_pattern(filter, "*.gpx");
+        gtk_file_filter_add_pattern(filter, "*.fit");
 
     }
     switch (gtk_dialog_run(GTK_DIALOG(dialog)))
@@ -1578,48 +1579,47 @@ void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer)
             for (iter = choosen_files; iter; iter = g_slist_next(iter))
             {
                 GpxFileBase *file;
-                gchar *basename;
                 GtkTreeIter liter;
                 double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
                 /* Create a GFile */
                 GFile *afile = g_file_new_for_uri((gchar*)iter->data);
                 /* Add entry to recent manager */
 				gtk_recent_manager_add_item(GTK_RECENT_MANAGER(priv->recent_man), (gchar *)iter->data);
-                /* Try to open the gpx file */
-                if (g_str_has_suffix(iter->data, "fit")) {
-                    file = gpx_fit_file_new(afile, NULL);
-                }else {
-                    file = gpx_xml_file_new(afile);
-                }
-                priv->files = g_list_append(priv->files, file);
-                g_object_unref(afile);
 
-                basename = gpx_file_base_get_basename(file);
-                gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
-                gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
-                    0, basename,
-                    1, NULL,
-                    2, FALSE,
-                    3, FALSE,
-                    -1);
-                g_free(basename);
-                if (gpx_file_base_get_tracks(file))
-                {
-                    GList *track_iter;
-                    for (track_iter = g_list_first(gpx_file_base_get_tracks(file)); track_iter; track_iter = g_list_next(track_iter))
+                file = gpx_file_open(afile, NULL);
+                g_object_unref(afile);
+                if(file != NULL)
+                { 
+                    gchar *basename;
+                    priv->files = g_list_append(priv->files, file);
+
+                    basename = gpx_file_base_get_basename(file);
+                    gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+                    gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
+                            0, basename,
+                            1, NULL,
+                            2, FALSE,
+                            3, FALSE,
+                            -1);
+                    g_free(basename);
+                    if (gpx_file_base_get_tracks(file))
                     {
-                        interface_plot_add_track(gpx_viewer,&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
+                        GList *track_iter;
+                        for (track_iter = g_list_first(gpx_file_base_get_tracks(file)); track_iter; track_iter = g_list_next(track_iter))
+                        {
+                            interface_plot_add_track(gpx_viewer,&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
+                        }
                     }
-                }
-                if(gpx_file_base_get_routes(file))
-                {
-                    GList *route_iter;
-                    for (route_iter = g_list_first(gpx_file_base_get_routes(file)); route_iter; route_iter = g_list_next(route_iter))
+                    if(gpx_file_base_get_routes(file))
                     {
-                        interface_plot_add_track(gpx_viewer,&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
+                        GList *route_iter;
+                        for (route_iter = g_list_first(gpx_file_base_get_routes(file)); route_iter; route_iter = g_list_next(route_iter))
+                        {
+                            interface_plot_add_track(gpx_viewer,&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
+                        }
                     }
+                    interface_create_fake_master_track(file, &liter,gpx_viewer);
                 }
-                interface_create_fake_master_track(file, &liter,gpx_viewer);
             }
             g_slist_foreach(choosen_files, (GFunc) g_free, NULL);
             g_slist_free(choosen_files);
@@ -1730,43 +1730,42 @@ static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, c
 		/* Try to open the gpx file */
 		//file = gpx_xml_file_new(input_files[i]);
 		filename = g_file_get_uri(input_files[i]);
-        if (g_str_has_suffix(filename, "fit")) {
-            file = gpx_fit_file_new(input_files[i], NULL);
-        }else {
-            file = gpx_xml_file_new(input_files[i]);
-        }
-        priv->files = g_list_append(priv->files, file);
-		/* Add entry to recent manager */
-		gtk_recent_manager_add_item(GTK_RECENT_MANAGER(priv->recent_man),filename); 
 
-		basename = gpx_file_base_get_basename(file);
-		gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
-		gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
-				0, basename,
-				1, NULL,
-				2, FALSE,
-				3, FALSE,
-				-1);
-		g_free(basename);
-		g_free(filename);
-		if (gpx_file_base_get_tracks(file))
-		{
-			GList *track_iter;
-			for (track_iter = g_list_first(gpx_file_base_get_tracks(file)); track_iter; track_iter = g_list_next(track_iter))
-			{
-				interface_plot_add_track(app,&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
-			}
-		}
-		if(gpx_file_base_get_routes(file))
-		{
-			GList *route_iter;
-			for (route_iter = g_list_first(gpx_file_base_get_routes(file)); route_iter; route_iter = g_list_next(route_iter))
-			{
-				interface_plot_add_track(app,&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
-			}
-		}
-		interface_create_fake_master_track(file, &liter, app);
-	}
+        file = gpx_file_open(input_files[i], NULL);
+        if(file != NULL) { 
+            priv->files = g_list_append(priv->files, file);
+            /* Add entry to recent manager */
+            gtk_recent_manager_add_item(GTK_RECENT_MANAGER(priv->recent_man),filename); 
+
+            basename = gpx_file_base_get_basename(file);
+            gtk_tree_store_append(GTK_TREE_STORE(model), &liter, NULL);
+            gtk_tree_store_set(GTK_TREE_STORE(model), &liter,
+                    0, basename,
+                    1, NULL,
+                    2, FALSE,
+                    3, FALSE,
+                    -1);
+            g_free(basename);
+            if (gpx_file_base_get_tracks(file))
+            {
+                GList *track_iter;
+                for (track_iter = g_list_first(gpx_file_base_get_tracks(file)); track_iter; track_iter = g_list_next(track_iter))
+                {
+                    interface_plot_add_track(app,&liter, track_iter->data, &lat1, &lon1, &lat2, &lon2);
+                }
+            }
+            if(gpx_file_base_get_routes(file))
+            {
+                GList *route_iter;
+                for (route_iter = g_list_first(gpx_file_base_get_routes(file)); route_iter; route_iter = g_list_next(route_iter))
+                {
+                    interface_plot_add_track(app,&liter, route_iter->data, &lat1, &lon1, &lat2, &lon2);
+                }
+            }
+            interface_create_fake_master_track(file, &liter, app);
+        }
+        g_free(filename);
+    }
 }
 
 static void
