@@ -545,12 +545,19 @@ namespace Gpx
     }
 
 
+    public errordomain FileError {
+        INVALID_FILE,
+        IO_ERROR,
+
+    }
+
     /**
      * This is the top level class representing the gpx file it self.
      * This contains a list of tracks and waypoints.
      */
     public abstract class FileBase : GLib.Object
     {
+
         /* A gpx file can contain multiple tracks, this supports it */
         public GLib.List<Gpx.Track> tracks = null;
         /* A gpx file can also contains a list of waypoints */
@@ -595,7 +602,33 @@ namespace Gpx
             return routes;
         }
     }
-    
+
+    /**
+     * @param file A GLib.File to open.
+     * 
+     * Tries to open the file.. check extension, if that fails, try it.
+     *
+     * @returns a file.
+     * @throws a FileError
+     */
+    public FileBase? file_open(GLib.File path) throws FileError
+    {
+        try {
+            // Test if fit file.
+            if(path.get_uri().has_suffix("fit")) {
+                return new Gpx.FitFile(path);
+            } 
+            // Test if gpx file.
+            if(path.get_uri().has_suffix("gpx")) {
+                return new Gpx.XmlFile(path);
+            } 
+            // Try, FIT first, it detects header. 
+            FileBase f = new Gpx.FitFile(path);
+            return f;
+        } catch (Error err) {
+            return new Gpx.XmlFile(path);
+        }
+    }    
 }
 
 

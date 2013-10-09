@@ -69,31 +69,39 @@ namespace Gpx
         /**
          * Parse the file.
          */
-        public FitFile(File file)
+        public FitFile(File file) throws FileError
         {
             // Keep the pointer in the base class.
             this.file = file;
-            // Open it and create an input stream.
-            DataInputStream fs = new DataInputStream(file.read());
-            if(fs == null ) {
-                stdout.printf("FAiled to open file.\n");
-                return ;
+            try {
+                var istr = file.read();
+                // Open it and create an input stream.
+                DataInputStream fs = new DataInputStream(istr);
+                if(fs == null ) {
+                    throw new FileError.IO_ERROR("Failed to create input stream.");
+                }
+                // Force the right endianess.
+                if(fs.get_byte_order() != DataStreamByteOrder.LITTLE_ENDIAN) {
+                    fs.set_byte_order(DataStreamByteOrder.LITTLE_ENDIAN);
+                }
+
+                track = new Gpx.Track();
+                // Parse the header file.
+                this.parse_header(fs);
+                // Parse all the records.
+                while(this.parse_record(fs));
+
+
+                // Add the track
+                track.filter_points();
+                tracks.append(track);
+            } catch ( GLib.IOError err ) {
+                throw new FileError.IO_ERROR(err.message);
+            } catch ( GLib.Error err ) {
+                throw new FileError.IO_ERROR(err.message);
+            } catch ( FileError err) {
+                throw err;
             }
-            // Force the right endianess.
-            if(fs.get_byte_order() != DataStreamByteOrder.LITTLE_ENDIAN) {
-                fs.set_byte_order(DataStreamByteOrder.LITTLE_ENDIAN);
-            }
-
-            track = new Gpx.Track();
-            // Parse the header file.
-            this.parse_header(fs);
-            // Parse all the records.
-            while(this.parse_record(fs));
-
-
-            // Add the track
-            track.filter_points();
-            tracks.append(track);
         }
 
         /**
@@ -118,7 +126,6 @@ namespace Gpx
                     local_message_type = record_id&0x0F;
 
                 } else {
-                    stdout.printf("compressed\n");
                     // Compressed header
                     // Always data mesg.
                     definition_header = false;
@@ -127,9 +134,7 @@ namespace Gpx
 
                     // TODO: time offset
                 }
-                stdout.printf("message type: %d\n", local_message_type);
 
-                stdout.printf("%u\n", data_length);
                 if( definition_header ) {
                     parse_definition_record(fs, local_message_type);
                 }else {
@@ -141,9 +146,8 @@ namespace Gpx
             return true;
         }
 
-        private void parse_definition_record(DataInputStream fs, uint8 local_message_type)
+        private void parse_definition_record(DataInputStream fs, uint8 local_message_type) throws FileError, GLib.IOError
         {
-            stdout.printf("Parse definition record\n");
             FieldDefinition *def =  get_field_def(local_message_type);
 
             // Skip reserved byte.
@@ -163,7 +167,6 @@ namespace Gpx
 
             def.type = fs.read_uint16();
             data_length-=2;
-            stdout.printf("Message id: %u\n", def.type);
 
 
             uint8 num_fields = fs.read_byte();
@@ -178,7 +181,7 @@ namespace Gpx
                 data_length-=(uint32)sizeof(FieldDefinitionHeader);
             }
         }
-        private uint32 parse_field(FieldDefinitionHeader field, DataInputStream fp)
+        private uint32 parse_field(FieldDefinitionHeader field, DataInputStream fp) throws FileError, GLib.IOError
         {
             uint32 retv = 0;
 
@@ -205,7 +208,7 @@ namespace Gpx
             }
             return retv;
         }
-        private void parse_data_record_activity_summary(DataInputStream fs, FieldDefinition *def)
+        private void parse_data_record_activity_summary(DataInputStream fs, FieldDefinition *def) throws FileError, GLib.IOError
         {
             Gpx.Point  p = new Gpx.Point();
             foreach ( var field in def->fields ) {
@@ -217,14 +220,12 @@ namespace Gpx
                         Time t =  Time.local(timestp);
                         var str = t.format("%FT%T%z");
                         p.time = str;
-                        stdout.printf("Time: %s\n", str);
                         break;
                     case 0:
                         // Longitude
                         uint32 val = parse_field(field, fs);
                         if(val != 0x7FFFFFFF) {
                             double lat_dec =  (double)val*(180.0/Math.pow(2.0,31.0));
-                            stdout.printf("Latitude: %f %f\n", lat_dec, val);
                             p.set_position_lat(lat_dec);
                         }
                         break;
@@ -233,7 +234,6 @@ namespace Gpx
                         uint32 val = parse_field(field, fs);
                         if(val != 0x7FFFFFFF) {
                             double lon_dec =  (double)val*(180.0/Math.pow(2.0,31.0));
-                            stdout.printf("Longitude: %f %f\n", lon_dec, val);
                             p.set_position_lon(lon_dec);
                         }
                         break;
@@ -252,7 +252,6 @@ namespace Gpx
                         }
                         break;
                     default:
-                        stdout.printf("FIELD: %d %d\n", field.def_num,field.base_type);
                         fs.skip(field.size);
                         data_length-=field.size;
                         break;
@@ -262,7 +261,6 @@ namespace Gpx
             // Ignore more tracks in one second.
             var lastp = track.get_last();
             if(lastp != null && lastp.get_time() == p.get_time()) {
-                stdout.printf("Remove point at same time.\n");
                 return;
             }
             if(p.has_position()) {
@@ -281,7 +279,6 @@ namespace Gpx
                     track.add_point(p);
             }else {
                 if(lastp != null) {
-                    stdout.printf("Add hr point\n");
                     p.lat_dec = lastp.lat_dec;
                     p.lon_dec = lastp.lon_dec;
                     p.lat= lastp.lat;
@@ -291,15 +288,13 @@ namespace Gpx
                     track.add_point(p);
                 }
             }
-
         }
-        private void parse_data_record(DataInputStream fs, uint8 local_message_type)
+        private void parse_data_record(DataInputStream fs, uint8 local_message_type) throws FileError, GLib.IOError
         {
             FieldDefinition* def = get_field_def(local_message_type);
 
             // Set the right endian
             parse_apply_definition_endian(fs,def);
-            stdout.printf("Parse type: %d\n", def.type);
             switch(def.type)
             {
                 case FitTypes.ACTIVITY_SUMMARY:
@@ -308,7 +303,6 @@ namespace Gpx
                     break;
 
                 default:
-                    //stdout.printf("Parse data record\n");
                     foreach ( var field in def->fields ) {
                         fs.skip(field.size);
                         data_length-=field.size;
@@ -320,53 +314,52 @@ namespace Gpx
         /**
          * Parse the header.
          */
-        private void parse_header(DataInputStream fs)
+        private void parse_header(DataInputStream fs) throws FileError, GLib.IOError
         {
-            // Read header size. (though header is always 12?)
-            // 1
-            var header_size = (uchar)fs.read_byte();
-            if ( header_size == FileStream.EOF ) {
-                return;
-            }
-            if ( ! (header_size == 12 || header_size == 14) ) {
-                stdout.printf("Invalid header\n");
-                return;
-            }
-            stdout.printf("Header size: %u\n", header_size);
-
-            // Get version
-            // 2
-            uchar version = (uchar)fs.read_byte();
-            uchar low = version&0x0f;
-            uchar high = (version&0xf0) >> 4;
-            stdout.printf("Protocol version: %u.%u (%u)\n", high, low, version);
-
-            // 4
-            uint16 profver = (uint16) fs.read_uint16();
-            stdout.printf("Profile version: %u\n", profver);
-
-            // 8
-            data_length = (uint32)fs.read_uint32();
-            stdout.printf("Data length: %u\n", data_length);
-
-            // 12
-            uint8[4] signature = { 0,0,0,0};
-            var size = fs.read(signature);
-            if ( size == 4 ) {
-                if ( !(signature[0] == '.' && signature[1] == 'F' &&
-                            signature[2] == 'I' && signature[3] == 'T'))
-                {
-                    // Invalid signature.
-                    return;
+            try {
+                // Read header size. (though header is always 12?)
+                // 1
+                var header_size = (uchar)fs.read_byte();
+                if ( header_size == FileStream.EOF ) {
+                    throw new FileError.INVALID_FILE("Empty header");
                 }
-                stdout.printf("Valid signature: .FIT\n");
-            }
-            // Size indicates there is a CRC.
-            if(header_size == 14) {
-                uint16 crc = fs.read_uint16();
-                stdout.printf("Got CRC: %X\n", crc);
+                if ( ! (header_size == 12 || header_size == 14) ) {
+                    throw new FileError.INVALID_FILE("Unsupported FIT Header size");
+                }
+
+                // Get version
+                // 2
+                uchar version = (uchar)fs.read_byte();
+                uchar low = version&0x0f;
+                uchar high = (version&0xf0) >> 4;
+
+                // 4
+                uint16 profver = (uint16) fs.read_uint16();
+
+                // 8
+                data_length = (uint32)fs.read_uint32();
+
+                // 12
+                uint8[4] signature = { 0,0,0,0};
+                var size = fs.read(signature);
+                if ( size == 4 ) {
+                    if ( !(signature[0] == '.' && signature[1] == 'F' &&
+                                signature[2] == 'I' && signature[3] == 'T'))
+                    {
+                        // Invalid signature.
+                        throw new FileError.INVALID_FILE("No valid FIT signature found.");
+                    }
+                }
+                // Size indicates there is a CRC.
+                if(header_size == 14) {
+                    uint16 crc = fs.read_uint16();
+                }
+            } catch (GLib.IOError err) {
+                // propagate down.
+                throw err;
+            } catch (FileError err) {
+               throw err;
             }
         }
-
     }
 }
