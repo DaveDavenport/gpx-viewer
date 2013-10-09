@@ -1,260 +1,9 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk+" version="3.0"/>
-  <!-- interface-naming-policy project-wide -->
-  <object class="GtkTreeStore" id="routes_store">
-    <columns>
-      <!-- column-name Name -->
-      <column type="gchararray"/>
-      <!-- column-name Route -->
-      <column type="gpointer"/>
-      <!-- column-name Selectable -->
-      <column type="gboolean"/>
-      <!-- column-name Visible -->
-      <column type="gboolean"/>
-      <!-- column-name Points -->
-      <column type="guint"/>
-      <!-- column-name Average speed-->
-      <column type="gdouble"/>
-    </columns>
-  </object>
-  <object class="GtkWindow" id="gpx_viewer_window">
-    <property name="title" translatable="yes">GPX Viewer</property>
-    <property name="default_width">680</property>
-    <property name="default_height">480</property>
-    <property name="icon_name">gpx-viewer</property>
-    <accel-groups>
-      <group name="accelgroup1"/>
-    </accel-groups>
-    <signal name="destroy_event" handler="on_destroy"/>
-    <signal name="size_allocate" handler="main_window_size_changed"/>
-    <signal name="delete_event" handler="on_destroy"/>
-    <child>
-      <object class="GtkVBox" id="gpx_viewer_vbox">
-        <property name="visible">True</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">6</property>
-        <child>
-          <object class="GtkMenuBar" id="menubar1">
-            <property name="visible">True</property>
-            <child>
-              <object class="GtkMenuItem" id="menuitem1">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_File</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu1">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="menu_open">
-                        <property name="label">gtk-open</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <property name="accel_group">accelgroup1</property>
-                        <signal name="activate" handler="open_gpx_file"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
-                        <property name="visible">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="menu_item_preferences">
-                        <property name="label">gtk-preferences</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="gpx_viewer_show_preferences_dialog"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkSeparatorMenuItem" id="menu_sep"/>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="menu_quit">
-                        <property name="label">gtk-quit</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <property name="accel_group">accelgroup1</property>
-                        <signal name="activate" handler="on_destroy_menu"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="view_menuitem">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Graph</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu2">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_menu_speed">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Speed</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="show_speed"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_menu_elevation">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Elevation</property>
-                        <property name="use_underline">True</property>
-                        <property name="group">view_menu_speed</property>
-                        <signal name="activate" handler="show_elevation"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_menu_distance">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Distance</property>
-                        <property name="use_underline">True</property>
-                        <property name="group">view_menu_speed</property>
-                        <signal name="activate" handler="show_distance"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_menu_vertical_speed">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Vertical Speed</property>
-                        <property name="use_underline">True</property>
-                        <property name="group">view_menu_speed</property>
-                        <signal name="activate" handler="show_vertical_speed"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_menu_acceleration">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Acceleration</property>
-                        <property name="use_underline">True</property>
-                        <property name="group">view_menu_speed</property>
-                        <signal name="activate" handler="show_acceleration_h"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkRadioMenuItem" id="view_menu_heartrate">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Heart rate</property>
-                        <property name="use_underline">True</property>
-                        <property name="group">view_menu_speed</property>
-                        <signal name="activate" handler="show_heartrate"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="view_menu">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_View</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu4">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkMenuItem" id="view_menu_show_track_list">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Show track list</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="show_current_track"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkMenuItem" id="help_menuitem">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Help</property>
-                <property name="use_underline">True</property>
-                <child type="submenu">
-                  <object class="GtkMenu" id="menu3">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkImageMenuItem" id="about_menuitem">
-                        <property name="label">gtk-about</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="about_menuitem_activate_cb"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkHPaned" id="main_hpane">
-            <child>
-              <object class="GtkHBox" id="main_view_hpane">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-              </object>
-            </child>
-		  <child>
-		  <object class="GtkVPaned" id="main_vpane">
-            <child>
-              <object class="GtkFrame" id="map_frame">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-              </object>
-            </child>
-			<child>
-				<placeholder />
-			</child>
-          </object>
-			</child>
-			</object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkHBox" id="hbox2">
-            <property name="visible">True</property>
-            <property name="spacing">6</property>
-            <child>
-              <object class="GtkStatusbar" id="statusbar2">
-                <property name="visible">True</property>
-                <property name="spacing">2</property>
-              </object>
-              <packing>
-                <property name="pack_type">end</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="pack_type">end</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkAccelGroup" id="accelgroup1"/>
+  <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkScrolledWindow" id="FileListWidget">
     <property name="visible">True</property>
     <property name="can_focus">True</property>
-    <property name="hscrollbar_policy">automatic</property>
-    <property name="vscrollbar_policy">automatic</property>
     <property name="shadow_type">in</property>
     <child>
       <object class="GtkTreeView" id="TracksTreeView">
@@ -264,11 +13,14 @@
         <property name="headers_clickable">False</property>
         <property name="rules_hint">True</property>
         <property name="search_column">0</property>
+        <child internal-child="selection">
+          <object class="GtkTreeSelection" id="treeview-selection1"/>
+        </child>
         <child>
           <object class="GtkTreeViewColumn" id="treeviewcolumn1">
             <child>
               <object class="GtkCellRendererToggle" id="cellrenderertoggle1">
-                <signal name="toggled" handler="row_visible_toggled"/>
+                <signal name="toggled" handler="row_visible_toggled" swapped="no"/>
               </object>
               <attributes>
                 <attribute name="visible">2</attribute>
@@ -329,6 +81,7 @@
     <child>
       <object class="GtkLabel" id="map_selection_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="xpad">6</property>
         <property name="label" translatable="yes">&lt;b&gt;Map:&lt;/b&gt;</property>
@@ -342,7 +95,8 @@
     <child>
       <object class="GtkComboBox" id="map_selection_combo">
         <property name="visible">True</property>
-        <signal name="changed" handler="map_selection_combo_changed_cb"/>
+        <property name="can_focus">False</property>
+        <signal name="changed" handler="map_selection_combo_changed_cb" swapped="no"/>
         <child>
           <object class="GtkCellRendererText" id="cellrenderertext3">
             <property name="ellipsize">end</property>
@@ -361,6 +115,7 @@
     <child>
       <object class="GtkLabel" id="map_zoom_level_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Zoom level:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -377,11 +132,11 @@
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="max_length">2</property>
-        <property name="invisible_char">&#x2022;</property>
+        <property name="invisible_char">•</property>
         <property name="width_chars">5</property>
         <property name="adjustment">map_zoom_level_adjustment</property>
         <property name="climb_rate">1</property>
-        <signal name="value_changed" handler="map_zoom_level_change_value_cb"/>
+        <signal name="value-changed" handler="map_zoom_level_change_value_cb" swapped="no"/>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -394,6 +149,7 @@
     <child>
       <object class="GtkLabel" id="map_show_waypoints_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Show waypoints:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -407,17 +163,16 @@
     </child>
     <child>
       <object class="GtkAlignment" id="show_waypoints_layer_ali">
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
-        <property name="yalign">0.5</property>
-        <property name="yscale">1</property>
         <property name="xscale">0</property>
         <child>
           <object class="GtkSwitch" id="show_waypoints_layer">
+            <property name="use_action_appearance">False</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
+            <property name="use_action_appearance">False</property>
             <property name="active">True</property>
-            <signal name="notify::active" handler="show_waypoints_layer_toggled_cb"/>
           </object>
         </child>
       </object>
@@ -433,6 +188,7 @@
     <child>
       <object class="GtkLabel" id="graph_smooth_factor_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Smooth factor:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -448,11 +204,11 @@
       <object class="GtkSpinButton" id="smooth_factor">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="invisible_char">&#x2022;</property>
+        <property name="invisible_char">•</property>
         <property name="adjustment">smooth_factor_adjustment</property>
         <property name="climb_rate">1</property>
         <property name="numeric">True</property>
-        <signal name="value_changed" handler="smooth_factor_change_value_cb"/>
+        <signal name="value-changed" handler="smooth_factor_change_value_cb" swapped="no"/>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -465,6 +221,7 @@
     <child>
       <object class="GtkLabel" id="graph_show_points_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Show points:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -478,17 +235,16 @@
     </child>
     <child>
       <object class="GtkAlignment" id="graph_show_points_ali">
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
-        <property name="yalign">0.5</property>
-        <property name="yscale">1</property>
         <property name="xscale">0</property>
         <child>
           <object class="GtkSwitch" id="graph_show_points">
+            <property name="use_action_appearance">False</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
+            <property name="use_action_appearance">False</property>
             <property name="active">True</property>
-            <signal name="notify::active" handler="graph_show_points_toggled_cb"/>
           </object>
         </child>
       </object>
@@ -504,13 +260,15 @@
   </object>
   <object class="GtkTable" id="TrackInfoWidget">
     <property name="visible">True</property>
-    <property name="n_rows">11</property>
+    <property name="can_focus">False</property>
+    <property name="n_rows">12</property>
     <property name="n_columns">2</property>
     <property name="column_spacing">6</property>
     <property name="row_spacing">6</property>
     <child>
       <object class="GtkLabel" id="distance_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Distance:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -523,6 +281,7 @@
     <child>
       <object class="GtkLabel" id="duration_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Duration:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -537,6 +296,7 @@
     <child>
       <object class="GtkLabel" id="distance_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -550,6 +310,7 @@
     <child>
       <object class="GtkLabel" id="duration_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -565,6 +326,7 @@
     <child>
       <object class="GtkLabel" id="average_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Average:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -579,6 +341,7 @@
     <child>
       <object class="GtkLabel" id="moving_average_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Moving average:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -593,6 +356,7 @@
     <child>
       <object class="GtkLabel" id="moving_averate_time_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Moving time:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -607,6 +371,7 @@
     <child>
       <object class="GtkLabel" id="max_speed_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Max. speed:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -621,6 +386,7 @@
     <child>
       <object class="GtkLabel" id="elevation_difference_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Elevation Diff.:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -635,6 +401,7 @@
     <child>
       <object class="GtkLabel" id="gradient_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Gradient:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -649,6 +416,7 @@
     <child>
       <object class="GtkLabel" id="average_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -664,6 +432,7 @@
     <child>
       <object class="GtkLabel" id="moving_average_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -679,6 +448,7 @@
     <child>
       <object class="GtkLabel" id="moving_average_time_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -694,6 +464,7 @@
     <child>
       <object class="GtkLabel" id="max_speed_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -709,6 +480,7 @@
     <child>
       <object class="GtkLabel" id="elevation_difference_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -724,6 +496,7 @@
     <child>
       <object class="GtkLabel" id="gradient_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -739,13 +512,14 @@
     <child>
       <object class="GtkLabel" id="label4">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Playback:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">10</property>
-        <property name="bottom_attach">11</property>
+        <property name="top_attach">11</property>
+        <property name="bottom_attach">12</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -753,14 +527,17 @@
     <child>
       <object class="GtkHBox" id="hbox1">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <child>
           <object class="GtkEventBox" id="eventbox3">
             <property name="visible">True</property>
+            <property name="can_focus">False</property>
             <property name="visible_window">False</property>
-            <signal name="button_press_event" handler="playback_play_clicked"/>
+            <signal name="button-press-event" handler="playback_play_clicked" swapped="no"/>
             <child>
               <object class="GtkImage" id="play_button">
                 <property name="visible">True</property>
+                <property name="can_focus">False</property>
                 <property name="stock">gtk-media-play</property>
                 <property name="icon-size">1</property>
               </object>
@@ -768,6 +545,7 @@
           </object>
           <packing>
             <property name="expand">False</property>
+            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -775,11 +553,13 @@
           <object class="GtkEventBox" id="eventbox1">
             <property name="visible">True</property>
             <property name="sensitive">False</property>
+            <property name="can_focus">False</property>
             <property name="visible_window">False</property>
-            <signal name="button_press_event" handler="playback_pause_clicked"/>
+            <signal name="button-press-event" handler="playback_pause_clicked" swapped="no"/>
             <child>
               <object class="GtkImage" id="pause_clicked">
                 <property name="visible">True</property>
+                <property name="can_focus">False</property>
                 <property name="stock">gtk-media-pause</property>
                 <property name="icon-size">1</property>
               </object>
@@ -787,6 +567,7 @@
           </object>
           <packing>
             <property name="expand">False</property>
+            <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -794,11 +575,13 @@
           <object class="GtkEventBox" id="eventbox2">
             <property name="visible">True</property>
             <property name="sensitive">False</property>
+            <property name="can_focus">False</property>
             <property name="visible_window">False</property>
-            <signal name="button_press_event" handler="playback_stop_clicked"/>
+            <signal name="button-press-event" handler="playback_stop_clicked" swapped="no"/>
             <child>
               <object class="GtkImage" id="image2">
                 <property name="visible">True</property>
+                <property name="can_focus">False</property>
                 <property name="stock">gtk-media-stop</property>
                 <property name="icon-size">1</property>
               </object>
@@ -806,6 +589,7 @@
           </object>
           <packing>
             <property name="expand">False</property>
+            <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -813,8 +597,8 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
-        <property name="top_attach">10</property>
-        <property name="bottom_attach">11</property>
+        <property name="top_attach">11</property>
+        <property name="bottom_attach">12</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -822,6 +606,7 @@
     <child>
       <object class="GtkLabel" id="start_time_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Start time:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -836,6 +621,7 @@
     <child>
       <object class="GtkLabel" id="stop_time_title_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">1</property>
         <property name="label" translatable="yes">&lt;b&gt;Stop time:&lt;/b&gt;</property>
         <property name="use_markup">True</property>
@@ -850,6 +636,7 @@
     <child>
       <object class="GtkLabel" id="start_time_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
       </object>
@@ -864,6 +651,7 @@
     <child>
       <object class="GtkLabel" id="stop_time_label">
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
       </object>
@@ -875,19 +663,359 @@
         <property name="y_options">GTK_FILL</property>
       </packing>
     </child>
+    <child>
+      <object class="GtkLabel" id="heart_rate_title_label">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Average heart-rate:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="top_attach">10</property>
+        <property name="bottom_attach">11</property>
+        <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="heart_rate_label">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="xalign">0</property>
+        <property name="label" translatable="yes">n/a</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">10</property>
+        <property name="bottom_attach">11</property>
+        <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkAccelGroup" id="accelgroup1"/>
+  <object class="GtkWindow" id="gpx_viewer_window">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">GPX Viewer</property>
+    <property name="default_width">680</property>
+    <property name="default_height">480</property>
+    <property name="icon_name">gpx-viewer</property>
+    <accel-groups>
+      <group name="accelgroup1"/>
+    </accel-groups>
+    <signal name="destroy-event" handler="on_destroy" swapped="no"/>
+    <signal name="delete-event" handler="on_destroy" swapped="no"/>
+    <signal name="size-allocate" handler="main_window_size_changed" swapped="no"/>
+    <child>
+      <object class="GtkVBox" id="gpx_viewer_vbox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="spacing">6</property>
+        <child>
+          <object class="GtkMenuBar" id="menubar1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkMenuItem" id="menuitem1">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_File</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_open">
+                        <property name="label">gtk-open</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <property name="accel_group">accelgroup1</property>
+                        <signal name="activate" handler="open_gpx_file" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_item_preferences">
+                        <property name="label">gtk-preferences</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="gpx_viewer_show_preferences_dialog" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menu_sep">
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_quit">
+                        <property name="label">gtk-quit</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <property name="accel_group">accelgroup1</property>
+                        <signal name="activate" handler="on_destroy_menu" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="view_menuitem">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_Graph</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu2">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_speed">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Speed</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="show_speed" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_elevation">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Elevation</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_elevation" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_distance">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Distance</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_distance" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_vertical_speed">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Vertical Speed</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_vertical_speed" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_acceleration">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Acceleration</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_acceleration_h" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_heartrate">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Heart rate</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_heartrate" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="view_menu">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_View</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="view_menu_show_track_list">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Show track list</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="show_current_track" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="help_menuitem">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_Help</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu3">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkImageMenuItem" id="about_menuitem">
+                        <property name="label">gtk-about</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="about_menuitem_activate_cb" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHPaned" id="main_hpane">
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkHBox" id="main_view_hpane">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+              <packing>
+                <property name="resize">False</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkVPaned" id="main_vpane">
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkFrame" id="map_frame">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="label_xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="resize">False</property>
+                    <property name="shrink">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="resize">True</property>
+                <property name="shrink">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="hbox2">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkStatusbar" id="statusbar2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="spacing">2</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="pack_type">end</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
   </object>
   <object class="GtkSizeGroup" id="heading_label_sizegroup"/>
   <object class="GtkAdjustment" id="map_zoom_level_adjustment">
-    <property name="value">5</property>
     <property name="lower">1</property>
     <property name="upper">19</property>
+    <property name="value">5</property>
     <property name="step_increment">1</property>
     <property name="page_increment">1</property>
   </object>
+  <object class="GtkTreeStore" id="routes_store">
+    <columns>
+      <!-- column-name Name -->
+      <column type="gchararray"/>
+      <!-- column-name Route -->
+      <column type="gpointer"/>
+      <!-- column-name Selectable -->
+      <column type="gboolean"/>
+      <!-- column-name Visible -->
+      <column type="gboolean"/>
+      <!-- column-name Points -->
+      <column type="guint"/>
+      <!-- column-name Average -->
+      <column type="gdouble"/>
+    </columns>
+  </object>
   <object class="GtkAdjustment" id="smooth_factor_adjustment">
-    <property name="value">4</property>
     <property name="lower">1</property>
     <property name="upper">100</property>
+    <property name="value">4</property>
     <property name="step_increment">1</property>
     <property name="page_increment">1</property>
   </object>

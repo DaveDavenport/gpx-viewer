@@ -483,12 +483,15 @@ namespace Gpx
         }
 
 
-        public uint heartrate_avg()
+        public uint heartrate_avg(Point start, Point stop)
         {
             double total = 0;
             double total_time = 0.0;
             Point *prev = null;
-            foreach(var p in points) {
+            weak List<Point?> iter = this.points.find(start);
+            if(iter == null) return 0;
+            do {
+                var p = iter.data;
                 if(p.tpe.heartrate != 0) {
                     if(prev == null) {
                         prev = p;
@@ -503,7 +506,8 @@ namespace Gpx
                         prev = p;
                     }
                 }
-            }
+                iter = iter.next;
+            } while(iter != null && iter.prev.data != stop);
             return (total_time > 0)?(uint)(total/total_time):0;
         }
 
