@@ -1121,7 +1121,7 @@ static void recent_chooser_file_picked(GtkRecentChooser *grc, gpointer gpx_viewe
     GpxFileBase *file;
     /* Try to open the gpx file */
     if (g_str_has_suffix(uri, "fit")) {
-        file = gpx_fit_file_new(afile);
+        file = gpx_fit_file_new(afile, NULL);
     }else {
         file = gpx_xml_file_new(afile);
     }
@@ -1587,7 +1587,7 @@ void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer)
 				gtk_recent_manager_add_item(GTK_RECENT_MANAGER(priv->recent_man), (gchar *)iter->data);
                 /* Try to open the gpx file */
                 if (g_str_has_suffix(iter->data, "fit")) {
-                    file = gpx_fit_file_new(afile);
+                    file = gpx_fit_file_new(afile, NULL);
                 }else {
                     file = gpx_xml_file_new(afile);
                 }
@@ -1731,7 +1731,7 @@ static void gpx_viewer_open(GpxViewer *app, GFile **input_files, gint n_files, c
 		//file = gpx_xml_file_new(input_files[i]);
 		filename = g_file_get_uri(input_files[i]);
         if (g_str_has_suffix(filename, "fit")) {
-            file = gpx_fit_file_new(input_files[i]);
+            file = gpx_fit_file_new(input_files[i], NULL);
         }else {
             file = gpx_xml_file_new(input_files[i]);
         }
