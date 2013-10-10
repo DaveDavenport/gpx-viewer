@@ -181,6 +181,26 @@ namespace Gpx
             {
                 keyfile.set_string(class, name, val);
             }
+            public double get_double(string class, string name, double def)
+            {
+                double val;
+                try{
+                    val = keyfile.get_double(class, name);
+                }catch (Error e) {
+                    val = def;
+                }
+                return val;
+            }
+            public bool get_boolean (string class, string name, bool def)
+            {
+                bool val;
+                try{
+                    val = keyfile.get_boolean(class, name);
+                }catch (Error e) {
+                    val = def;
+                }
+                return val;
+            }
         }
     }
 }

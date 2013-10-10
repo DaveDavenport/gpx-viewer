@@ -511,19 +511,23 @@ namespace Gpx
             return (total_time > 0)?(uint)(total/total_time):0;
         }
 
-        public uint heartrate_calc_calories(bool male, 
+        public uint heartrate_calc_calories(
+                Point start, Point stop,
+                bool male, 
                 double weight, double age)
         {
             double total = 0;
             double total_time = 0.0;
             Point *prev = null;
-            foreach(var p in points) {
+            weak List<Point?> iter = this.points.find(start);
+            if(iter == null) return 0;
+            do {
+                var p = iter.data;
                 if(p.tpe.heartrate != 0) {
                     if(prev == null) {
                         prev = p;
                     }else{
                         double diff = (double)p.get_time()-(double)prev->get_time();
-                        if(!p.stopped) 
                         {
                             total+= ((prev->tpe.heartrate+p.tpe.heartrate)/2.0)*diff;
                             total_time+=diff;
@@ -532,7 +536,8 @@ namespace Gpx
                         prev = p;
                     }
                 }
-            }
+                iter = iter.next;
+            }while (iter != null && iter.prev.data != stop);
             double cal=0;
             if (male) {
                 cal = ((-55.0969 + (0.6309 * total/total_time) + (0.1988 * weight) + (0.2017 * age))/4.184) *

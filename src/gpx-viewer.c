@@ -485,12 +485,33 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
 	    gv_set_speed_label(label, elevation_diff, ELEVATION);
     }
     /* Average heartrate */
-    {
+    if(track != NULL) {
         label = (GtkWidget *) gtk_builder_get_object(priv->builder, "heart_rate_label");
         double hr = gpx_track_heartrate_avg(track,start,stop); 
         gchar *string = g_strdup_printf("%.0f bpm", hr); 
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
+    }else {
+        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "heart_rate_label");
+        gtk_label_set_text(GTK_LABEL(label), "n/a");
+    }
+    /* Average calories */
+    if(track != NULL ){
+        gboolean male = gpx_viewer_settings_get_boolean (priv->settings, "calories" , "male", TRUE);
+        double weight = gpx_viewer_settings_get_double  (priv->settings, "calories" , "weight", 0.0);
+        double age = gpx_viewer_settings_get_double     (priv->settings, "calories" , "age", 0.0);
+        if(weight > 0 && age > 0) {
+        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "calories_label");
+        double hr = gpx_track_heartrate_calc_calories(track,start,stop, male, weight, age); 
+        gchar *string = g_strdup_printf("%.1f kcal", hr); 
+        gtk_label_set_text(GTK_LABEL(label), string);
+        g_free(string);
+        }else{
+            gtk_label_set_text(GTK_LABEL(label), _("Please configure first"));
+        }
+    }else {
+        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "calories_label");
+        gtk_label_set_text(GTK_LABEL(label), _("n/a"));
     }
 }
 
