@@ -497,7 +497,7 @@ namespace Gpx
                         prev = p;
                     }else{
                         double diff = (double)p.get_time()-(double)prev->get_time();
-                        if(!p.stopped) 
+/*                        if(!p.stopped) */
                         {
                             total+= prev->tpe.heartrate*diff;
                             total_time+=diff;
