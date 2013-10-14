@@ -643,7 +643,6 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             if (route->track->top && route->track->bottom)
             {
                 ChamplainBoundingBox *track_bounding_box;
-                printf("zet zoom leveland view track\n");
 				champlain_view_set_zoom_level(view,
 						champlain_view_get_max_zoom_level(view));
                 track_bounding_box = champlain_bounding_box_new();
@@ -664,7 +663,6 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 
             if(route->stop){
                 clutter_actor_show(CLUTTER_ACTOR(route->stop));
-				printf("show stop marker\n");
 			}
 
             if(route->start)
