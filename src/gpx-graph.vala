@@ -205,7 +205,7 @@ namespace Gpx
 		}
 		private bool button_press_event_cb(Gdk.EventButton event)
 		{
-			if(this.track == null) return false;
+			if(this.track == null) return true;
 			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null) {
 				if(event.button == 1){
@@ -215,13 +215,13 @@ namespace Gpx
 					point_clicked(point);
 				}
 			}
-			return false;
+			return true;
 		}
 
 		private bool motion_notify_event_cb(Gdk.EventMotion event)
 		{
-			if(this.track == null) return false;
-			if(this.start == null) return false;
+			if(this.track == null) return true;
+			if(this.start == null) return true;
 
 			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null)
@@ -238,16 +238,16 @@ namespace Gpx
 						} else {
 							selection_changed(this.track, stop, start);
 						}
-						return false;
+						return true;
 					}
 				}
 				selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
 			}
-			return false;
+			return true;
 		}
 		private bool button_release_event_cb(Gdk.EventButton event)
 		{
-			if(this.track == null) return false;
+			if(this.track == null) return true;
 			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null)
 			{
@@ -266,13 +266,13 @@ namespace Gpx
 							} else {
 								selection_changed(this.track, stop, start);
 							}
-							return false;
+							return true;
 						}
 					}
 					selection_changed(this.track, this.track.points.first().data, this.track.points.last().data);
 				}
 			}
-			return false;
+			return true;
 		}
 		private void size_allocate_cb(Gtk.Allocation alloc)
 		{
