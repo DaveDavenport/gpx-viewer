@@ -884,6 +884,7 @@ static gboolean first = TRUE;
 static void interface_plot_add_track(GpxViewer *gpx_viewer, GtkTreeIter *parent, GpxTrack *track, double *lat1, double *lon1, double *lat2, double *lon2)
 {
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
+    GtkTreeSelection *gts = NULL;
 
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(priv->champlain_view));
     /* Plot all tracks, and get total bounding box */
@@ -899,7 +900,7 @@ static void interface_plot_add_track(GpxViewer *gpx_viewer, GtkTreeIter *parent,
     {
         route->track = g_object_ref(track);
     }
-    route->visible = FALSE;
+    route->visible = TRUE;
 
     /* draw the track */
     interface_map_plot_route(view, route);
@@ -955,6 +956,12 @@ static void interface_plot_add_track(GpxViewer *gpx_viewer, GtkTreeIter *parent,
     }
 
     priv->routes = g_list_append(priv->routes, route);
+    gts = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(priv->builder, "TracksTreeView")));
+	if (gts != NULL)
+	{
+        GtkTreePath *path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &liter);
+		gtk_tree_selection_select_path(gts, path);
+	}
 }
 
 void main_window_size_changed(GtkWindow *win, GtkAllocation *alloc, gpointer data)
@@ -1494,6 +1501,9 @@ static void create_interface(GtkApplication *gtk_app)
             "File and track list",
             GDL_DOCK_ITEM_BEH_CANT_CLOSE
             |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+			|GDL_DOCK_ITEM_BEH_NEVER_FLOATING
+			|GDL_DOCK_ITEM_BEH_NO_GRIP
+			|GDL_DOCK_ITEM_BEH_LOCKED
 			);
         gtk_container_add(GTK_CONTAINER(item), flw);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_LEFT);
@@ -1505,6 +1515,9 @@ static void create_interface(GtkApplication *gtk_app)
             "Detailed track information",
             GDL_DOCK_ITEM_BEH_CANT_CLOSE
             |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+			|GDL_DOCK_ITEM_BEH_NEVER_FLOATING
+			|GDL_DOCK_ITEM_BEH_NO_GRIP
+			|GDL_DOCK_ITEM_BEH_LOCKED
 			);
         gtk_container_add(GTK_CONTAINER(item), tiw);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_CENTER);
@@ -1516,6 +1529,9 @@ static void create_interface(GtkApplication *gtk_app)
             "Map and graph settings",
             GDL_DOCK_ITEM_BEH_CANT_CLOSE
             |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+			|GDL_DOCK_ITEM_BEH_NEVER_FLOATING
+			|GDL_DOCK_ITEM_BEH_NO_GRIP
+			|GDL_DOCK_ITEM_BEH_LOCKED
 			);
         gtk_container_add(GTK_CONTAINER(item), swi);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_CENTER);
