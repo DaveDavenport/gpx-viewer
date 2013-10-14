@@ -321,7 +321,6 @@ namespace Gpx
 				iter = iter.next;
 			}
 			deviation /= num_points; 
-			var sqrt_deviation = Math.sqrt(deviation);
 
 			iter = list_copy.first();
 			uint i =0;

@@ -100,7 +100,7 @@ namespace Gpx
                 object.get_property(sp.name, ref value);
                 if(sp.value_type == typeof(int)) {
                     pref.keyfile.set_integer(t.name(), sp.name, value.get_int());
-                }else if (sp.value_type.is_a(pref.enum_type)) {
+                }else if (sp.value_type.is_a(Settings.enum_type)) {
                     pref.keyfile.set_integer(t.name(), sp.name, (int)value.get_enum());
                 }else if (sp.value_type.is_a(typeof(bool))) {
                     pref.keyfile.set_boolean(t.name(), sp.name, value.get_boolean());

@@ -56,6 +56,7 @@ namespace Gpx
 
         public bool get_iter (out Gtk.TreeIter iter, Gtk.TreePath path)
         {
+            iter = Gtk.TreeIter();
             int depth = path.get_depth ();
             assert (depth == 1);
             int n = path.get_indices ()[0];
@@ -113,6 +114,7 @@ namespace Gpx
          * Should never be reached since iter_has_child is never true
          */
         public bool iter_children (out Gtk.TreeIter iter, Gtk.TreeIter? parent){
+            iter = Gtk.TreeIter();
             return false;
         }
 
@@ -157,6 +159,7 @@ namespace Gpx
 
         public bool iter_nth_child (out Gtk.TreeIter iter, Gtk.TreeIter? parent, int n)
         {
+            iter = Gtk.TreeIter();
             if (parent == null)
                 return false;
             if (n<0 || n>= this.track.points.length ())
@@ -170,6 +173,7 @@ namespace Gpx
          * again, not implemented since this is not a tree
          */
         public bool iter_parent (out Gtk.TreeIter iter, Gtk.TreeIter child){
+            iter = Gtk.TreeIter();
             return false;
         }
 

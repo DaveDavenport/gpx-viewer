@@ -47,8 +47,8 @@ namespace Gpx
                             {
                                 Point p = new Point();
                                 // TODO: Move parsing into Point class.
-                                double flat = lat.to_double();
-                                double flon = lon.to_double();
+                                double flat = double.parse(lat);
+                                double flon = double.parse(lon);
                                 p.set_position(flat, flon);
                                 var info = point->children;
                                 while(info != null)
@@ -58,7 +58,7 @@ namespace Gpx
                                     {
                                         var content = info->get_content();
                                         if(content != null)
-                                            p.elevation = content.to_double();
+                                            p.elevation = double.parse(content);
                                     }
                                     else if (info->name == "time")
                                     {
@@ -75,7 +75,7 @@ namespace Gpx
                                                 {
                                                     if(ext->name == "hr") {
                                                         var val= ext->get_content();
-                                                        p.tpe.heartrate = val.to_int();
+                                                        p.tpe.heartrate = int.parse(val);
                                                     }
                                                 } 
                                             }
@@ -120,8 +120,8 @@ namespace Gpx
             if(lat != null && lon != null)
             {
                 Point p = new Point();
-                double flat = lat.to_double();
-                double flon = lon.to_double();
+                double flat = double.parse(lat);
+                double flon = double.parse(lon);
                 p.set_position(flat, flon);
                 var info = node->children;
                 while(info != null)
@@ -159,8 +159,8 @@ namespace Gpx
                     if(lat != null && lon != null)
                     {
                         Point p = new Point();
-                        double flat = lat.to_double();
-                        double flon = lon.to_double();
+                        double flat = double.parse(lat);
+                        double flon = double.parse(lon);
                         p.set_position(flat, flon);
                         var info = trkseg->children;
                         while(info != null)
@@ -170,7 +170,7 @@ namespace Gpx
                             {
                                 var content = info->get_content();
                                 if(content != null)
-                                    p.elevation = content.to_double();
+                                    p.elevation = double.parse(content);
                             }
                             else if (info->name == "time")
                             {

@@ -437,7 +437,6 @@ namespace Gpx
 			ctx.stroke();
 
 			/* Draw time units. */
-			weak List<Point?> iter = track.points.first();
 
 			fd.set_absolute_size(12*1024);
 			layout.set_font_description(fd);
@@ -721,9 +720,9 @@ namespace Gpx
 			layout.set_font_description(fd);
 			string mtext = "";
 			if(_do_miles) {
-				mtext = _(this.GraphModeMiles[this._mode]);
+				mtext = _(Graph.GraphModeMiles[this._mode]);
 			}else{
-				mtext = _(this.GraphModeName[this._mode]);
+				mtext = _(Graph.GraphModeName[this._mode]);
 			}
 			if(this._smooth_factor != 1)
 			{
