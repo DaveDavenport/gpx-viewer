@@ -480,11 +480,22 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         elevation_diff = 0;
         if (start && stop)
         {
-            elevation_diff = stop->elevation - start->elevation;
+            elevation_diff = stop->smooth_elevation - start->smooth_elevation;
             distance_diff = stop->distance - start->distance;
         }
 	    gv_set_speed_label(label, elevation_diff, ELEVATION);
     }
+
+	/* Accumulated elevation */
+	if(track && start && stop) {
+		double up; double down;
+		gpx_track_calculate_total_elevation(track, start, stop, &up, &down);
+		label = (GtkWidget *) gtk_builder_get_object(priv->builder, "elevation_total_up_label");
+		gv_set_speed_label(label, up, ELEVATION);
+		label = (GtkWidget *) gtk_builder_get_object(priv->builder, "elevation_total_down_label");
+		gv_set_speed_label(label, down, ELEVATION);
+	}
+
     /* Average heartrate */
     if(track != NULL) {
         double hr = gpx_track_heartrate_avg(track,start,stop); 

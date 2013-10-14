@@ -44,6 +44,7 @@ namespace Gpx
         public double distance =0;
         /* Elevation */
         public double elevation;
+		public double smooth_elevation;
         /* Time */
         public string time;
         /* The speed (only if part of track */
@@ -78,6 +79,7 @@ namespace Gpx
             p.lon_dec = this.lon_dec;
             p.time = this.time;
             p.elevation = this.elevation;
+			p.smooth_elevation = this.smooth_elevation;
             p.tpe = this.tpe;
             return p;
         }
@@ -239,12 +241,41 @@ namespace Gpx
                     if(point.elevation < this.min_elevation) this.min_elevation = point.elevation;
 					point.distance = 0;
 				}
+				// radius in km
+				double radius = 0.2;
+
+				// add current point
+				double elevation_value = point.elevation * radius;
+				double weights = radius;
+
+				// add previous points within the radius
+				unowned List<Point> ?env_iter = iter;
+				int i = 0;
+				while ((env_iter = env_iter.prev) != null) {
+					i++;
+					double mydist = calculate_distance(env_iter.data, point);
+					if (mydist < radius) {
+						elevation_value += (env_iter.data.elevation * (radius - mydist));
+						weights += (radius - mydist);
+					} else break;
+				}
+				// add following points within the radius
+				env_iter = iter;
+				while ((env_iter = env_iter.prev) != null) {
+					i++;
+					double mydist = calculate_distance(env_iter.data, point);
+					if (mydist < radius) {
+						elevation_value += (env_iter.data.elevation * (radius - mydist));
+						weights += (radius - mydist);
+					} else break;
+				}
+				point.smooth_elevation = elevation_value / weights;
+				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Used %d points in radius of %f m", i, radius * 1000.0);
                 if(point.has_position()) {
                     last = iter;
                 }
             }
 		}
-
 
         public void add_point (Point point)
         {
@@ -256,7 +287,6 @@ namespace Gpx
                 var distance = calculate_distance(last, point);
                 this.total_distance += distance;
                 point.distance = this.total_distance;
-
                 /* Update the 2 bounding box points */
                 if(top == null || top.lat_dec ==  1000 || top.lat_dec < point.lat_dec)
                 {
@@ -442,6 +472,24 @@ namespace Gpx
             return distance/(time/(60.0*60.0));
         }
 
+        public void calculate_total_elevation(Gpx.Point start, Gpx.Point stop, out double up, out double down)
+        {
+			up = 0.0;
+			down = 0.0;
+            weak List<Point?> iter = this.points.find(start);
+            weak List<Point?> last = null;
+            if(iter == null) return;
+			do {
+				if (last != null) {
+					if(iter.data.smooth_elevation > last.data.smooth_elevation) {
+						up += (iter.data.smooth_elevation - last.data.smooth_elevation);
+					} else {
+						down += (last.data.smooth_elevation - iter.data.smooth_elevation);
+					}
+				}
+				last = iter;
+			} while((iter = iter.next) != null && iter.prev.data != stop);
+        }
 		/**
 		 * @param lon_a longitude in radians of point a
 		 * @param lat_a latitude in radians of point a

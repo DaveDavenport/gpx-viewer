@@ -212,6 +212,34 @@
       </packing>
     </child>
     <child>
+      <object class="GtkLabel" id="elevation_total_up_title_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Acc. Elevation Up:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="top_attach">9</property>
+        <property name="bottom_attach">10</property>
+        <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="elevation_total_down_title_label">
+        <property name="visible">True</property>
+        <property name="xalign">1</property>
+        <property name="label" translatable="yes">&lt;b&gt;Acc. Elevation Down:&lt;/b&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="top_attach">10</property>
+        <property name="bottom_attach">11</property>
+        <property name="x_options">GTK_FILL</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkLabel" id="gradient_title_label">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -220,8 +248,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">9</property>
-        <property name="bottom_attach">10</property>
+        <property name="top_attach">11</property>
+        <property name="bottom_attach">12</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -307,9 +335,8 @@
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="gradient_label">
+      <object class="GtkLabel" id="elevation_total_up_label">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
         <property name="xalign">0</property>
         <property name="label" translatable="yes">n/a</property>
         <property name="ellipsize">end</property>
@@ -323,6 +350,37 @@
       </packing>
     </child>
     <child>
+      <object class="GtkLabel" id="elevation_total_down_label">
+        <property name="visible">True</property>
+        <property name="xalign">0</property>
+        <property name="label" translatable="yes">n/a</property>
+        <property name="ellipsize">end</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">10</property>
+        <property name="bottom_attach">11</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="gradient_label">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="xalign">0</property>
+        <property name="label" translatable="yes">n/a</property>
+        <property name="ellipsize">end</property>
+      </object>
+      <packing>
+        <property name="left_attach">1</property>
+        <property name="right_attach">2</property>
+        <property name="top_attach">11</property>
+        <property name="bottom_attach">12</property>
+        <property name="y_options">GTK_FILL</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkLabel" id="label4">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -331,8 +389,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">12</property>
-        <property name="bottom_attach">13</property>
+        <property name="top_attach">14</property>
+        <property name="bottom_attach">15</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -410,8 +468,8 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
-        <property name="top_attach">12</property>
-        <property name="bottom_attach">13</property>
+        <property name="top_attach">14</property>
+        <property name="bottom_attach">15</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -485,8 +543,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">10</property>
-        <property name="bottom_attach">11</property>
+        <property name="top_attach">12</property>
+        <property name="bottom_attach">13</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -501,8 +559,8 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
-        <property name="top_attach">10</property>
-        <property name="bottom_attach">11</property>
+        <property name="top_attach">12</property>
+        <property name="bottom_attach">13</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -516,8 +574,8 @@
         <property name="use_markup">True</property>
       </object>
       <packing>
-        <property name="top_attach">11</property>
-        <property name="bottom_attach">12</property>
+        <property name="top_attach">13</property>
+        <property name="bottom_attach">14</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
@@ -532,8 +590,8 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="right_attach">2</property>
-        <property name="top_attach">11</property>
-        <property name="bottom_attach">12</property>
+        <property name="top_attach">13</property>
+        <property name="bottom_attach">14</property>
         <property name="x_options">GTK_FILL</property>
         <property name="y_options">GTK_FILL</property>
       </packing>
