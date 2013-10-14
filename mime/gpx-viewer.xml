@@ -4,4 +4,8 @@
      <comment xml:lang="en">GPX Track</comment>
      <glob pattern="*.gpx"/>
   </mime-type>
+  <mime-type type="application/vnd.ant.fit">
+     <comment xml:lang="en">ANT+ FIT</comment>
+     <glob pattern="*.fit"/>
+  </mime-type>
 </mime-info>
