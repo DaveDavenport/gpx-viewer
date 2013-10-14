@@ -86,10 +86,11 @@ typedef struct _GpxViewerPrivate {
 
 } GpxViewerPrivate;
 
+GType gpx_viewer_get_type (void);
+#define GPX_TYPE_VIEWER  (gpx_viewer_get_type())
+
 G_DEFINE_TYPE (GpxViewer, gpx_viewer, GTK_TYPE_APPLICATION)
 #define GPX_VIEWER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GPX_TYPE_VIEWER, GpxViewerPrivate))
-
-#define GPX_TYPE_VIEWER  (gpx_viewer_get_type())
 
 
 
@@ -486,9 +487,9 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
     /* Average heartrate */
     if(track != NULL) {
-        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "heart_rate_label");
         double hr = gpx_track_heartrate_avg(track,start,stop); 
         gchar *string = g_strdup_printf("%.0f bpm", hr); 
+        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "heart_rate_label");
         gtk_label_set_text(GTK_LABEL(label), string);
         g_free(string);
     }else {
@@ -501,11 +502,11 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
         double weight = gpx_viewer_settings_get_double  (priv->settings, "calories" , "weight", 0.0);
         double age = gpx_viewer_settings_get_double     (priv->settings, "calories" , "age", 0.0);
         if(weight > 0 && age > 0) {
-        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "calories_label");
-        double hr = gpx_track_heartrate_calc_calories(track,start,stop, male, weight, age); 
-        gchar *string = g_strdup_printf("%.1f kcal", hr); 
-        gtk_label_set_text(GTK_LABEL(label), string);
-        g_free(string);
+			double hr = gpx_track_heartrate_calc_calories(track,start,stop, male, weight, age); 
+			gchar *string = g_strdup_printf("%.1f kcal", hr); 
+			label = (GtkWidget *) gtk_builder_get_object(priv->builder, "calories_label");
+			gtk_label_set_text(GTK_LABEL(label), string);
+			g_free(string);
         }else{
             gtk_label_set_text(GTK_LABEL(label), _("Please configure first"));
         }
@@ -533,7 +534,7 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
     //gpx_viewer_path_layer_set_stroke_color(route->path, &normal_track_color);
 	gpx_viewer_path_layer_set_track(route->path,route->track);
     champlain_view_add_layer(CHAMPLAIN_VIEW(view), CHAMPLAIN_LAYER(route->path));
-	clutter_actor_set_depth(CLUTTER_ACTOR(route->path), -10);
+	clutter_actor_set_z_position(CLUTTER_ACTOR(route->path), -10);
     if(!route->visible) gpx_viewer_path_layer_set_visible(route->path, FALSE);
 }
 
@@ -1327,7 +1328,6 @@ static void create_interface(GtkApplication *gtk_app)
     gint w,h;
     GtkRecentFilter *grf;
 	GtkWidget *dock;
-	GtkWidget *map_dock_item, *graph_dock_item;
 
     /* Open UI description file */
     priv->builder = gtk_builder_new();
@@ -1529,7 +1529,7 @@ static void create_interface(GtkApplication *gtk_app)
 		*/
         gtk_box_pack_end(GTK_BOX(gtk_builder_get_object(priv->builder, "main_view_hpane")), dock, TRUE, TRUE, 0);
 
-        priv->dock_layout = gdl_dock_layout_new(GDL_DOCK(dock));
+        priv->dock_layout = gdl_dock_layout_new(G_OBJECT(dock));
         restore_layout(gtk_app);
 
     }
@@ -1833,8 +1833,10 @@ int main(int argc, char **argv)
 	bind_textdomain_codeset(PACKAGE, "UTF-8");
 	textdomain(PACKAGE);
 	setlocale (LC_ALL, "");
-
-	gtk_clutter_init(&argc, &argv);
+	
+	if ((retv = gtk_clutter_init(&argc, &argv)) != CLUTTER_INIT_SUCCESS) {
+	   return retv;
+	}
 
 	/* Add own icon structure to the theme engine search */
 	path = g_build_filename(DATA_DIR, "icons", NULL);

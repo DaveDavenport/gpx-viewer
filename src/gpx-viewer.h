@@ -36,6 +36,7 @@ void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp, gpointer gp
 void gpx_viewer_show_preferences_dialog(GtkWidget *menu_item, gpointer user_data);
 void show_vertical_speed(GtkMenuItem *item, gpointer user_data);
 void show_acceleration_h(GtkMenuItem *item, gpointer user_data);
+void show_heartrate(GtkMenuItem *item, gpointer user_data);
 
 enum _SpeedFormat
 {
