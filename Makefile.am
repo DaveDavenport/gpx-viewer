@@ -94,9 +94,10 @@ endif
 
 EXTRA_DIST+=\
     vapi/config.vapi\
+    vapi/gpx-viewer.vapi\
     vapi/champlain-0.12.vapi\
     vapi/champlain-gtk-0.12.vapi\
-	src/gpx-viewer-path-layer.h\
+    src/gpx-viewer-path-layer.h\
     src/gpx-viewer.h
 
 ##
