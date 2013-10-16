@@ -28,6 +28,7 @@ namespace Gpx
         private uint32 data_length = 0;
 
         private enum FitTypes {
+            LAP = 19,
             ACTIVITY_SUMMARY = 20
         }
         // Internal structs.
@@ -85,7 +86,7 @@ namespace Gpx
                     fs.set_byte_order(DataStreamByteOrder.LITTLE_ENDIAN);
                 }
 
-                track = new Gpx.Track();
+                //track = new Gpx.Track();
                 // Parse the header file.
                 this.parse_header(fs);
                 // Parse all the records.
@@ -93,8 +94,10 @@ namespace Gpx
 
 
                 // Add the track
-                track.filter_points();
-                tracks.append(track);
+                if(track != null) {
+                    track.filter_points();
+                    tracks.append(track);
+                }
             } catch ( GLib.IOError err ) {
                 throw new FileError.IO_ERROR(err.message);
             } catch ( GLib.Error err ) {
@@ -208,8 +211,43 @@ namespace Gpx
             }
             return retv;
         }
+        private void parse_data_record_lap(DataInputStream fs, FieldDefinition *def) throws FileError, GLib.IOError
+        {
+
+            foreach ( var field in def->fields ) {
+                switch(field.def_num) {
+                    case 11:
+                        // Calories of the track?
+                        uint32 val = parse_field(field, fs);
+                        track.hrmt.calories = val;
+                        break;
+                    /** Currently we do not store other fields, as we do not care about them. */
+                    case 15:
+                        // AVG BPM
+                        uint32 val = parse_field(field, fs);
+                        break;
+                    case 16:
+                        // MAX BPM
+                        uint32 val = parse_field(field, fs);
+                        break;
+                    default:
+                        uint32 val = parse_field(field, fs);
+                        stdout.printf("%d %u\n", field.def_num,val);
+                        break;                        
+                }
+            }
+            // Add the track
+            if(track != null) {
+                track.filter_points();
+                tracks.append(track);
+                track = null;
+            }
+        }
         private void parse_data_record_activity_summary(DataInputStream fs, FieldDefinition *def) throws FileError, GLib.IOError
         {
+            if(track == null) {
+                track = new Gpx.Track();
+            }
             Gpx.Point  p = new Gpx.Point();
             foreach ( var field in def->fields ) {
                 switch(field.def_num) {
@@ -301,8 +339,11 @@ namespace Gpx
                     parse_data_record_activity_summary(fs, def);
 
                     break;
-
+                case FitTypes.LAP:
+                    parse_data_record_lap(fs, def);
+                    break;
                 default:
+                    stdout.printf("Unknown record: %d\n", def.type);
                     foreach ( var field in def->fields ) {
                         fs.skip(field.size);
                         data_length-=field.size;

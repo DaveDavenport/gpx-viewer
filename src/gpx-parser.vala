@@ -24,9 +24,12 @@ namespace Gpx
     public struct HeartRateMonitorPoint 
     {
         public int heartrate;
-        
-
     }
+    public struct HeartRateMonitorTrack
+    {
+        public uint32 calories;
+    }
+
     /**
      * Represents a point in the track or a waypoint.
      */
@@ -121,6 +124,7 @@ namespace Gpx
      */
     public class Track : GLib.Object
     {
+        public HeartRateMonitorTrack hrmt = HeartRateMonitorTrack() { calories = 0 }; 
         /* make a property */
         public string name {get; set; default = null;}
 		/**  Number of points that the #filter_points()  function removed */
@@ -270,7 +274,7 @@ namespace Gpx
 					} else break;
 				}
 				point.smooth_elevation = elevation_value / weights;
-				log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Used %d points in radius of %f m", i, radius * 1000.0);
+				//log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Used %d points in radius of %f m", i, radius * 1000.0);
                 if(point.has_position()) {
                     last = iter;
                 }
@@ -558,46 +562,14 @@ namespace Gpx
             return (total_time > 0)?(uint)(total/total_time):0;
         }
 
-        public uint heartrate_calc_calories(
-                Point start, Point stop,
-                bool male, 
-                double weight, double age)
+        public uint get_burned_calories()
         {
-            double total = 0;
-            double total_time = 0.0;
-            Point *prev = null;
-            weak List<Point?> iter = this.points.find(start);
-            if(iter == null) return 0;
-            do {
-                var p = iter.data;
-                if(p.tpe.heartrate != 0) {
-                    if(prev == null) {
-                        prev = p;
-                    }else{
-                        double diff = (double)p.get_time()-(double)prev->get_time();
-                        {
-                            total+= ((prev->tpe.heartrate+p.tpe.heartrate)/2.0)*diff;
-                            total_time+=diff;
-                        }
-
-                        prev = p;
-                    }
-                }
-                iter = iter.next;
-            }while (iter != null && iter.prev.data != stop);
-            double cal=0;
-            if (male) {
-                cal = ((-55.0969 + (0.6309 * total/total_time) + (0.1988 * weight) + (0.2017 * age))/4.184) *
-                    (total_time/60.0);
-            } else {
-                cal = ((-20.4022 + (0.4472 * total/total_time) - (0.1263 * weight) + (0.074 * age))/4.184) *
-                    total_time/60.0;
-            }
-            return (uint)cal;
+            return this.hrmt.calories;
         }
-
-
-
+        public void set_burned_calories(uint value)
+        {
+            this.hrmt.calories = value;
+        }
     }
 
 

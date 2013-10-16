@@ -509,18 +509,11 @@ static void interface_update_heading(GtkBuilder * c_builder, GpxTrack * track, G
     }
     /* Average calories */
     if(track != NULL ){
-        gboolean male = gpx_viewer_settings_get_boolean (priv->settings, "calories" , "male", TRUE);
-        double weight = gpx_viewer_settings_get_double  (priv->settings, "calories" , "weight", 0.0);
-        double age = gpx_viewer_settings_get_double     (priv->settings, "calories" , "age", 0.0);
-        if(weight > 0 && age > 0) {
-			double hr = gpx_track_heartrate_calc_calories(track,start,stop, male, weight, age); 
-			gchar *string = g_strdup_printf("%.1f kcal", hr); 
-			label = (GtkWidget *) gtk_builder_get_object(priv->builder, "calories_label");
-			gtk_label_set_text(GTK_LABEL(label), string);
-			g_free(string);
-        }else{
-            gtk_label_set_text(GTK_LABEL(label), _("Please configure first"));
-        }
+        uint32_t hr = gpx_track_get_burned_calories(track); 
+        gchar *string = g_strdup_printf("%u kcal (full track)", hr); 
+        label = (GtkWidget *) gtk_builder_get_object(priv->builder, "calories_label");
+        gtk_label_set_text(GTK_LABEL(label), string);
+        g_free(string);
     }else {
         label = (GtkWidget *) gtk_builder_get_object(priv->builder, "calories_label");
         gtk_label_set_text(GTK_LABEL(label), _("n/a"));
@@ -1096,15 +1089,18 @@ static void interface_create_fake_master_track(GpxFileBase *file, GtkTreeIter *l
 
     if (gpx_file_base_get_tracks(file))
     {
+        uint32_t calories = 0;
         for (iter = g_list_first(gpx_file_base_get_tracks(file)); iter; iter = g_list_next(iter))
         {
             GList *piter;
+            calories += gpx_track_get_burned_calories(GPX_TRACK(iter->data));
             for(piter = g_list_first(GPX_TRACK(iter->data)->points); piter != NULL; piter = g_list_next(piter))
             {
                 GpxPoint *p = piter->data;
                 gpx_track_add_point(route->track, gpx_point_copy(p));
             }
         }
+        gpx_track_set_burned_calories(GPX_TRACK(route->track), calories);
     }
     if(gpx_file_base_get_routes(file))
     {
