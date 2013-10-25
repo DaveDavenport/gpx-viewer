@@ -489,6 +489,7 @@ namespace Gpx
 			}else if(this._mode == GraphMode.DISTANCE){
 				value = Gpx.Track.calculate_distance(ii.data, ii.first().data);
 			}else if(this._mode == GraphMode.ACCELERATION_H && ii.prev != null){
+                if(ii.data.get_time() == ii.prev.data.get_time()) return 0;
 				value = (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
 			}else if(this._mode == GraphMode.SPEED_V && ii.prev != null){
                 if(ii.data.get_time() == ii.prev.data.get_time()) return 0;
