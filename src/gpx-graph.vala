@@ -491,6 +491,7 @@ namespace Gpx
 			}else if(this._mode == GraphMode.ACCELERATION_H && ii.prev != null){
 				value = (ii.data.speed- ii.prev.data.speed)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
 			}else if(this._mode == GraphMode.SPEED_V && ii.prev != null){
+                if(ii.data.get_time() == ii.prev.data.get_time()) return 0;
 				value = (ii.data.elevation- ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
 			}else if (this._mode == GraphMode.HEARTRATE)  {
                  value = ii.data.tpe.heartrate;
@@ -623,7 +624,7 @@ namespace Gpx
 			{
 				double time_offset = (iter.data.get_time()-f.get_time());
 				double speed = calculate_graph_point_smooth_value(iter)-min_value;
-				if(this._mode == GraphMode.SPEED)
+                if(this._mode == GraphMode.SPEED)
 				{
 					// if previous one is stopped, start at 0 
 					if(iter.prev != null && iter.prev.data.stopped) {
@@ -680,7 +681,7 @@ namespace Gpx
 					}else{
 						ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);
 					}
-					ctx.rectangle(graph_width*(double)(time_offset/(double)elapsed_time)-1,
+                    ctx.rectangle(graph_width*(double)(time_offset/(double)elapsed_time)-1,
 							graph_height*(double)(1.0-speed/(range))-1,2,2);
 					ctx.stroke();
 

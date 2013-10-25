@@ -85,7 +85,9 @@ namespace Gpx
                                     info = info->next;
                                 }
 
-                                track.add_point(p);
+                                if(p.time != null) {
+                                    track.add_point(p);
+                                }
                             }
                             else
                             {
@@ -178,8 +180,9 @@ namespace Gpx
                             }
                             info = info->next;
                         }
-
-                        track.add_point(p);
+                        if(p.time != null) {
+                            track.add_point(p);
+                        }
                     }
                     else
                     {
