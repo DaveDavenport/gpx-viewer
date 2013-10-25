@@ -589,7 +589,11 @@ namespace Gpx
 				}
             }
 			max_value = GLib.Math.ceil(max_value);
+
+            if(max_value == min_value) return;
+
 			range = max_value-min_value;
+
 			double elapsed_time = track.get_total_time();
 
 			log(LOG_DOMAIN, LogLevelFlags.LEVEL_DEBUG, "Draw Axis");
@@ -677,6 +681,8 @@ namespace Gpx
 					weak List<Point?> ii = iter.next;
 					double time_offset = (ii.data.get_time()-f.get_time());
 					double speed = calculate_graph_point_smooth_value(ii)-min_value;
+
+
 					if(ii.data.stopped) {
 						ctx.set_source_rgba(1.0, 0.0, 0.0, 1.0);
 					}else{
