@@ -1421,7 +1421,7 @@ static void create_interface(GtkApplication *gtk_app)
 
 
     view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(priv->champlain_view));
-    g_signal_connect (view, "notify:state", G_CALLBACK (view_state_changed),
+    g_signal_connect (view, "notify::state", G_CALLBACK (view_state_changed),
         gtk_app);
 
     interface_map_make_waypoints(view,gtk_app);
