@@ -781,6 +781,36 @@
                         <signal name="activate" handler="show_current_track" swapped="no"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_toggle_file_list">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Toggle file list</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="view_menu_toggle_file_list" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_toggle_detail_track">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Toggle track details</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="view_menu_toggle_detail_track" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_menu_toggle_settings">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Toggle settings pane</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="view_menu_toggle_settings" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

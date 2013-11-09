@@ -34,8 +34,10 @@
 #include "gpx-viewer-path-layer.h"
 
 
-
-
+void dock_item_state_changed(GdlDockItem *dock_item,GParamSpec *sp, GtkWidget *menu_item);
+void view_menu_toggle_settings(GtkMenuItem *mitem, GpxViewer *gpx_viewer);
+void view_menu_toggle_detail_track(GtkMenuItem *mitem, GpxViewer *gpx_viewer);
+void view_menu_toggle_file_list(GtkMenuItem *mitem, GpxViewer *gpx_viewer);
 /**
  * This structure holds all information related to
  * a track.
@@ -1323,7 +1325,14 @@ static void graph_mode_changed(GpxGraph *graph, GParamSpec *sp, gpointer gpx_vie
     }
 
 }
-
+void dock_item_state_changed(GdlDockItem *dock_item,GParamSpec *sp, GtkWidget *menu_item)
+{
+    gboolean state = FALSE;
+    g_object_get(G_OBJECT(dock_item), "visible", &state, NULL);
+    if(state != gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item))){
+            gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), state);
+    }
+} 
 
 /* Create the interface */
 static void create_interface(GtkApplication *gtk_app)
@@ -1412,7 +1421,7 @@ static void create_interface(GtkApplication *gtk_app)
 
 
     view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(priv->champlain_view));
-    g_signal_connect (view, "notify::state", G_CALLBACK (view_state_changed),
+    g_signal_connect (view, "notify:state", G_CALLBACK (view_state_changed),
         gtk_app);
 
     interface_map_make_waypoints(view,gtk_app);
@@ -1506,42 +1515,42 @@ static void create_interface(GtkApplication *gtk_app)
         priv->dock_items[0] = item = gdl_dock_item_new(
             "Files",
             "File and track list",
-            GDL_DOCK_ITEM_BEH_CANT_CLOSE
-            |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+            GDL_DOCK_ITEM_BEH_CANT_ICONIFY
 			|GDL_DOCK_ITEM_BEH_NEVER_FLOATING
-			|GDL_DOCK_ITEM_BEH_NO_GRIP
-			|GDL_DOCK_ITEM_BEH_LOCKED
 			);
         gtk_container_add(GTK_CONTAINER(item), flw);
+        gtk_container_set_border_width(GTK_CONTAINER(item), 6);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_LEFT);
+        g_signal_connect(G_OBJECT(item), "notify::visible", G_CALLBACK(dock_item_state_changed), 
+                gtk_builder_get_object(priv->builder,"view_menu_toggle_file_list"));
         gtk_widget_show(item);
 
         /* Dock item */
         priv->dock_items[1] =     item = gdl_dock_item_new(
             "Information",
             "Detailed track information",
-            GDL_DOCK_ITEM_BEH_CANT_CLOSE
-            |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+            GDL_DOCK_ITEM_BEH_CANT_ICONIFY
 			|GDL_DOCK_ITEM_BEH_NEVER_FLOATING
-			|GDL_DOCK_ITEM_BEH_NO_GRIP
-			|GDL_DOCK_ITEM_BEH_LOCKED
 			);
         gtk_container_add(GTK_CONTAINER(item), tiw);
+        gtk_container_set_border_width(GTK_CONTAINER(item), 6);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_CENTER);
+        g_signal_connect(G_OBJECT(item), "notify::visible", G_CALLBACK(dock_item_state_changed), 
+                gtk_builder_get_object(priv->builder,"view_menu_toggle_detail_track"));
         gtk_widget_show(item);
 
         /* Dock item */
         priv->dock_items[2] =item = gdl_dock_item_new(
             "Settings",
             "Map and graph settings",
-            GDL_DOCK_ITEM_BEH_CANT_CLOSE
-            |GDL_DOCK_ITEM_BEH_CANT_ICONIFY
+            GDL_DOCK_ITEM_BEH_CANT_ICONIFY
 			|GDL_DOCK_ITEM_BEH_NEVER_FLOATING
-			|GDL_DOCK_ITEM_BEH_NO_GRIP
-			|GDL_DOCK_ITEM_BEH_LOCKED
 			);
         gtk_container_add(GTK_CONTAINER(item), swi);
+        gtk_container_set_border_width(GTK_CONTAINER(item), 6);
         gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(item), GDL_DOCK_CENTER);
+        g_signal_connect(G_OBJECT(item), "notify::visible", G_CALLBACK(dock_item_state_changed), 
+                gtk_builder_get_object(priv->builder,"view_menu_toggle_settings"));
         gtk_widget_show(item);
 
         gtk_widget_show_all(dock);
@@ -1554,6 +1563,21 @@ static void create_interface(GtkApplication *gtk_app)
 
         priv->dock_layout = gdl_dock_layout_new(G_OBJECT(dock));
         restore_layout(gtk_app);
+        if(!gdl_dock_item_is_closed(GDL_DOCK_ITEM(priv->dock_items[0]))){
+                gtk_check_menu_item_set_active(
+                    GTK_CHECK_MENU_ITEM(gtk_builder_get_object(priv->builder,"view_menu_toggle_file_list")),
+                    TRUE);
+        }
+        if(!gdl_dock_item_is_closed(GDL_DOCK_ITEM(priv->dock_items[1]))){
+                gtk_check_menu_item_set_active(
+                    GTK_CHECK_MENU_ITEM(gtk_builder_get_object(priv->builder,"view_menu_toggle_detail_track")),
+                    TRUE);
+        }
+        if(!gdl_dock_item_is_closed(GDL_DOCK_ITEM(priv->dock_items[2]))){
+                gtk_check_menu_item_set_active(
+                    GTK_CHECK_MENU_ITEM(gtk_builder_get_object(priv->builder,"view_menu_toggle_settings")),
+                    TRUE);
+        }
 
     }
     gpx_viewer_settings_add_object_property(priv->settings,
@@ -1588,6 +1612,38 @@ static void create_interface(GtkApplication *gtk_app)
         champlain_bounding_box_free(bounding_box);
     }
     gtk_window_set_application(GTK_WINDOW(gtk_builder_get_object(priv->builder,"gpx_viewer_window")), gtk_app);
+}
+
+
+void view_menu_toggle_settings(GtkMenuItem *mitem, GpxViewer *gpx_viewer)
+{
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
+    GdlDockItem *item = GDL_DOCK_ITEM(priv->dock_items[2]);
+    if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(mitem))) {
+        gdl_dock_item_show_item(item); 
+    }else {
+        gdl_dock_item_hide_item(item); 
+    }
+}
+void view_menu_toggle_detail_track(GtkMenuItem *mitem, GpxViewer *gpx_viewer)
+{
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
+    GdlDockItem *item = GDL_DOCK_ITEM(priv->dock_items[1]);
+    if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(mitem))) {
+        gdl_dock_item_show_item(item); 
+    }else {
+        gdl_dock_item_hide_item(item); 
+    }
+}
+void view_menu_toggle_file_list(GtkMenuItem *mitem, GpxViewer *gpx_viewer)
+{
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);
+    GdlDockItem *item = GDL_DOCK_ITEM(priv->dock_items[0]);
+    if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(mitem))) {
+        gdl_dock_item_show_item(item); 
+    }else {
+        gdl_dock_item_hide_item(item); 
+    }
 }
 
 
