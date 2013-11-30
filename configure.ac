@@ -1,6 +1,6 @@
 #Define the version
 m4_define([package_major_version], [0])
-m4_define([package_minor_version], [3])
+m4_define([package_minor_version], [4])
 m4_define([package_micro_version], [0])
 m4_define([package_version], [package_major_version.package_minor_version.package_micro_version])
 
