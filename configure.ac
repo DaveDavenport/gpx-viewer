@@ -34,7 +34,7 @@ AC_SUBST(DISTCHECK_CONFIGURE_FLAGS)
 
 #intltool, libtool. Check for CC compiler
 IT_PROG_INTLTOOL([0.21])
-ALL_LINGUAS="ar cs de es hu it ru uk zh_CN"
+ALL_LINGUAS="ar cs de el es fr hu it ru uk zh_CN"
 AM_GNU_GETTEXT_VERSION(0.11.5)
 AM_GLIB_GNU_GETTEXT
 GETTEXT_PACKAGE=gpx-viewer

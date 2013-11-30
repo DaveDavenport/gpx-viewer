@@ -8,50 +8,50 @@ msgstr ""
 "Project-Id-Version: gpx-viewer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-16 14:19+0100\n"
-"PO-Revision-Date: 2010-07-06 20:56+0000\n"
+"PO-Revision-Date: 2013-11-16 17:04+0000\n"
 "Last-Translator: Jorge Dardón <jdardon@xelalug.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
-"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2010-08-01 11:36+0000\n"
-"X-Generator: Launchpad (build Unknown)\n"
+"X-Launchpad-Export-Date: 2013-11-30 09:48+0000\n"
+"X-Generator: Launchpad (build 16856)\n"
+"Language: es\n"
 
 #: ../src/gpx-viewer.c:141
 msgid "Miles"
-msgstr ""
+msgstr "Millas"
 
 #: ../src/gpx-viewer.c:143
 msgid "km"
-msgstr ""
+msgstr "km"
 
 #: ../src/gpx-viewer.c:147
 msgid "Miles/h"
-msgstr ""
+msgstr "Millas/h"
 
 #: ../src/gpx-viewer.c:149
 msgid "km/h"
-msgstr ""
+msgstr "km/h"
 
 #. TODO:
 #: ../src/gpx-viewer.c:154
 msgid "ft"
-msgstr ""
+msgstr "pies"
 
 #: ../src/gpx-viewer.c:156
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #. TODO:
 #: ../src/gpx-viewer.c:161
 msgid "ft/s²"
-msgstr ""
+msgstr "ft/s²"
 
 #: ../src/gpx-viewer.c:163
 msgid "m/s²"
-msgstr ""
+msgstr "m/s²"
 
 #: ../src/gpx-viewer.c:167 ../src/gpx-viewer.c:367 ../src/gpx-viewer.c:382
 #: ../src/gpx-viewer.c:398 ../src/gpx-viewer.c:438 ../src/gpx-viewer.c:521
@@ -65,7 +65,7 @@ msgstr "Un sencillo programa para visualizar uno o más archivos gpx."
 
 #: ../src/gpx-viewer.c:305
 msgid "About GPX Viewer"
-msgstr "Acerca del Visor GPX"
+msgstr "Acerca del visor GPX"
 
 #: ../src/gpx-viewer.c:322
 msgid "hour"
@@ -156,22 +156,19 @@ msgstr "<b>Duración del desplazamiento:</b>"
 
 #: ../data/gpx-viewer.ui.h:7
 msgid "<b>Max. speed:</b>"
-msgstr "<b>Velocidad Máx. :</b>"
+msgstr "<b>Velocidad máx. :</b>"
 
 #: ../data/gpx-viewer.ui.h:8
-#, fuzzy
 msgid "<b>Elevation Diff.:</b>"
-msgstr "<b>Diferencia de elevación:</b>"
+msgstr "<b>Dif. de elevación:</b>"
 
 #: ../data/gpx-viewer.ui.h:9
-#, fuzzy
 msgid "<b>Acc. Elevation Up:</b>"
-msgstr "<b>Diferencia de elevación:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:10
-#, fuzzy
 msgid "<b>Acc. Elevation Down:</b>"
-msgstr "<b>Diferencia de elevación:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:11
 msgid "<b>Gradient:</b>"
@@ -182,24 +179,20 @@ msgid "<b>Playback:</b>"
 msgstr "<b>Reproducción:</b>"
 
 #: ../data/gpx-viewer.ui.h:13
-#, fuzzy
 msgid "<b>Start time:</b>"
-msgstr "<b>Duración del desplazamiento:</b>"
+msgstr "<b>Hora de inicio:</b>"
 
 #: ../data/gpx-viewer.ui.h:14
-#, fuzzy
 msgid "<b>Stop time:</b>"
-msgstr "<b>Duración del desplazamiento:</b>"
+msgstr "<b>Hora de finalización:</b>"
 
 #: ../data/gpx-viewer.ui.h:15
-#, fuzzy
 msgid "<b>Average heart-rate:</b>"
-msgstr "<b>Promedio:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:16
-#, fuzzy
 msgid "<b>Calories estimation:</b>"
-msgstr "<b>Duración:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:17 ../data/gpx-viewer.desktop.in.h:1
 msgid "GPX Viewer"
@@ -215,7 +208,7 @@ msgstr "_Gráfico"
 
 #: ../data/gpx-viewer.ui.h:23
 msgid "Vertical Speed"
-msgstr "Velocidad Vertical"
+msgstr "Velocidad vertical"
 
 #: ../data/gpx-viewer.ui.h:24
 msgid "Acceleration"
@@ -247,7 +240,7 @@ msgstr ""
 
 #: ../data/gpx-viewer.ui.h:31
 msgid "_Help"
-msgstr "_Ayuda"
+msgstr "Ay_uda"
 
 #: ../data/gpx-viewer.ui.h:32
 msgid "<b>Map:</b>"
@@ -268,49 +261,3 @@ msgstr "<b>Factor de suavizado:</b>"
 #: ../data/gpx-viewer.ui.h:36
 msgid "<b>Show points:</b>"
 msgstr "<b>Mostrar puntos:</b>"
-
-#~ msgid "[FILE...] - GPX Viewer"
-#~ msgstr "[ARCHIVO...] - GPX Viewer"
-
-#~ msgid "Website: "
-#~ msgstr "Sitio web: "
-
-#~ msgid "Speed (km/h) vs Time (HH:MM)"
-#~ msgstr "Velocidad (km/h) vs Tiempo (HH:MM)"
-
-#~ msgid "Elevation (m) vs Time (HH:MM)"
-#~ msgstr "Elevación (m) vs tiempo (HH:MM)"
-
-#~ msgid "Distance (km) vs Time (HH:MM)"
-#~ msgstr "Distancia (km) vs tiempo (HH:MM)"
-
-#~ msgid "Horizontal acceleration (m/s) vs Time (HH:MM)"
-#~ msgstr "Aceleración horizontal (m/s) vs tiempo (HH:MM)"
-
-#~ msgid "Vertical speed (m/s) vs Time (HH:MM)"
-#~ msgstr "Velocidad vertical (m/s) vs tiempo (HH:MM)"
-
-#~ msgid "Files dock"
-#~ msgstr "Barra de ficheros"
-
-#~ msgid "Setings dock"
-#~ msgstr "Barra de ajustes"
-
-#~ msgid "Track information dock"
-#~ msgstr "Barra de información de trazas"
-
-#~ msgid "Website: http://blog.sarine.nl/gpx-viewer"
-#~ msgstr "Sitio Web: http://blog.sarine.nl/gpx-viewer"
-
-#~ msgid "Show Waypoints"
-#~ msgstr "Mostrar Puntos de Ruta"
-
-#~ msgid "Show"
-#~ msgstr "Mostrar"
-
-#~ msgid "Change the zoom level of the map."
-#~ msgstr "Cambiar el nivel de zoom del mapa."
-
-#~ msgid "Change the smoothing factor used when plotting the speed graph."
-#~ msgstr ""
-#~ "Cambiar el factor de suavizado usando al dibujar la gráfica de velocidad."

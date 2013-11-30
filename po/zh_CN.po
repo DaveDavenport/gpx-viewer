@@ -8,16 +8,16 @@ msgstr ""
 "Project-Id-Version: gpx-viewer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-16 14:19+0100\n"
-"PO-Revision-Date: 2010-03-23 14:48+0000\n"
+"PO-Revision-Date: 2013-11-16 17:04+0000\n"
 "Last-Translator: sxdhaoren <hupengnihao@gmail.com>\n"
 "Language-Team: Simplified Chinese <zh_CN@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Launchpad-Export-Date: 2010-08-01 11:36+0000\n"
-"X-Generator: Launchpad (build Unknown)\n"
+"X-Launchpad-Export-Date: 2013-11-30 09:48+0000\n"
+"X-Generator: Launchpad (build 16856)\n"
+"Language: \n"
 
 #: ../src/gpx-viewer.c:141
 msgid "Miles"
@@ -156,19 +156,16 @@ msgid "<b>Max. speed:</b>"
 msgstr "<b>最大速度：</b>"
 
 #: ../data/gpx-viewer.ui.h:8
-#, fuzzy
 msgid "<b>Elevation Diff.:</b>"
-msgstr "<b>持续时间:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:9
-#, fuzzy
 msgid "<b>Acc. Elevation Up:</b>"
-msgstr "<b>持续时间:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:10
-#, fuzzy
 msgid "<b>Acc. Elevation Down:</b>"
-msgstr "<b>持续时间:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:11
 msgid "<b>Gradient:</b>"
@@ -179,24 +176,20 @@ msgid "<b>Playback:</b>"
 msgstr ""
 
 #: ../data/gpx-viewer.ui.h:13
-#, fuzzy
 msgid "<b>Start time:</b>"
-msgstr "<b>移动时间</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:14
-#, fuzzy
 msgid "<b>Stop time:</b>"
-msgstr "<b>移动时间</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:15
-#, fuzzy
 msgid "<b>Average heart-rate:</b>"
-msgstr "<b>平均：</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:16
-#, fuzzy
 msgid "<b>Calories estimation:</b>"
-msgstr "<b>持续时间:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:17 ../data/gpx-viewer.desktop.in.h:1
 msgid "GPX Viewer"
@@ -265,24 +258,3 @@ msgstr ""
 #: ../data/gpx-viewer.ui.h:36
 msgid "<b>Show points:</b>"
 msgstr ""
-
-#~ msgid "[FILE...] - GPX Viewer"
-#~ msgstr "[FILE...] - GPX 查看器"
-
-#~ msgid "Website: "
-#~ msgstr "网站： "
-
-#~ msgid "Speed (km/h) vs Time (HH:MM)"
-#~ msgstr "速度 (km/h) vs 时间 (HH:MM)"
-
-#~ msgid "Distance (km) vs Time (HH:MM)"
-#~ msgstr "距离（km）和 时间（HH:MM）"
-
-#~ msgid "Website: http://blog.sarine.nl/gpx-viewer"
-#~ msgstr "网站：http://blog.sarine.nl/gpx-viewer"
-
-#~ msgid "Change the zoom level of the map."
-#~ msgstr "转化地图的放大比例。"
-
-#~ msgid "Show"
-#~ msgstr "显示"

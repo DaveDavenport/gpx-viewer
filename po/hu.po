@@ -8,50 +8,50 @@ msgstr ""
 "Project-Id-Version: gpx-viewer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-16 14:19+0100\n"
-"PO-Revision-Date: 2010-04-15 15:22+0000\n"
-"Last-Translator: City-busz <Unknown>\n"
+"PO-Revision-Date: 2013-11-16 17:04+0000\n"
+"Last-Translator: GPX Viewer developer team <Unknown>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
-"Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2010-08-01 11:36+0000\n"
-"X-Generator: Launchpad (build Unknown)\n"
+"X-Launchpad-Export-Date: 2013-11-30 09:48+0000\n"
+"X-Generator: Launchpad (build 16856)\n"
+"Language: hu\n"
 
 #: ../src/gpx-viewer.c:141
 msgid "Miles"
-msgstr ""
+msgstr "mérföld"
 
 #: ../src/gpx-viewer.c:143
 msgid "km"
-msgstr ""
+msgstr "km"
 
 #: ../src/gpx-viewer.c:147
 msgid "Miles/h"
-msgstr ""
+msgstr "mérföld/h"
 
 #: ../src/gpx-viewer.c:149
 msgid "km/h"
-msgstr ""
+msgstr "km/h"
 
 #. TODO:
 #: ../src/gpx-viewer.c:154
 msgid "ft"
-msgstr ""
+msgstr "láb"
 
 #: ../src/gpx-viewer.c:156
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #. TODO:
 #: ../src/gpx-viewer.c:161
 msgid "ft/s²"
-msgstr ""
+msgstr "láb/s²"
 
 #: ../src/gpx-viewer.c:163
 msgid "m/s²"
-msgstr ""
+msgstr "m/s²"
 
 #: ../src/gpx-viewer.c:167 ../src/gpx-viewer.c:367 ../src/gpx-viewer.c:382
 #: ../src/gpx-viewer.c:398 ../src/gpx-viewer.c:438 ../src/gpx-viewer.c:521
@@ -159,19 +159,16 @@ msgid "<b>Max. speed:</b>"
 msgstr "<b>Max. sebesség:</b>"
 
 #: ../data/gpx-viewer.ui.h:8
-#, fuzzy
 msgid "<b>Elevation Diff.:</b>"
-msgstr "<b>Szintkülönbség:</b>"
+msgstr "<b>Magasssági különb.:</b>"
 
 #: ../data/gpx-viewer.ui.h:9
-#, fuzzy
 msgid "<b>Acc. Elevation Up:</b>"
-msgstr "<b>Szintkülönbség:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:10
-#, fuzzy
 msgid "<b>Acc. Elevation Down:</b>"
-msgstr "<b>Szintkülönbség:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:11
 msgid "<b>Gradient:</b>"
@@ -182,24 +179,20 @@ msgid "<b>Playback:</b>"
 msgstr "<b>Visszajátszás:</b>"
 
 #: ../data/gpx-viewer.ui.h:13
-#, fuzzy
 msgid "<b>Start time:</b>"
-msgstr "<b>Mozgási idő:</b>"
+msgstr "<b>Időintervallum kezdete:</b>"
 
 #: ../data/gpx-viewer.ui.h:14
-#, fuzzy
 msgid "<b>Stop time:</b>"
-msgstr "<b>Mozgási idő:</b>"
+msgstr "<b>Időintervallum vége:</b>"
 
 #: ../data/gpx-viewer.ui.h:15
-#, fuzzy
 msgid "<b>Average heart-rate:</b>"
-msgstr "<b>Átlag:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:16
-#, fuzzy
 msgid "<b>Calories estimation:</b>"
-msgstr "<b>Időtartam:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:17 ../data/gpx-viewer.desktop.in.h:1
 msgid "GPX Viewer"
@@ -268,48 +261,3 @@ msgstr "<b>Simítási tényező:</b>"
 #: ../data/gpx-viewer.ui.h:36
 msgid "<b>Show points:</b>"
 msgstr "<b>Pontok megjelenítése:</b>"
-
-#~ msgid "[FILE...] - GPX Viewer"
-#~ msgstr "[FÁJL...] - GPX Viewer"
-
-#~ msgid "Website: "
-#~ msgstr "Weboldal: "
-
-#~ msgid "Speed (km/h) vs Time (HH:MM)"
-#~ msgstr "Sebesség (km/h) kontra idő (HH:MM)"
-
-#~ msgid "Elevation (m) vs Time (HH:MM)"
-#~ msgstr "Magasság (m) kontra idő (HH:MM)"
-
-#~ msgid "Distance (km) vs Time (HH:MM)"
-#~ msgstr "Távolság (km) kontra idő (HH:MM)"
-
-#~ msgid "Horizontal acceleration (m/s) vs Time (HH:MM)"
-#~ msgstr "Vízszintes gyorsulás (m/s) kontra idő (HH:MM)"
-
-#~ msgid "Vertical speed (m/s) vs Time (HH:MM)"
-#~ msgstr "Függőleges sebesség (m/s) kontra idő (HH:MM)"
-
-#~ msgid "Files dock"
-#~ msgstr "Fájlok panel"
-
-#~ msgid "Setings dock"
-#~ msgstr "Beállítások panel"
-
-#~ msgid "Track information dock"
-#~ msgstr "Nyomvonal-információ panel"
-
-#~ msgid "Website: http://blog.sarine.nl/gpx-viewer"
-#~ msgstr "Webhely: http://blog.sarine.nl/gpx-viewer"
-
-#~ msgid "Show Waypoints"
-#~ msgstr "Útpontok megjelenítése"
-
-#~ msgid "Change the zoom level of the map."
-#~ msgstr "A térkép nagyítási szintjének módosítása"
-
-#~ msgid "Change the smoothing factor used when plotting the speed graph."
-#~ msgstr "A simítási tényező módosítása a sebességdiagram ábrázolásakor"
-
-#~ msgid "Show"
-#~ msgstr "Megjelenítés"

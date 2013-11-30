@@ -8,51 +8,51 @@ msgstr ""
 "Project-Id-Version: gpx-viewer\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-11-16 14:19+0100\n"
-"PO-Revision-Date: 2010-03-24 11:25+0000\n"
-"Last-Translator: Alexander Gorbounov <Unknown>\n"
+"PO-Revision-Date: 2013-11-16 17:04+0000\n"
+"Last-Translator: GPX Viewer developer team <Unknown>\n"
 "Language-Team: Russian <ru@li.org>\n"
-"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2010-08-01 11:36+0000\n"
-"X-Generator: Launchpad (build Unknown)\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Launchpad-Export-Date: 2013-11-30 09:48+0000\n"
+"X-Generator: Launchpad (build 16856)\n"
+"Language: ru\n"
 
 #: ../src/gpx-viewer.c:141
 msgid "Miles"
-msgstr ""
+msgstr "Мили"
 
 #: ../src/gpx-viewer.c:143
 msgid "km"
-msgstr ""
+msgstr "километры"
 
 #: ../src/gpx-viewer.c:147
 msgid "Miles/h"
-msgstr ""
+msgstr "миль/час"
 
 #: ../src/gpx-viewer.c:149
 msgid "km/h"
-msgstr ""
+msgstr "км/ч"
 
 #. TODO:
 #: ../src/gpx-viewer.c:154
 msgid "ft"
-msgstr ""
+msgstr "футов"
 
 #: ../src/gpx-viewer.c:156
 msgid "m"
-msgstr ""
+msgstr "метров"
 
 #. TODO:
 #: ../src/gpx-viewer.c:161
 msgid "ft/s²"
-msgstr ""
+msgstr "фут/с²"
 
 #: ../src/gpx-viewer.c:163
 msgid "m/s²"
-msgstr ""
+msgstr "м/с²"
 
 #: ../src/gpx-viewer.c:167 ../src/gpx-viewer.c:367 ../src/gpx-viewer.c:382
 #: ../src/gpx-viewer.c:398 ../src/gpx-viewer.c:438 ../src/gpx-viewer.c:521
@@ -66,7 +66,7 @@ msgstr "Простая программа для визуализации одн
 
 #: ../src/gpx-viewer.c:305
 msgid "About GPX Viewer"
-msgstr "О GPX Viewer"
+msgstr "Про GPX Viewer"
 
 #: ../src/gpx-viewer.c:322
 msgid "hour"
@@ -91,7 +91,7 @@ msgstr[2] "секунд"
 
 #: ../src/gpx-viewer.c:1090
 msgid "Combined track"
-msgstr ""
+msgstr "Составной путь"
 
 #: ../src/gpx-viewer.c:1220
 msgid "Loading map data.."
@@ -99,7 +99,7 @@ msgstr "Загрузка данных карты..."
 
 #: ../src/gpx-viewer.c:1363
 msgid "_Recent file"
-msgstr ""
+msgstr "_Последние Файлы"
 
 #: ../src/gpx-graph.c:1017 ../data/gpx-viewer.ui.h:20
 msgid "Speed"
@@ -124,7 +124,7 @@ msgstr ""
 #: ../src/gpx-graph.c:2853
 #, c-format
 msgid "%s <i>(smooth window: %i)</i>"
-msgstr ""
+msgstr "%s <i>(сглаженное окно: %i)</i>"
 
 #: ../data/gpx-viewer-file-chooser.ui.h:1
 msgid "Choose gpx file(s)"
@@ -163,19 +163,16 @@ msgid "<b>Max. speed:</b>"
 msgstr "<b>Макс. скорость:</b>"
 
 #: ../data/gpx-viewer.ui.h:8
-#, fuzzy
 msgid "<b>Elevation Diff.:</b>"
-msgstr "<b>Разница высот:</b>"
+msgstr "<b>Разница высот.:</b>"
 
 #: ../data/gpx-viewer.ui.h:9
-#, fuzzy
 msgid "<b>Acc. Elevation Up:</b>"
-msgstr "<b>Разница высот:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:10
-#, fuzzy
 msgid "<b>Acc. Elevation Down:</b>"
-msgstr "<b>Разница высот:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:11
 msgid "<b>Gradient:</b>"
@@ -183,27 +180,23 @@ msgstr "<b>Градиент:</b>"
 
 #: ../data/gpx-viewer.ui.h:12
 msgid "<b>Playback:</b>"
-msgstr ""
+msgstr "<b>Воспроизведение:</b>"
 
 #: ../data/gpx-viewer.ui.h:13
-#, fuzzy
 msgid "<b>Start time:</b>"
-msgstr "<b>Время движения:</b>"
+msgstr "<b>Время начала:</b>"
 
 #: ../data/gpx-viewer.ui.h:14
-#, fuzzy
 msgid "<b>Stop time:</b>"
-msgstr "<b>Время движения:</b>"
+msgstr "<b>время остановки:</b>"
 
 #: ../data/gpx-viewer.ui.h:15
-#, fuzzy
 msgid "<b>Average heart-rate:</b>"
-msgstr "<b>Средняя:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:16
-#, fuzzy
 msgid "<b>Calories estimation:</b>"
-msgstr "<b>Длительность:</b>"
+msgstr ""
 
 #: ../data/gpx-viewer.ui.h:17 ../data/gpx-viewer.desktop.in.h:1
 msgid "GPX Viewer"
@@ -215,7 +208,7 @@ msgstr "_Файл"
 
 #: ../data/gpx-viewer.ui.h:19
 msgid "_Graph"
-msgstr ""
+msgstr "_Графики"
 
 #: ../data/gpx-viewer.ui.h:23
 msgid "Vertical Speed"
@@ -231,11 +224,11 @@ msgstr ""
 
 #: ../data/gpx-viewer.ui.h:26
 msgid "_View"
-msgstr ""
+msgstr "_Вид"
 
 #: ../data/gpx-viewer.ui.h:27
 msgid "Show track list"
-msgstr ""
+msgstr "Показать список треков"
 
 #: ../data/gpx-viewer.ui.h:28
 msgid "Toggle file list"
@@ -251,7 +244,7 @@ msgstr ""
 
 #: ../data/gpx-viewer.ui.h:31
 msgid "_Help"
-msgstr ""
+msgstr "_Справка"
 
 #: ../data/gpx-viewer.ui.h:32
 msgid "<b>Map:</b>"
@@ -259,53 +252,16 @@ msgstr "<b>Карта:</b>"
 
 #: ../data/gpx-viewer.ui.h:33
 msgid "<b>Zoom level:</b>"
-msgstr ""
+msgstr "<b> Масштаб: </ B>"
 
 #: ../data/gpx-viewer.ui.h:34
 msgid "<b>Show waypoints:</b>"
-msgstr ""
+msgstr "<b>Показать пути:</b>"
 
 #: ../data/gpx-viewer.ui.h:35
 msgid "<b>Smooth factor:</b>"
-msgstr ""
+msgstr "<b>Коэффициент сглаживания:</b>"
 
 #: ../data/gpx-viewer.ui.h:36
 msgid "<b>Show points:</b>"
-msgstr ""
-
-#~ msgid "[FILE...] - GPX Viewer"
-#~ msgstr "[FILE...] - GPX Viewer"
-
-#~ msgid "Website: "
-#~ msgstr "Сайт: "
-
-#~ msgid "Speed (km/h) vs Time (HH:MM)"
-#~ msgstr "Скорость (км/ч)  от времени (ЧЧ:ММ)"
-
-#~ msgid "Elevation (m) vs Time (HH:MM)"
-#~ msgstr "Высота (м) и Время (ЧЧ:ММ)"
-
-#~ msgid "Distance (km) vs Time (HH:MM)"
-#~ msgstr "Дистанция (км) и Время (ЧЧ:ММ)"
-
-#~ msgid "Horizontal acceleration (m/s) vs Time (HH:MM)"
-#~ msgstr "Горизонтальное ускорение (м/с) и Время (ЧЧ:ММ)"
-
-#~ msgid "Vertical speed (m/s) vs Time (HH:MM)"
-#~ msgstr "Вертикальная скорость (м/с) и Время (ЧЧ:ММ)"
-
-#~ msgid "Website: http://blog.sarine.nl/gpx-viewer"
-#~ msgstr "Вебсайт: http://blog.sarine.nl/gpx-viewer"
-
-#~ msgid "Show Waypoints"
-#~ msgstr "Показать путевые точки"
-
-#~ msgid "Change the zoom level of the map."
-#~ msgstr "Изменить масштаб карты."
-
-#~ msgid "Change the smoothing factor used when plotting the speed graph."
-#~ msgstr ""
-#~ "Изменить фактор сглаживания используемый при построении графика скорости."
-
-#~ msgid "Show"
-#~ msgstr "Показать"
+msgstr "<b>Показать точки:</b>"
