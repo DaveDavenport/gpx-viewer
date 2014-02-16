@@ -399,7 +399,7 @@ namespace Gpx
             layout.get_pixel_size(out wt, out ht);
 			step_size = graph_height/(Math.ceil(graph_height/(ht+10)/5)*5);
 			/* Draw horizontal lines + labels */
-			for(j=0;j<=graph_height;j+=step_size){
+			for(j=0;j<=(graph_height+1);j+=step_size){
 				double speed = min_value + (range)*((graph_height-j)/graph_height);
 				var text = "%.1f".printf(speed);
 				int w,h;
