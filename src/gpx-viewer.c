@@ -1062,6 +1062,16 @@ void show_heartrate(GtkMenuItem *item, gpointer user_data)
         gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_HEARTRATE);
     }
 }
+void show_cadence(GtkMenuItem *item, gpointer user_data)
+{
+	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(user_data);	
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_CADENCE)
+    {
+        g_debug("switch to cadence\n");
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_CADENCE);
+    }
+}
+
 
 
 

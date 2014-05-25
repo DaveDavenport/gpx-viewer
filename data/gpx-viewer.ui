@@ -756,6 +756,17 @@
                         <signal name="activate" handler="show_heartrate" swapped="no"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_cadence">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Cadence</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_cadence" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

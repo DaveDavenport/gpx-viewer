@@ -289,6 +289,20 @@ namespace Gpx
                             p.tpe.heartrate = (int)val;
                         }
                         break;
+                    case 4:
+                        // Cadence.
+                        uint32 val = parse_field(field, fs);
+                        if ( val != 0xFF ) {
+                            p.cadence = val;
+                        }
+                        break;
+                    case 18:
+                        // Cycles
+                        uint32 val = parse_field(field, fs);
+                        if ( val != 0xFF ) {
+                            stdout.printf("Cycles: %u\n", val);
+                        }
+                        break;
                     default:
                         fs.skip(field.size);
                         data_length-=field.size;

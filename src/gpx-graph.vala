@@ -39,6 +39,7 @@ namespace Gpx
 			ACCELERATION_H,
 			SPEED_V,
             HEARTRATE,
+            CADENCE,
 			NUM_GRAPH_MODES
 		}
 		/* Privates */
@@ -48,7 +49,8 @@ namespace Gpx
 			N_("Absolute Distance (km) vs Time (HH:MM)"),
 			N_("Horizontal acceleration (m/s²) vs Time (HH:MM)"),
 			N_("Vertical speed (m/s) vs Time (HH:MM)"),
-            N_("Heart-rate (bpm) vs Time (HH:MM)")
+            N_("Heart-rate (bpm) vs Time (HH:MM)"),
+            N_("Cadence (rpm) vs Time (HH:MM)")
 		};
 		static string[] GraphModeMiles = {
 			N_("Speed (Miles/h) vs Time (HH:MM)"),
@@ -56,7 +58,8 @@ namespace Gpx
 			N_("Distance (Miles) vs Time (HH:MM)"),
 			N_("Horizontal acceleration (Miles/s²) vs Time (HH:MM)"),
 			N_("Vertical speed (feet/s) vs Time (HH:MM)"),
-            N_("Heart-rate (bpm) vs Time (HH:MM)")
+            N_("Heart-rate (bpm) vs Time (HH:MM)"),
+            N_("Cadence (rpm) vs Time (HH:MM)")
 		};
 
 		private bool _do_miles = false;
@@ -346,6 +349,7 @@ namespace Gpx
                     if(f.tpe.heartrate > 0) {
                         text += "\n"+_("Heart-rate")+": "+"%d".printf(this.draw_current.tpe.heartrate)+_("(bpm)");
                     }
+                    text += "\n"+_("Cadence")+":\t"+"%u rpm".printf(this.draw_current.cadence);
 
 					fd.set_absolute_size(12*1024);
 					layout.set_font_description(fd);
@@ -496,8 +500,10 @@ namespace Gpx
 				value = (ii.data.elevation- ii.prev.data.elevation)/(3.6*(ii.data.get_time()-ii.prev.data.get_time()));
 			}else if (this._mode == GraphMode.HEARTRATE)  {
                  value = ii.data.tpe.heartrate;
+            }else if (this._mode == GraphMode.CADENCE) {
+                 value = ii.data.cadence;
             }
-			return value;
+            return value;
 		}
 		private double calculate_graph_point_smooth_value(List<Point?> iter)
 		{
@@ -587,6 +593,16 @@ namespace Gpx
 					max_value = (speed > max_value )?speed:max_value;
 					iter = iter.next;
 				}
+            }else if (this.mode == GraphMode.CADENCE) {
+                max_value = 0.0;
+				weak List<Point?> iter = this.track.points.first();
+				while(iter.next != null)
+				{
+					weak List<Point?> ii = iter.next;
+					max_value = (ii.data.cadence > max_value )?ii.data.cadence:max_value;
+					iter = iter.next;
+				}
+
             }
 			max_value = GLib.Math.ceil(max_value);
 

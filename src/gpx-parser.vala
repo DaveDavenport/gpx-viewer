@@ -57,6 +57,8 @@ namespace Gpx
 
         private time_t utime  = 0;
 
+        public uint32 cadence = 0;
+
 
         public HeartRateMonitorPoint tpe = HeartRateMonitorPoint() {
             heartrate = 0
