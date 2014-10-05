@@ -1379,6 +1379,8 @@ static void create_interface(GtkApplication *gtk_app)
 
     // Filter based on the added Mime type.
     gtk_recent_filter_add_mime_type(GTK_RECENT_FILTER(grf), "application/gpx+xml");
+    gtk_recent_filter_add_mime_type(GTK_RECENT_FILTER(grf), "application/vnd.ant.fit");
+
     gtk_recent_chooser_add_filter(GTK_RECENT_CHOOSER(rc),grf);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), rc);
 
