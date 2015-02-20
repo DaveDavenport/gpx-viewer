@@ -63,6 +63,7 @@ gpx_viewer_SOURCES=\
     src/gpx-settings.vala\
     src/gpx-viewer-mapwidget.vala\
 	src/gpx-viewer-path-layer.c\
+	src/Graph.vala\
 	src/gpx-viewer.c
 
 
