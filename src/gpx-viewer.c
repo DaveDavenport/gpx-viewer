@@ -697,7 +697,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
                 graph_graph_add_data_set(priv->gpx_graph2->graph, gds_el);
                 graph_data_set_line_set_dots(gdsb, FALSE);
 
-                GraphDataSetLine *gdsla = graph_data_set_average_new(GPX_TYPE_POINT, gpx_point_copy, gpx_point_unref, gdsl);
+                GraphDataSet *gdsla = graph_data_set_average_new(GPX_TYPE_POINT, gpx_point_copy, gpx_point_unref, gdsl);
                 graph_graph_add_data_set(priv->gpx_graph2->graph, gdsla);
 //                gpx_graph_set_track(priv->gpx_graph2, priv->active_route->track);
             }
