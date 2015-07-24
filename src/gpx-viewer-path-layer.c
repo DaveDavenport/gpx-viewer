@@ -524,6 +524,7 @@ static gboolean redraw_path (GpxViewerPathLayer *layer)
 	cairo_set_line_width (cr, priv->stroke_width);
 	cairo_set_dash(cr, priv->dash, priv->num_dashes, 0);
 	cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+	cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 	for (elem = g_list_first(priv->track->points); elem != NULL; elem = elem->next)
 	{
 		GpxPoint *location = GPX_POINT (elem->data);
