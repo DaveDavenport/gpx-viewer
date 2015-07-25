@@ -72,7 +72,6 @@ typedef struct _GpxViewerPrivate {
 	GtkBuilder          *builder;
 	/* The graph */
 	GpxGraph            *gpx_graph;
-	GraphWidget            *gpx_graph2;
 
 	/* The Map view widget */
 	GtkWidget           *champlain_view;
@@ -80,8 +79,6 @@ typedef struct _GpxViewerPrivate {
 	GtkWidget        *dock_items[3];
 	GdlDockLayout    *dock_layout;
 
-    GdlDockLayout *dock_graphs_layout;
-	GtkWidget        *dock_graphs_items[3];
 	/* List of routes GList<Route> *routes */
 	GList *routes;
 
@@ -629,7 +626,6 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             gpx_playback_stop(priv->playback);
             /* Clear graph */
             gpx_graph_set_track(priv->gpx_graph, NULL);
-//            gpx_graph_set_track(priv->gpx_graph2, NULL);
             /* Hide graph */
 			/* if not visible hide track again */
 			if(!priv->active_route->visible) {
@@ -667,44 +663,10 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             if (gpx_track_get_total_time(priv->active_route->track) > 5)
             {
                 gpx_graph_set_track(priv->gpx_graph, priv->active_route->track);
-                GraphDataSet *gdsl = graph_data_set_area_new ( GPX_TYPE_POINT, gpx_point_copy,gpx_point_unref); 
-                graph_data_set_set_color(gdsl, 0.0, 0.3, 0.8);
-
-                GraphDataSet *gdsb = graph_data_set_line_new ( GPX_TYPE_POINT, gpx_point_copy,gpx_point_unref); 
-                graph_data_set_set_color(gdsb, 0.8, 0.3, 0.1);
-
-                GraphDataSet *gdsc = graph_data_set_area_new ( GPX_TYPE_POINT, gpx_point_copy, gpx_point_unref);
-                graph_data_set_set_color(gdsc, 0.1, 0.8, 0.1);
-
-                GraphDataSet *gds_el = graph_data_set_area_new ( GPX_TYPE_POINT, gpx_point_copy, gpx_point_unref);
-                graph_data_set_set_color(gds_el, 0.8, 0.8, 0.2);
-
-                GList *start = g_list_first(route->track->points);
-                for(const GList *iter = start; iter != NULL; iter = g_list_next (iter)) {
-                    GpxPoint *p = iter->data;
-                    double x = (gpx_point_get_time(p) - gpx_point_get_time(start->data));
-                    double y = p->speed;
-                    double e = p->tpe.heartrate; 
-                    graph_data_set_add_point_value(gdsl, x,y, p);
-                    graph_data_set_add_point_value(gdsb, x, e, p); 
-                    graph_data_set_add_point_value(gdsc, x, p->cadence, p); 
-                    graph_data_set_add_point_value(gds_el, x, p->elevation, p); 
-                }
-
-                graph_graph_add_data_set(priv->gpx_graph2->graph, gdsc);
-                graph_graph_add_data_set(priv->gpx_graph2->graph, gdsb);
-                graph_graph_add_data_set(priv->gpx_graph2->graph, gdsl);
-                graph_graph_add_data_set(priv->gpx_graph2->graph, gds_el);
-                graph_data_set_line_set_dots(gdsb, FALSE);
-
-                GraphDataSet *gdsla = graph_data_set_average_new(GPX_TYPE_POINT, gpx_point_copy, gpx_point_unref, gdsl);
-                graph_graph_add_data_set(priv->gpx_graph2->graph, gdsla);
-//                gpx_graph_set_track(priv->gpx_graph2, priv->active_route->track);
             }
             else
             {
                 gpx_graph_set_track(priv->gpx_graph, NULL);
-//                gpx_graph_set_track(priv->gpx_graph2, NULL);
             }
 
             if(route->stop){
@@ -722,7 +684,6 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
 	else
 	{
 		gpx_graph_set_track(priv->gpx_graph, NULL);
-//		gpx_graph_set_track(priv->gpx_graph2, NULL);
 	}
 }
 
@@ -1402,8 +1363,6 @@ static void create_interface(GtkApplication *gtk_app)
     GtkRecentFilter *grf;
 	GtkWidget *dock;
 
-    GtkWidget *dock_graphs = NULL;
-
     /* Open UI description file */
     priv->builder = gtk_builder_new();
     if (!gtk_builder_add_from_file(priv->builder, path, &error))
@@ -1458,47 +1417,8 @@ static void create_interface(GtkApplication *gtk_app)
     gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(priv->gpx_graph));
     gtk_widget_show(GTK_WIDGET(priv->gpx_graph));
     //gtk_widget_set_no_show_all(GTK_WIDGET(gpx_graph_container), TRUE);
-/*
-	graph_dock_item = gdl_dock_item_new("Graph", "Graph",
-				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
-				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
-				GDL_DOCK_ITEM_BEH_NEVER_FLOATING);
 
-	gtk_container_add(GTK_CONTAINER(graph_dock_item), GTK_WIDGET(gpx_graph_container));
-	gdl_dock_add_item(GDL_DOCK(dock), GDL_DOCK_ITEM(graph_dock_item), GDL_DOCK_BOTTOM);
-	gtk_widget_show_all(graph_dock_item);
-*/
-
-    dock_graphs = gdl_dock_new();
-    priv->dock_graphs_layout = gdl_dock_layout_new(G_OBJECT(dock_graphs));
-
-    priv->dock_graphs_items[0] = gdl_dock_item_new("Graph", "Graph", 
-				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
-				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
-				GDL_DOCK_ITEM_BEH_NEVER_FLOATING);
-	gtk_container_add(GTK_CONTAINER(priv->dock_graphs_items[0]), GTK_WIDGET(gpx_graph_container));
-	gdl_dock_add_item(GDL_DOCK(dock_graphs), GDL_DOCK_ITEM(priv->dock_graphs_items[0]), GDL_DOCK_CENTER);
-	gtk_widget_show_all(priv->dock_graphs_items[0]);
-    gtk_widget_show_all(dock_graphs);
-	gtk_paned_add2(GTK_PANED(gtk_builder_get_object(priv->builder, "main_vpane")),
-            GTK_WIDGET(dock_graphs));
-            //GTK_WIDGET(gpx_graph_container));
-
-    priv->gpx_graph2 = graph_widget_new(); 
-//    gpx_graph_set_mode(priv->gpx_graph2, GPX_GRAPH_GRAPH_MODE_SPEED);
-    gpx_graph_container = gtk_frame_new(NULL);
-    gtk_widget_set_size_request(gpx_graph_container, -1, 120);
-    gtk_frame_set_shadow_type(GTK_FRAME(gpx_graph_container), GTK_SHADOW_IN);
-    gtk_container_add(GTK_CONTAINER(gpx_graph_container), GTK_WIDGET(priv->gpx_graph2));
-    gtk_widget_show(GTK_WIDGET(priv->gpx_graph2));
-
-    priv->dock_graphs_items[1] = gdl_dock_item_new("Speed", "Speed", 
-				GDL_DOCK_ITEM_BEH_CANT_CLOSE|
-				GDL_DOCK_ITEM_BEH_CANT_ICONIFY|
-				GDL_DOCK_ITEM_BEH_NEVER_FLOATING);
-	gtk_container_add(GTK_CONTAINER(priv->dock_graphs_items[1]), GTK_WIDGET(gpx_graph_container));
-	gdl_dock_add_item(GDL_DOCK(dock_graphs), GDL_DOCK_ITEM(priv->dock_graphs_items[1]), GDL_DOCK_CENTER);
-	gtk_widget_show_all(priv->dock_graphs_items[1]);
+    gtk_paned_add2(GTK_PANED(gtk_builder_get_object(priv->builder, "main_vpane")), GTK_WIDGET(gpx_graph_container));
     /* show the interface */
     gtk_widget_show_all(GTK_WIDGET(gtk_builder_get_object(priv->builder, "gpx_viewer_window")));
 
