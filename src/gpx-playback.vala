@@ -37,7 +37,7 @@ namespace Gpx
         private Gpx.Track track =null;
         private uint timer = 0;
 //        private time_t progress = 0;
-        private weak List <weak Gpx.Point> current;
+        private weak List <Gpx.Point> current;
         private Gpx.Point first = null;
 
         public signal void tick(Gpx.Point? point);

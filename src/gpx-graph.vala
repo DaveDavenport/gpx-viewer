@@ -404,7 +404,7 @@ namespace Gpx
 			step_size = graph_height/(Math.ceil(graph_height/(ht+10)/5)*5);
 			/* Draw horizontal lines + labels */
 			for(j=0;j<=(graph_height+1);j+=step_size){
-				double speed = min_value + (range)*((graph_height-j)/graph_height);
+				double speed = min_value + range*((graph_height-j)/graph_height);
 				var text = "%.1f".printf(speed);
 				int w,h;
                 ctx.set_source_rgba(0.0, 0.0, 0.0, 1.0);

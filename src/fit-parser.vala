@@ -133,7 +133,7 @@ namespace Gpx
                     // Always data mesg.
                     definition_header = false;
 
-                    local_message_type = ((record_id)&0x60) >> 5;
+                    local_message_type = (record_id&0x60) >> 5;
 
                     // TODO: time offset
                 }
