@@ -1,6 +1,6 @@
 [Desktop Entry]
-_Name=GPX Viewer
-_Comment=A simple program to visualize one or more gpx files.
+Name=GPX Viewer
+Comment=A simple program to visualize one or more gpx files.
 Exec=gpx-viewer %U
 MimeType=application/gpx+xml;application/vnd.ant.fit;
 Terminal=false
