@@ -17,22 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdlib.h>
-#include <config.h>
-#include <time.h>
-#include <string.h>
-#include <gtk/gtk.h>
-#include <glib/gi18n.h>
-#include <champlain/champlain.h>
-#include <champlain-gtk/champlain-gtk.h>
-#include <clutter-gtk/clutter-gtk.h>
-
-
-#include <gdl/gdl.h>
 #include "gpx-viewer.h"
-#include "gpx.h"
-#include "gpx-viewer-path-layer.h"
-
 
 void dock_item_state_changed(GdlDockItem *dock_item,GParamSpec *sp, GtkWidget *menu_item);
 void view_menu_toggle_settings(GtkMenuItem *mitem, GpxViewer *gpx_viewer);
@@ -119,10 +104,6 @@ static void gpx_viewer_init (GpxViewer *app)
 
 }
 
-/* TODO get correct values */
-#define KM_IN_MILE 0.621371192
-#define M_IN_FEET 0.3048
-
 void gv_set_speed_label(GtkWidget *label, gdouble speed, SpeedFormat format)
 {
 	gchar *val = gpx_viewer_misc_convert(speed, (speed == 0)?NA:format);
@@ -130,46 +111,6 @@ void gv_set_speed_label(GtkWidget *label, gdouble speed, SpeedFormat format)
 	g_free(val);
 }
 
-gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format)
-{
-	gchar 		*retv	 = NULL;
-	/* TODO: Make config option? */
-	gboolean 	do_miles = FALSE;
-	switch(format)
-	{
-		case DISTANCE:
-			if(do_miles)
-				retv = g_strdup_printf( "% .2f %s", speed/KM_IN_MILE, _("Miles"));
-			else
-				retv = g_strdup_printf( "% .2f %s", speed, _("km"));
-			break;
-		case SPEED:
-			if(do_miles)
-				retv = g_strdup_printf( "% .2f %s", speed/KM_IN_MILE, _("Miles/h"));
-			else
-				retv = g_strdup_printf( "% .2f %s", speed, _("km/h"));
-			break;
-		case ELEVATION:
-			if(do_miles)
-				/* TODO: */
-				retv = g_strdup_printf( "% .2f %s", speed/M_IN_FEET, _("ft"));
-			else
-				retv = g_strdup_printf( "% .2f %s", speed, _("m"));
-			break;
-		case ACCEL:
-			if(do_miles)
-				/* TODO: */
-				retv = g_strdup_printf( "% .2f %s", speed/M_IN_FEET, _("ft/s²"));
-			else
-				retv = g_strdup_printf( "% .2f %s", speed, _("m/s²"));
-			break;
-		case NA:
-		default:
-			retv = g_strdup(_("n/a"));
-			break;
-	}
-	return retv;
-}
 /**
  * Dock loading/restoring
  */
@@ -1355,7 +1296,7 @@ static void create_interface(GtkApplication *gtk_app)
     double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
     GError *error = NULL;
     GtkWidget *sp = NULL;
-    gchar *path = g_build_filename(DATA_DIR, "gpx-viewer.ui", NULL);
+    gchar *path = g_strconcat("/com/github/gpx-viewer/", "gpx-viewer.ui", NULL);
     GtkTreeSelection *selection;
     GtkWidget *sw,*item,*rc;
     int current;
@@ -1365,7 +1306,7 @@ static void create_interface(GtkApplication *gtk_app)
 
     /* Open UI description file */
     priv->builder = gtk_builder_new();
-    if (!gtk_builder_add_from_file(priv->builder, path, &error))
+    if (!gtk_builder_add_from_resource(priv->builder, path, &error))
     {
         g_error("Failed to create ui: %s\n", error->message);
     }
@@ -1656,8 +1597,8 @@ void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer)
     GtkWidget *dialog;
     GtkBuilder *fbuilder = gtk_builder_new();
     /* Show dialog */
-    gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-file-chooser.ui", NULL);
-    if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+    gchar *path = g_strconcat("/com/github/gpx-viewer/", "gpx-viewer-file-chooser.ui", NULL);
+    if (!gtk_builder_add_from_resource(fbuilder, path, NULL))
     {
         g_error("Failed to load gpx-viewer.ui");
     }
@@ -1960,8 +1901,8 @@ void show_current_track(GtkWidget *menu_item, gpointer user_data)
 		GtkTreeModel *model = (GtkTreeModel *)gpx_track_tree_model_new(priv->active_route->track);
 		GtkBuilder *fbuilder = gtk_builder_new();
 		/* Show dialog */
-		gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-tracklist.ui", NULL);
-		if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+		gchar *path = g_strconcat("/com/github/gpx-viewer/", "gpx-viewer-tracklist.ui", NULL);
+		if (!gtk_builder_add_from_resource(fbuilder, path, NULL))
 		{
 			g_error("Failed to load gpx-viewer.ui");
 		}
@@ -2007,8 +1948,8 @@ void gpx_viewer_show_preferences_dialog(GtkWidget *menu_item, gpointer user_data
 	GtkWidget *widget;
 	GtkBuilder *fbuilder = gtk_builder_new();
 	/* Show dialog */
-	gchar *path = g_build_filename(DATA_DIR, "gpx-viewer-preferences.ui", NULL);
-	if (!gtk_builder_add_from_file(fbuilder, path, NULL))
+	gchar *path = g_strconcat("/com/github/gpx-viewer/", "gpx-viewer-preferences.ui", NULL);
+	if (!gtk_builder_add_from_resource(fbuilder, path, NULL))
 	{
 		g_error("Failed to load gpx-viewer-preferences.ui");
 	}

@@ -1,0 +1,11 @@
+#ifndef H_CONFIG_H
+#define H_CONFIG_H
+
+#define PACKAGE "@package@"
+#define DATA_DIR "@datadir@"
+#define LOCALEDIR "@localedir@"
+#define PACKAGE_NAME "@package_name@"
+#define PACKAGE_URL "@package_url@"
+#define VERSION "@version@"
+
+#endif

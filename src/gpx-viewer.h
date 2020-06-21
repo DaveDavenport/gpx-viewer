@@ -1,6 +1,22 @@
 #ifndef __GPX_VIEWER_H__
 #define __GPX_VIEWER_H__
 
+#include <stdlib.h>
+#include <config.h>
+#include <time.h>
+#include <string.h>
+#include <locale.h>
+#include <gtk/gtk.h>
+#include <glib/gi18n.h>
+#include <champlain/champlain.h>
+#include <champlain-gtk/champlain-gtk.h>
+#include <clutter-gtk/clutter-gtk.h>
+
+#include <gdl/gdl.h>
+#include "gpx.h"
+#include "gpx-viewer-path-layer.h"
+
+
 typedef GtkApplication 		GpxViewer;
 typedef GtkApplicationClass GpxViewerClass;
 
@@ -37,18 +53,6 @@ void gpx_viewer_show_preferences_dialog(GtkWidget *menu_item, gpointer user_data
 void show_vertical_speed(GtkMenuItem *item, gpointer user_data);
 void show_acceleration_h(GtkMenuItem *item, gpointer user_data);
 void show_heartrate(GtkMenuItem *item, gpointer user_data);
-
-enum _SpeedFormat
-{
-	DISTANCE,
-	SPEED,
-	ELEVATION,
-	ACCEL,
-	NA
-};
-typedef enum _SpeedFormat SpeedFormat;
-
-gchar * gpx_viewer_misc_convert(gdouble speed, SpeedFormat format);
 
 void gv_set_speed_label(GtkWidget *label, gdouble speed, SpeedFormat format);
 void show_waypoints_layer_toggled_cb(GtkSwitch * button, GParamSpec *spec,gpointer user_data);
