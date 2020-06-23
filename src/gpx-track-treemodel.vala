@@ -17,11 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-using Gtk;
-using GLib;
-using Xml;
-using Config;
-
 namespace Gpx
 {
     public class TrackTreeModel :  GLib.Object, Gtk.TreeModel
@@ -81,7 +76,7 @@ namespace Gpx
             assert (iter.user_data != null);
             Point p = iter.user_data as Gpx.Point;
 
-            TreePath path = new TreePath();
+            Gtk.TreePath path = new Gtk.TreePath();
             int pos = this.track.points.index (p);
             assert (pos != -1);
             path.append_index (pos);
@@ -138,7 +133,7 @@ namespace Gpx
             }
         }
         public Gtk.TreeModelFlags get_flags (){
-                Gtk.TreeModelFlags flags = TreeModelFlags.LIST_ONLY | TreeModelFlags.ITERS_PERSIST;
+                Gtk.TreeModelFlags flags = Gtk.TreeModelFlags.LIST_ONLY | Gtk.TreeModelFlags.ITERS_PERSIST;
                 return flags;
         }
         /**

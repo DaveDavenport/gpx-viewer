@@ -17,16 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-using Gtk;
-using Gpx;
-using Gpx.Viewer;
-using GLib;
-using Config;
-
-static const string LOG_DOMAIN="GPX_GRAPH";
-static const string unique_graph = Config.VERSION;
 namespace Gpx
 {
+	const string LOG_DOMAIN = "GPX_GRAPH";
+
 	public class Graph: Gtk.EventBox
 	{
 		/* Public */

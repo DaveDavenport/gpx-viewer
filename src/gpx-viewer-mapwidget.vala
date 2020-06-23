@@ -16,10 +16,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-using Champlain;
-using GtkChamplain;
-using Gtk;
-using GLib;
 
 namespace Gpx
 {
@@ -122,7 +118,7 @@ namespace Gpx
 				}
 			}
 
-			public void add_marker(Marker marker)
+			public void add_marker(Champlain.Marker marker)
 			{
 				marker_layer.add_marker(marker);
 			}
@@ -162,7 +158,7 @@ namespace Gpx
 				/* Create a ListStore with all the available maps. Used for selectors */
 				var fact = Champlain.MapSourceFactory.dup_default();
 				var l = fact.get_registered();
-				foreach(weak MapSourceDesc a in l)
+				foreach(weak Champlain.MapSourceDesc a in l)
 				{
 					Gtk.TreeIter iter;
 					/* If no map set, pick the first one */

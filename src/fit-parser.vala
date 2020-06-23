@@ -17,13 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-using GLib;
-const int MAX_LOCAL_DEFINITIONS = 16;
-
 namespace Gpx
 {
     public class FitFile : Gpx.FileBase
     {
+        const int MAX_LOCAL_DEFINITIONS = 16;
+
         private Gpx.Track track = null;
         private uint32 data_length = 0;
 

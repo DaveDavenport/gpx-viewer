@@ -17,15 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-using Gtk;
-using Gpx;
-using GLib;
-using Config;
-
-static const string GT_LOG_DOMAIN="GPX_PLAYBACK";
-static const string gt_unique_graph = Config.VERSION;
 namespace Gpx
 {
+    const string GT_LOG_DOMAIN = "GPX_PLAYBACK";
+
     public class Playback : GLib.Object
     {
         public enum State {

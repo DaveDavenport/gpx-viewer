@@ -17,10 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-using Gtk;
-using GLib;
-using Config;
-
 namespace Gpx
 {
     namespace Viewer
@@ -28,7 +24,8 @@ namespace Gpx
         public class Settings : GLib.Object
         {
             /* The log domain */
-            static string LOG_DOMAIN = "Gpx.Viewer.Settings";
+            const string LOG_DOMAIN = "Gpx.Viewer.Settings";
+
             /* The keyfile holding the values */
             private GLib.KeyFile keyfile = new GLib.KeyFile();
 
