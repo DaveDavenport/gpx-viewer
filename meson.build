@@ -55,6 +55,7 @@ libgpx = static_library(
 	'src/gpx-settings.vala',
 	'src/gpx-track-treemodel.vala',
 	'src/gpx-viewer-mapwidget.vala',
+	'src/gpx-viewer-path-layer.vala',
 	dependencies: gpx_deps,
 )
 
@@ -69,8 +70,6 @@ executable(
 	resources,
 	'src/gpx-viewer.c',
 	'src/gpx-viewer.h',
-	'src/gpx-viewer-path-layer.c',
-	'src/gpx-viewer-path-layer.h',
 	dependencies: libgpx_dep,
 	install : true,
 )
