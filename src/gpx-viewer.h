@@ -14,7 +14,6 @@
 
 #include <gdl/gdl.h>
 #include "gpx.h"
-#include "gpx-viewer-path-layer.h"
 
 
 typedef GtkApplication 		GpxViewer;
