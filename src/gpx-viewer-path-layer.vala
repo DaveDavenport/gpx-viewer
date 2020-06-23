@@ -253,7 +253,7 @@ namespace Gpx.Viewer
 		ulong view_relocate_handler_id = 0U;
 		ulong view_latitude_handler_id = 0U;
 
-		public override void set_view (Champlain.View? view)
+		public override void set_view (Champlain.View view)
 		{
 			if (this.view != null) {
 				this.view.disconnect (view_relocate_handler_id);

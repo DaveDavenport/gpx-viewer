@@ -13,6 +13,9 @@ vapi_dir = join_paths(meson.current_source_dir(), 'vapi')
 add_project_arguments(['--vapidir', vapi_dir, '--pkg', 'config', '--use-header'], language: 'vala')
 add_project_arguments(['--include', 'config.h'], language: 'c')
 
+# https://gitlab.gnome.org/GNOME/libchamplain/-/merge_requests/11
+add_project_arguments(['--disable-assert'], language: 'vala')
+
 config_data = configuration_data()
 config_data.set('package', meson.project_name())
 config_data.set('package_name', 'GPX Viewer')
