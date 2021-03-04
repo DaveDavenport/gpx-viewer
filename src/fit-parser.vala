@@ -176,7 +176,7 @@ namespace Gpx
             def.fields = new FieldDefinitionHeader[num_fields];
             for ( uint8 field =0; field < num_fields; field++) {
                 FieldDefinitionHeader *header;
-                uint8[sizeof(FieldDefinitionHeader)] temp = new uint8[sizeof(FieldDefinitionHeader)];
+                uint8[] temp = new uint8[sizeof(FieldDefinitionHeader)];
                 fs.read(temp);
                 header = (FieldDefinitionHeader*)(&temp[0]);
                 def.fields[field] = *header;
@@ -394,7 +394,7 @@ namespace Gpx
                 data_length = (uint32)fs.read_uint32();
 
                 // 12
-                uint8[4] signature = { 0,0,0,0};
+                uint8[] signature = { 0,0,0,0};
                 var size = fs.read(signature);
                 if ( size == 4 ) {
                     if ( !(signature[0] == '.' && signature[1] == 'F' &&
