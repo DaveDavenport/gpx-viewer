@@ -105,11 +105,15 @@ namespace Gpx
             this.lon = (2*GLib.Math.PI*lon)/360.0;
         }
         /* Get the unix time. (calculated on first request, then cached ) */
+        public void set_utime ( time_t ut )
+        {
+            this.utime = ut;
+        }
         public time_t get_time()
         {
-            if(this.time == null) return 0;
             if(this.utime > 0)
                 return this.utime;
+            if(this.time == null) return 0;
             Time ta = Time();
             ta.strptime(this.time, "%FT%T%z");
             this.utime = ta.mktime();
@@ -649,6 +653,10 @@ namespace Gpx
             // Test if gpx file.
             if(path.get_uri().has_suffix("gpx")) {
                 return new Gpx.XmlFile(path);
+            } 
+            // Test if gpx file.
+            if(path.get_uri().has_suffix("json")) {
+                return new Gpx.JsonFile(path);
             } 
             // Try, FIT first, it detects header. 
             FileBase f = new Gpx.FitFile(path);

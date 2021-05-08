@@ -54,6 +54,7 @@ libgpx = static_library(
 	'src/gpx-graph.vala',
 	'src/gpx-parser.vala',
 	'src/gpx-parser-xml.vala',
+	'src/gpx-parser-json.vala',
 	'src/gpx-playback.vala',
 	'src/gpx-settings.vala',
 	'src/gpx-track-treemodel.vala',

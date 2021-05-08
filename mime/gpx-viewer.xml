@@ -8,4 +8,8 @@
      <comment xml:lang="en">ANT+ FIT</comment>
      <glob pattern="*.fit"/>
   </mime-type>
+  <mime-type type="application/json">
+     <comment xml:lang="en">json</comment>
+     <glob pattern="*.json"/>
+  </mime-type>
 </mime-info>

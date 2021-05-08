@@ -1321,6 +1321,7 @@ static void create_interface(GtkApplication *gtk_app)
 
     // Filter based on the added Mime type.
     gtk_recent_filter_add_mime_type(GTK_RECENT_FILTER(grf), "application/gpx+xml");
+    gtk_recent_filter_add_mime_type(GTK_RECENT_FILTER(grf), "application/json");
     gtk_recent_filter_add_mime_type(GTK_RECENT_FILTER(grf), "application/vnd.ant.fit");
 
     gtk_recent_chooser_add_filter(GTK_RECENT_CHOOSER(rc),grf);
@@ -1618,6 +1619,7 @@ void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer)
             (GtkFileFilter *) gtk_builder_get_object(fbuilder, "gpx_viewer_file_chooser_filter");
         gtk_file_filter_add_pattern(filter, "*.gpx");
         gtk_file_filter_add_pattern(filter, "*.fit");
+        gtk_file_filter_add_pattern(filter, "*.json");
 
     }
     switch (gtk_dialog_run(GTK_DIALOG(dialog)))

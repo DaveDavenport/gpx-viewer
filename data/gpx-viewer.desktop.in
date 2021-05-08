@@ -2,7 +2,7 @@
 Name=GPX Viewer
 Comment=A simple program to visualize one or more gpx files.
 Exec=gpx-viewer %U
-MimeType=application/gpx+xml;application/vnd.ant.fit;
+MimeType=application/gpx+xml;application/vnd.ant.fit;application/json
 Terminal=false
 Type=Application
 Icon=gpx-viewer
