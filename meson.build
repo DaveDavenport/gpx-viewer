@@ -47,36 +47,7 @@ gpx_deps = [
 	meson.get_compiler('c').find_library('m'),
 ]
 
-libgpx = static_library(
-	'gpx',
-	'src/fit-parser.vala',
-	'src/gpx-convert.vala',
-	'src/gpx-graph.vala',
-	'src/gpx-parser.vala',
-	'src/gpx-parser-xml.vala',
-	'src/gpx-parser-json.vala',
-	'src/gpx-playback.vala',
-	'src/gpx-settings.vala',
-	'src/gpx-track-treemodel.vala',
-	'src/gpx-viewer-mapwidget.vala',
-	'src/gpx-viewer-path-layer.vala',
-	dependencies: gpx_deps,
-)
-
-libgpx_dep = declare_dependency(
-    link_with: libgpx,
-    include_directories: include_directories('.'),
-    dependencies : [ gpx_deps ],
-)
-
-executable(
-	meson.project_name(),
-	resources,
-	'src/gpx-viewer.c',
-	'src/gpx-viewer.h',
-	dependencies: libgpx_dep,
-	install : true,
-)
+subdir('src')
 
 install_data(
 	'mime' / 'gpx-viewer.xml',
