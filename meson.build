@@ -47,6 +47,7 @@ gpx_deps = [
 	meson.get_compiler('c').find_library('m'),
 ]
 
+subdir('libgpx')
 subdir('src')
 
 install_data(
