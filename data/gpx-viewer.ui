@@ -860,10 +860,10 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHPaned" id="main_hpane">
+          <object class="GtkPaned" id="main_hpane">
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkHBox" id="main_view_hpane">
+              <object class="GtkBox" id="main_view_hpane">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
 		<property name="width-request">350</property>
@@ -874,8 +874,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkVPaned" id="main_vpane">
+              <object class="GtkPaned" id="main_vpane">
                 <property name="can_focus">False</property>
+                <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
                 <child>
                   <object class="GtkFrame" id="map_frame">
                     <property name="visible">True</property>
