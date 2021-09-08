@@ -33,3 +33,8 @@ desktop_file = i18n.merge_file(
 	po_dir: meson.source_root() / 'po',
 	type: 'desktop'
 )
+
+install_data(
+	'gpx-viewer.metainfo.xml',
+	install_dir: get_option('datadir') / 'metainfo',
+)
