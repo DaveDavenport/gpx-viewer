@@ -1,4 +1,4 @@
-icon_sizes = ['16', '22', '24', '32', '48', '256']
+icon_sizes = ['16', '22', '24', '32', '48', '128', '256']
 foreach i : icon_sizes
 	install_data(
 		'icons' / i + 'x' + i / 'apps' / 'gpx-viewer.png',
