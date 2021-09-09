@@ -1,0 +1,61 @@
+# 0.4.0
+
+- Add metadata info
+- Add 128 icon
+- Add flatpak manifest
+- correct blog url
+- Do not allow to shrink
+- Update deprecated components
+- add json format used internally
+- Preserve compatiblity with libchamplain <= 1.12.20
+- Move Gpx.Viewer.PathLayer to vala
+- Drop autotools build support
+- Build with meson
+- Set joins of path line to round, to avoid glitches on the map
+- Update copyright.
+- removed invalid property in ui-files that caused the program to crash
+- Add support for Cadence.
+- Bump to version 0.4
+- Don't draw anything if range is zero.
+- Small fix to accell.
+- Small fix, with no time elapsed for vertical speed.
+- Add support for laps in fit format and calories from fit file. (instead of wrong calculations).
+- Add FIT as mime type.
+- Add calories.. (seems to be severe over estimation.)
+- Do not take stop into account when calculating avg heartrate.
+- Show heartrate in states.
+- Fix wrong position of markers with libchamplain >= 0.12.4
+
+# 0.3.0
+
+- Install application/gpx+xml  mime type for *.gpx files.
+- Update recentmanager to use this mime type for recent files.
+- Call update-desktop-database on install/uninstall.
+- Merge the GTK3 branch into master.
+- Small cleanups.
+- Port to GTK3
+- Port to libchamplain 0.12
+- Track now has height-colors.
+- Tracks are clickable. clicking on atrack will highlight that point in the graph.
+- Use GtkApplication instead of Unique.
+- Stopped detection on tracks. (points detected as stopped are highlighted red.)
+- Filter out points that are a linear continuation. (should make for less complex tracks, so improved performance)
+- etc..
+
+# 0.2.0
+
+- Updated translations
+- Fix for bug 448392
+- Treeview for switching tracks.
+- Improved Playback
+- Display number of points and average speed in tracklist.
+- Add point list view.
+- Add acceleration, elevation speed, etc. graph.
+- Add recent file support
+- Show scale in graph.
+- Add map-type selector.
+- Add dock’s and allow them to be moved.
+- Indicator that the map is loading data.
+- Preferences backend with signal hooks.
+- Unique app support.
+
