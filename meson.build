@@ -1,7 +1,7 @@
 project(
 	'gpx-viewer',
 	'vala', 'c',
-	version: '0.4.0'
+	version: '0.5.0'
 )
 
 gnome = import('gnome')
