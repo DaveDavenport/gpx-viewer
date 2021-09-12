@@ -194,7 +194,9 @@ namespace Gpx
 
 			private bool button_press_callback(Clutter.ButtonEvent event)
 			{
-				if(event.button == 3) 
+				var default_modifiers = Gtk.accelerator_get_default_mod_mask ();
+				if(event.button == Gdk.BUTTON_PRIMARY &&
+				   (event.modifier_state & Clutter.ModifierType.CONTROL_MASK) == Clutter.ModifierType.CONTROL_MASK)
 				{
 					double lat,lon;
 					lat = view.y_to_latitude (event.y);
