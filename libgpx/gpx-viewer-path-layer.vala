@@ -94,6 +94,9 @@ namespace Gpx.Viewer
 		public Gpx.Track track {
 			set {
 				_track = value;
+				_track.point_removed.connect(() => {
+					schedule_redraw ();
+				});
 				schedule_redraw ();
 			}
 		}

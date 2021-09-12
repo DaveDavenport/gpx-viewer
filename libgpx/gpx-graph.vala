@@ -234,6 +234,23 @@ namespace Gpx
 			}
 			return true;
 		}
+		public void remove_selected_point() {
+			if (this.selected != null) {
+			    var pos = this.track.points.index(selected);
+				var last = this.track.points.length() - 1;
+				if (pos == last) {
+					pos--;
+				}
+				this.track.remove_point(selected);
+				this.selected = this.track.points.nth_data(pos);
+				this.surf = null;
+				point_clicked(selected);
+
+				selection_changed(track, start != null ? start : track.points.first().data, stop != null ? stop :
+								  track.points.last().data);
+				queue_draw();
+			}
+		}
 		private bool button_press_event_cb(Gdk.EventButton event)
 		{
 			if(this.track == null) return true;
@@ -247,6 +264,15 @@ namespace Gpx
 					this.start = null;
 					this.selected = point;
 					point_clicked(point);
+					Gtk.Menu menu = new Gtk.Menu ();
+					menu.attach_to_widget (this, null);
+					Gtk.MenuItem menu_item = new Gtk.MenuItem.with_label ("Remove point");
+					menu_item.activate.connect(() => {
+						remove_selected_point();
+					});
+					menu.add (menu_item);
+					menu.show_all ();
+					menu.popup (null, null, null, event.button, event.time);
 				}
 			}
 			return true;
@@ -286,11 +312,11 @@ namespace Gpx
 			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null)
 			{
-				if(event.button == 1)
+				if(event.button == Gdk.BUTTON_PRIMARY)
 					this.stop = point;
 				else this.stop = null;
 				this.queue_draw();
-				if(event.button == 1)
+				if(event.button == Gdk.BUTTON_PRIMARY)
 				{
 					if(this.start != null && this.stop  != null)
 					{
