@@ -16,7 +16,7 @@
         "--socket=wayland",
         "--device=dri",
         "--share=network",
-        "--env=G_ENABLE_DIAGNOSTICS=1"
+        "--filesystem=home"
     ],
     "cleanup" : [
         "/include",
