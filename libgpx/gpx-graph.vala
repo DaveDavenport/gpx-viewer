@@ -190,8 +190,16 @@ namespace Gpx
 				time += iter.data.get_time();
 				while(iter.next != null)
 				{
-					if(time < iter.next.data.get_time() && (time == iter.data.get_time() ||
-								time > iter.data.get_time()))
+					var next_time = iter.next.data.get_time();
+					var cur_time = iter.data.get_time();
+					var mid_next_time = (cur_time + next_time) / 2;
+					var mid_prev_time = cur_time;
+
+					if (iter.prev != null) {
+						var prev_time = iter.prev.data.get_time();
+						mid_prev_time = (prev_time + cur_time) / 2;
+					}
+					if(time >= mid_prev_time && time <= mid_next_time)
 					{
 						return iter.data;
 					}
