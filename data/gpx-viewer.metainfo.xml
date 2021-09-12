@@ -17,8 +17,39 @@
       <image width="1440" height="855">https://blog.sarine.nl/wp-content/uploads/2012/07/gpx-viewer-path.png</image>
     </screenshot>
   </screenshots>
-
   <releases>
+    <release version="0.4" type="development" date="2021-09-09" urgency="medium">
+      <description>
+        <p>GPX-Viewer 0.4.0.</p>
+        <ul>
+          <li>Add metadata info</li>
+          <li>Add 128 icon</li>
+          <li>Add flatpak manifest</li>
+          <li>correct blog url</li>
+          <li>Do not allow to shrink</li>
+          <li>Update deprecated components</li>
+          <li>add json format used internally</li>
+          <li>Preserve compatiblity with libchamplain &lt;= 1.12.20</li>
+          <li>Move Gpx.Viewer.PathLayer to vala</li>
+          <li>Drop autotools build support</li>
+          <li>Build with meson</li>
+          <li>Set joins of path line to round, to avoid glitches on the map</li>
+          <li>Update copyright.</li>
+          <li>removed invalid property in ui-files that caused the program to crash</li>
+          <li>Add support for Cadence.</li>
+          <li>Bump to version 0.4</li>
+          <li>Don't draw anything if range is zero.</li>
+          <li>Small fix to accell.</li>
+          <li>Small fix, with no time elapsed for vertical speed.</li>
+          <li>Add support for laps in fit format and calories from fit file. (instead of wrong calculations).</li>
+          <li>Add FIT as mime type.</li>
+          <li>Add calories.. (seems to be severe over estimation.)</li>
+          <li>Do not take stop into account when calculating avg heartrate.</li>
+          <li>Show heartrate in states.</li>
+          <li>Fix wrong position of markers with libchamplain >= 0.12.4</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3" type="development" date="2012-07-22" urgency="medium">
       <description>
         <p>Just release GPX-Viewer 0.3.0.</p>
