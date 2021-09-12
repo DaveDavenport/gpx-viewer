@@ -26,6 +26,10 @@ namespace Gpx
 		/* Public */
 		/* Holds the track */
 		public Gpx.Track track = null;
+		private Gpx.Point start = null;
+		private Gpx.Point stop = null;
+		private Gpx.Point selected = null;
+
 		public enum  GraphMode {
 			SPEED,
 			ELEVATION,
@@ -213,10 +217,13 @@ namespace Gpx
 			if(this.track == null) return true;
 			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null) {
-				if(event.button == 1){
-					this.start = point;
-				}else{
+				if(event.button == Gdk.BUTTON_PRIMARY) {
 					this.start = null;
+					this.selected = point;
+					point_clicked(point);
+				} else if(event.button == Gdk.BUTTON_SECONDARY) {
+					this.start = null;
+					this.selected = point;
 					point_clicked(point);
 				}
 			}
@@ -226,11 +233,12 @@ namespace Gpx
 		private bool motion_notify_event_cb(Gdk.EventMotion event)
 		{
 			if(this.track == null) return true;
-			if(this.start == null) return true;
 
 			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null)
 			{
+				if (start == null)
+					this.start = point;
 				this.stop = point;
 				/* queue redraw so the selection is updated */
 				this.queue_draw();
@@ -285,8 +293,6 @@ namespace Gpx
 			this.surf = null;
 		}
 
-		private Gpx.Point start = null;
-		private Gpx.Point stop = null;
 		bool a_expose_event(Cairo.Context ctx)
 		{
 			//var ctx = Gdk.cairo_create(this.get_window());
