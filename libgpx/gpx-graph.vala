@@ -212,6 +212,28 @@ namespace Gpx
 			}
 			return null;
 		}
+		public bool select_next_point() {
+			if (this.selected == null) {
+				this.selected = this.track.points.first().data;
+			}
+			var pos = this.track.points.index(selected);
+			if (pos < this.track.points.length() - 1 ) {
+				this.selected = this.track.points.nth_data(pos + 1);
+				point_clicked(selected);
+			}
+			return true;
+		}
+		public bool select_prev_point() {
+			if (this.selected == null) {
+				this.selected = this.track.points.last().data;
+			}
+			var pos = this.track.points.index(selected);
+			if (pos > 0 ) {
+				this.selected = this.track.points.nth_data(pos - 1);
+				point_clicked(selected);
+			}
+			return true;
+		}
 		private bool button_press_event_cb(Gdk.EventButton event)
 		{
 			if(this.track == null) return true;

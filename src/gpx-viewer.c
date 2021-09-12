@@ -1297,6 +1297,44 @@ void dock_item_state_changed(GdlDockItem *dock_item,GParamSpec *sp, GtkWidget *m
     }
 } 
 
+static void
+prev_point_activated (GSimpleAction *action,
+                      GVariant      *parameter,
+                      gpointer       user_data)
+{
+	//TODO: Better emit a signal and allow other components to listen
+	GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
+	gpx_graph_select_prev_point(priv->gpx_graph);
+}
+
+static void
+next_point_activated (GSimpleAction *action,
+                      GVariant      *parameter,
+                      gpointer       user_data)
+{
+	//TODO: Better emit a signal and allow other components to listen
+	GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
+	gpx_graph_select_next_point(priv->gpx_graph);
+}
+
+static GActionEntry app_entries[] = {
+	{ "next-point", next_point_activated, NULL, NULL, NULL },
+	{ "prev-point", prev_point_activated, NULL, NULL, NULL },
+};
+
+static void
+add_accelerator (GtkApplication *app,
+                 const gchar    *action_name,
+                 const gchar    *accel)
+{
+	const gchar *vaccels[] = {
+		accel,
+		NULL
+	};
+
+	gtk_application_set_accels_for_action (app, action_name, vaccels);
+}
+
 /* Create the interface */
 static void create_interface(GtkApplication *gtk_app)
 {
@@ -1345,8 +1383,14 @@ static void create_interface(GtkApplication *gtk_app)
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(gtk_builder_get_object(priv->builder, "TracksTreeView")));
     g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(routes_list_changed_cb), gtk_app);
 
+	g_action_map_add_action_entries (G_ACTION_MAP (G_APPLICATION(gtk_app)),
+	                                 app_entries,
+	                                 G_N_ELEMENTS (app_entries),
+	                                 G_APPLICATION(gtk_app));
 
-	
+	add_accelerator (GTK_APPLICATION (gtk_app), "app.next-point", "Right");
+	add_accelerator (GTK_APPLICATION (gtk_app), "app.prev-point", "Left");
+
 	dock = gdl_dock_new();
 
    /* Create map view */
