@@ -79,6 +79,14 @@ namespace Gpx
 			{
 				click_marker.hide();
 			}
+			public void increase_zoom_level()
+			{
+				get_view().zoom_level += 1;
+			}
+			public void decrease_zoom_level()
+			{
+				get_view().zoom_level -= 1;
+			}
 
 
 

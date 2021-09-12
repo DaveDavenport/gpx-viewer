@@ -574,6 +574,15 @@ namespace Gpx
         {
             this.hrmt.calories = value;
         }
+
+		public signal void point_removed(Point point);
+
+		public void remove_point(Point point)
+		{
+			points.remove(point);
+			recalculate();
+			point_removed(point);
+		}
     }
 
 
