@@ -1196,28 +1196,28 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon, gpo
 		double lon_zero = lon - bot_lon; 
 		double lat_zero = lat - bot_lat;
 		if(top_lon_zero >= lon_zero && top_lat_zero >= lat_zero && lon_zero >= 0 && lat_zero >= 0)
-			{
-				double lat_r = lat*M_PI/180;
-				double lon_r = lon*M_PI/180;
+		{
+			double lat_r = lat*M_PI/180;
+			double lon_r = lon*M_PI/180;
 
-				GpxPoint *d = NULL;
-				double distance = 0;
-				/* Find closest point */
-				GList *iter = g_list_first(priv->active_route->track->points);
-				for(;iter;iter = g_list_next(iter))
-				{
-					GpxPoint *a = iter->data;
-					double di = gpx_track_calculate_distance_coords(a->lon, a->lat, lon_r, lat_r);
-					if(d == NULL || di < distance) {
-						d = iter->data;
-						distance = di;
-					}
-				}
-				if(distance < 0.5)
-				{
-			        graph_point_clicked(priv->gpx_graph, d, gpx_viewer);
+			GpxPoint *d = NULL;
+			double distance = 0;
+			/* Find closest point */
+			GList *iter = g_list_first(priv->active_route->track->points);
+			for(;iter;iter = g_list_next(iter))
+			{
+				GpxPoint *a = iter->data;
+				double di = gpx_track_calculate_distance_coords(a->lon, a->lat, lon_r, lat_r);
+				if(d == NULL || di < distance) {
+					d = iter->data;
+					distance = di;
 				}
 			}
+			if(distance < 0.5)
+			{
+				graph_point_clicked(priv->gpx_graph, d, gpx_viewer);
+			}
+		}
 	}
 }
 static void map_view_zoom_level_changed(GpxViewerMapView *view, 
