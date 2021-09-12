@@ -1184,13 +1184,22 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon, gpo
 	GpxViewerPrivate *priv = GPX_VIEWER_GET_PRIVATE(gpx_viewer);	
 	if(priv->active_route)
 	{
-		/* Check if the clicked point is within the bounding box of the current track */
-		if(priv->active_route->track->top->lon_dec > lon && priv->active_route->track->top->lat_dec > lat && 
-			priv->active_route->track->bottom->lon < lon && priv->active_route->track->bottom->lat_dec < lat)
+		/* Check if the clicked point is within the bounding box of the current track
+		 * Move to zero for negative values in lat,lon
+		 */
+		double top_lat = priv->active_route->track->top->lat_dec;
+		double top_lon = priv->active_route->track->top->lon_dec; 
+		double bot_lat = priv->active_route->track->bottom->lat_dec;
+		double bot_lon = priv->active_route->track->bottom->lon_dec;
+		double top_lat_zero = top_lat - bot_lat; 
+		double top_lon_zero = top_lon - bot_lon; 
+		double lon_zero = lon - bot_lon; 
+		double lat_zero = lat - bot_lat;
+		if(top_lon_zero >= lon_zero && top_lat_zero >= lat_zero && lon_zero >= 0 && lat_zero >= 0)
 			{
 				double lat_r = lat*M_PI/180;
 				double lon_r = lon*M_PI/180;
-				
+
 				GpxPoint *d = NULL;
 				double distance = 0;
 				/* Find closest point */
