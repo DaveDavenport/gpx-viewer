@@ -1074,6 +1074,7 @@
             <property name="can_focus">True</property>
             <property name="use_action_appearance">False</property>
             <property name="active">True</property>
+            <signal name="notify::active" handler="show_waypoints_layer_toggled_cb"/>
           </object>
         </child>
       </object>
@@ -1146,6 +1147,7 @@
             <property name="can_focus">True</property>
             <property name="use_action_appearance">False</property>
             <property name="active">True</property>
+            <signal name="notify::active" handler="graph_show_points_toggled_cb"/>
           </object>
         </child>
       </object>
