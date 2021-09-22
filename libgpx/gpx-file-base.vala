@@ -42,21 +42,52 @@ namespace Gpx
         /* The file behind it */
         protected GLib.File file = null;
 
+        protected string creator;
+        protected string name;
+        protected string description;
+        protected string time;
+        protected string keywords;
+
         /**
          * Helpers
          */
+        public string get_keywords()
+        {
+            return keywords;
+        }
+
+        public string get_time()
+        {
+            return time;
+        }
+
+        public string get_name()
+        {
+            return name;
+        }
+
+        public string get_description()
+        {
+            return description;
+        }
+
+        public string get_creator()
+        {
+            return creator;
+        }
+
         public string get_uri()
         {
             return file.get_uri();
         }
-        
+
 
         public string get_basename()
         {
             return file.get_basename();
         }
 
-        /** 
+        /**
          * Accessors
          */
         public unowned List<Gpx.Track> get_tracks()
@@ -65,7 +96,7 @@ namespace Gpx
         }
 
 
-        public unowned GLib.List <Gpx.Point> get_waypoints() 
+        public unowned GLib.List <Gpx.Point> get_waypoints()
         {
             return waypoints;
         }
@@ -79,7 +110,7 @@ namespace Gpx
 
     /**
      * @param file A GLib.File to open.
-     * 
+     *
      * Tries to open the file.. check extension, if that fails, try it.
      *
      * @returns a file.
@@ -91,22 +122,22 @@ namespace Gpx
             // Test if fit file.
             if(path.get_uri().has_suffix("fit")) {
                 return new Gpx.FitFile(path);
-            } 
+            }
             // Test if gpx file.
             if(path.get_uri().has_suffix("gpx")) {
                 return new Gpx.XmlFile(path);
-            } 
+            }
             // Test if gpx file.
             if(path.get_uri().has_suffix("json")) {
                 return new Gpx.JsonFile(path);
-            } 
-            // Try, FIT first, it detects header. 
+            }
+            // Try, FIT first, it detects header.
             FileBase f = new Gpx.FitFile(path);
             return f;
         } catch (Error err) {
             return new Gpx.XmlFile(path);
         }
-    }    
+    }
 }
 
 

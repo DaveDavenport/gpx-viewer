@@ -27,11 +27,11 @@ namespace Gpx
     /**
      * Represents a point in the track or a waypoint.
      */
-	
     public class Point
     {
         /* Waypoint name */
         public string name {get; set; default=null;}
+        public string description {get; set; default=null;}
         /* Position, in radians and degrees, 1000 means not set */
         public double lat = 1000;
         public double lon = 1000;
@@ -41,13 +41,13 @@ namespace Gpx
         public double distance =0;
         /* Elevation */
         public double elevation;
-		public double smooth_elevation;
+        public double smooth_elevation;
         /* Time */
         public string time;
         /* The speed (only if part of track */
         public double speed = 0;
-		/* indicate if stopped */
-		public bool stopped = false;
+        /* indicate if stopped */
+        public bool stopped = false;
 
         private time_t utime  = 0;
         private DateTime datetime;
@@ -73,13 +73,14 @@ namespace Gpx
         {
             Gpx.Point p = new Gpx.Point();
             p.name = this.name;
+            p.description = this.description;
             p.lat = this.lat;
             p.lon = this.lon;
             p.lat_dec = this.lat_dec;
             p.lon_dec = this.lon_dec;
             p.time = this.time;
             p.elevation = this.elevation;
-			p.smooth_elevation = this.smooth_elevation;
+            p.smooth_elevation = this.smooth_elevation;
             p.tpe = this.tpe;
             return p;
         }
