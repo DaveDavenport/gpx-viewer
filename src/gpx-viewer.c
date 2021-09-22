@@ -1445,6 +1445,10 @@ static void create_interface(GtkApplication *gtk_app)
     gtk_recent_filter_add_mime_type(GTK_RECENT_FILTER(grf), "application/vnd.ant.fit");
 
     gtk_recent_chooser_add_filter(GTK_RECENT_CHOOSER(rc),grf);
+    clear = gtk_menu_item_new_with_mnemonic(_("_Clear list"));
+    gtk_menu_shell_append(GTK_MENU_SHELL(rc), gtk_separator_menu_item_new());
+    g_signal_connect(G_OBJECT(clear), "activate", G_CALLBACK(clear_recent_chooser_file_list), rc);
+    gtk_menu_shell_append(GTK_MENU_SHELL(rc), clear);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), rc);
 
     w =gpx_viewer_settings_get_integer(priv->settings,"Window", "width", 400);
