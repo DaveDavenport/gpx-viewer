@@ -90,6 +90,16 @@ namespace Gpx
 
 
 
+			bool markers_added = false;
+
+			public void add_layer(Champlain.Layer layer) {
+				var view = get_view();
+				view.add_layer(layer);
+				if (!markers_added) {
+				    view.add_layer(waypoint_layer);
+				    view.add_layer(marker_layer);
+				}
+			}
 			/* Waypoint layer */
 			private Champlain.MarkerLayer waypoint_layer = new Champlain.MarkerLayer();
 			private bool _show_waypoints = false;
@@ -176,8 +186,6 @@ namespace Gpx
 							view.min_zoom_level,
 							view.max_zoom_level);
 						});
-				view.add_layer(waypoint_layer);
-				view.add_layer(marker_layer);
 				marker_layer.show();
 				/* Set it to recieve signals */
 				view.reactive = true;

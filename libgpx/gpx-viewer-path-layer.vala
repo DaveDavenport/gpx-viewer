@@ -218,7 +218,15 @@ namespace Gpx.Viewer
 			max_elv = _track.max_elevation;
 			range = double.max (250.0, max_elv - min_elv);
 
-			cr.set_line_width (stroke_width);
+			var is_route = _track.is_route;
+			var alpha = 1.0;
+			if (is_route) {
+			    cr.set_line_width (stroke_width);
+			    cr.set_dash ({30, 20}, 0);
+			    alpha = 0.3;
+			} else {
+			    cr.set_line_width (2 * stroke_width);
+			}
 			cr.set_line_cap (Cairo.LineCap.ROUND);
 			cr.set_line_join (Cairo.LineJoin.ROUND);
 
@@ -232,7 +240,7 @@ namespace Gpx.Viewer
 				if (val != old_val) {
 					cr.line_to (c_x, c_y);
 					cr.stroke ();
-					cr.set_source_rgb (HEIGHT_COLORS[val].r, HEIGHT_COLORS[val].g, HEIGHT_COLORS[val].b);
+					cr.set_source_rgba (HEIGHT_COLORS[val].r, HEIGHT_COLORS[val].g, HEIGHT_COLORS[val].b, alpha);
 					old_val = val;
 					cr.move_to (c_x, c_y);
 				} else {

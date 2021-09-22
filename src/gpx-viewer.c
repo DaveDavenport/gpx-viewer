@@ -834,7 +834,7 @@ static void interface_plot_add_track(GpxViewer *gpx_viewer, GpxFileBase *file, G
 	GpxViewerPrivate *priv = gpx_viewer_get_instance_private(gpx_viewer);
     GtkTreeSelection *gts = NULL;
 
-    ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(priv->champlain_view));
+    ChamplainView *view = GTK_CHAMPLAIN_EMBED(priv->champlain_view);
     /* Plot all tracks, and get total bounding box */
     GtkTreeIter liter;
     GtkTreeModel *model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
