@@ -44,10 +44,12 @@ void show_distance(GtkMenuItem *item, gpointer user_data);
 void show_total_distance(GtkMenuItem *item, gpointer user_data);
 void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data);
 void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer);
+void save_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer);
+void save_as_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer);
 
-void close_show_current_track(GtkWidget *widget,gint response_id, gpointer user_data); 
+void close_show_current_track(GtkWidget *widget,gint response_id, gpointer user_data);
 void show_current_track(GtkWidget *menu_item, gpointer user_data);
-void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, gpointer user_data); 
+void gpx_viewer_preferences_close(GtkWidget *dialog, gint respose, gpointer user_data);
 void playback_speedup_spinbutton_value_changed_cb(GtkSpinButton *sp, gpointer gpx_viewer);
 void gpx_viewer_show_preferences_dialog(GtkWidget *menu_item, gpointer user_data);
 void show_vertical_speed(GtkMenuItem *item, gpointer user_data);

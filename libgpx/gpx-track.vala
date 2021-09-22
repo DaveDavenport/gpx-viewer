@@ -34,6 +34,9 @@ namespace Gpx
         public HeartRateMonitorTrack hrmt = HeartRateMonitorTrack() { calories = 0 }; 
         /* make a property */
         public string name {get; set; default = null;}
+        public string track_type {get; set; default = null;}
+        public int? number {get; set; default = null;}
+		public bool is_route {get; set; default = false;}
 		/**  Number of points that the #filter_points()  function removed */
 		public int filtered_points = 0; 
 
@@ -490,6 +493,7 @@ namespace Gpx
                 point_removed(point);
             }
         }
+
     }
 }
 
