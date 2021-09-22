@@ -96,12 +96,8 @@ namespace Gpx
 			public bool show_waypoints {
 				get { return _show_waypoints;}
 				set {
-					if(value) {
-						this.waypoint_layer.show();
-					}else{
-						this.waypoint_layer.hide();
-					}
 					this._show_waypoints = value;
+					this.waypoint_layer.visible = _show_waypoints;
 				}
 			}
 
@@ -118,11 +114,8 @@ namespace Gpx
 			public bool show_markers {
 				get { return _show_markers;}
 				set {
-					if(value) {
-						this.marker_layer.show();
-					}else{
-						this.marker_layer.hide();
-					}
+					_show_markers = value;
+					marker_layer.visible = _show_markers;
 				}
 			}
 
@@ -184,9 +177,7 @@ namespace Gpx
 							view.max_zoom_level);
 						});
 				view.add_layer(waypoint_layer);
-//				waypoint_layer.set_z_position(0);
 				view.add_layer(marker_layer);
-//				marker_layer.set_z_position(1);
 				marker_layer.show();
 				/* Set it to recieve signals */
 				view.reactive = true;
