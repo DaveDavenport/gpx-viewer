@@ -3,6 +3,7 @@
 	<gresource prefix="/com/github/gpx-viewer">
 		<file compressed="true">gpx-viewer.ui</file>
 		<file compressed="true">gpx-viewer-file-chooser.ui</file>
+		<file compressed="true">gpx-viewer-file-chooser-save.ui</file>
 		<file compressed="true">gpx-viewer-preferences.ui</file>
 		<file compressed="true">gpx-viewer-tracklist.ui</file>
 	</gresource>
