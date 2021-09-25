@@ -1,6 +1,6 @@
 libgpx = static_library(
 	'gpx',
-	'fit-parser.vala',
+	'gpx-parser-fit.vala',
 	'gpx-convert.vala',
 	'gpx-graph.vala',
 	'gpx-parser.vala',
@@ -9,7 +9,7 @@ libgpx = static_library(
 	'gpx-playback.vala',
 	'gpx-settings.vala',
 	'gpx-track-treemodel.vala',
-	'gpx-viewer-mapwidget.vala',
+	'gpx-viewer-map-view.vala',
 	'gpx-viewer-path-layer.vala',
 	dependencies: gpx_deps,
 )
