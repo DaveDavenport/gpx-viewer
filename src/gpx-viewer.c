@@ -820,12 +820,12 @@ static void route_playback_state_changed(GpxPlayback *route_playback, GpxPlaybac
 }
 
 
-static void toggle_save_menu(GpxViewer *gpx_viewer, gboolean status) {
+static void toggle_save_menu(GpxViewer *gpx_viewer, gboolean save, gboolean save_as) {
 	GpxViewerPrivate *priv = gpx_viewer_get_instance_private(gpx_viewer);
     GtkMenuItem *save_menu_item = (GtkMenuItem *) gtk_builder_get_object(priv->builder, "menu_save");
     GtkMenuItem *save_as_menu_item = (GtkMenuItem *) gtk_builder_get_object(priv->builder, "menu_save_as");
-    gtk_widget_set_sensitive(GTK_WIDGET(save_menu_item), status);
-    gtk_widget_set_sensitive(GTK_WIDGET(save_as_menu_item), status);
+    gtk_widget_set_sensitive(GTK_WIDGET(save_menu_item), save);
+    gtk_widget_set_sensitive(GTK_WIDGET(save_as_menu_item), save_as);
 }
 
 static gboolean first = TRUE;
@@ -1123,6 +1123,7 @@ static void gpx_viewer_open_gpx_file(GpxViewer *app, GpxFileBase *file) {
     gchar *basename;
     GtkTreeModel *model;
     double lon1 = 1000, lon2 = -1000, lat1 = 1000, lat2 = -1000;
+    gboolean save = FALSE;
 
     GpxViewerPrivate *priv = gpx_viewer_get_instance_private(app);
     model = (GtkTreeModel *) gtk_builder_get_object(priv->builder, "routes_store");
@@ -1142,6 +1143,10 @@ static void gpx_viewer_open_gpx_file(GpxViewer *app, GpxFileBase *file) {
             2, FALSE,
             3, FALSE,
             -1);
+    if (g_str_has_suffix(basename, ".gpx")) {
+        save = TRUE;
+    }
+
     g_free(basename);
     if (gpx_file_base_get_tracks(file))
     {
@@ -1163,7 +1168,7 @@ static void gpx_viewer_open_gpx_file(GpxViewer *app, GpxFileBase *file) {
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(priv->champlain_view));
     interface_map_make_waypoints(view, app);
 
-    toggle_save_menu(app, TRUE);
+    toggle_save_menu(app, save, TRUE);
 }
 
 static void gpx_viewer_open_file(GpxViewer *app, GFile *input_file) {
