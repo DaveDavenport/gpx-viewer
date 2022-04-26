@@ -987,6 +987,17 @@ void show_distance(GtkMenuItem *item, gpointer user_data)
 }
 
 
+void show_total_distance(GtkMenuItem *item, gpointer user_data)
+{
+	GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
+    if(gpx_graph_get_mode(priv->gpx_graph) != GPX_GRAPH_GRAPH_MODE_TOTAL_DISTANCE)
+    {
+        g_debug("switch to distance\n");
+        gpx_graph_set_mode(priv->gpx_graph, GPX_GRAPH_GRAPH_MODE_TOTAL_DISTANCE);
+    }
+}
+
+
 void show_acceleration_h(GtkMenuItem *item, gpointer user_data)
 {
 	GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
