@@ -1224,7 +1224,7 @@ static void map_view_clicked(GpxViewerMapView *view, double lat, double lon, gpo
 			for(;iter;iter = g_list_next(iter))
 			{
 				GpxPoint *a = iter->data;
-				double di = gpx_track_calculate_distance_coords(a->lon, a->lat, lon_r, lat_r);
+				double di = gpx_track_calculate_distance_coords(a->lon, a->lat, a->elevation, lon_r, lat_r, 0);
 				if(d == NULL || di < distance) {
 					d = iter->data;
 					distance = di;

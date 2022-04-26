@@ -411,7 +411,7 @@ namespace Gpx
          *
          * @returns distance in km.		 
 		 */
-        public static double calculate_distance_coords(double lon_a, double lat_a, double lon_b, double lat_b)
+        public static double calculate_distance_coords(double lon_a, double lat_a, double ele_a,  double lon_b, double lat_b, double ele_b)
         {
             double retv =0;
             retv = 6378.7 * Math.acos(
@@ -422,7 +422,9 @@ namespace Gpx
             {
                 return 0;
             }
-            return retv;
+            double ele = (ele_b - ele_a)/1000;
+            retv = Math.sqrt(Math.pow(retv, 2)+Math.pow(ele, 2));
+            return GLib.Math.fabs(retv);
         }
 
         /**
@@ -437,7 +439,7 @@ namespace Gpx
         public static double calculate_distance(Point a, Point b)
         {
             if(a.lat == b.lat && a.lon == b.lon) return 0;
-            return calculate_distance_coords(a.lon,a.lat, b.lon,b.lat);
+            return calculate_distance_coords(a.lon,a.lat,a.elevation, b.lon,b.lat,b.elevation);
         }
 
 
