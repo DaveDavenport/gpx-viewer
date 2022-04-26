@@ -407,6 +407,7 @@ namespace Gpx
                         text += "\n"+_("Heart-rate")+": "+"%d".printf(this.draw_current.tpe.heartrate)+_("(bpm)");
                     }
                     text += "\n"+_("Cadence")+":\t"+"%u rpm".printf(this.draw_current.cadence);
+                    text += "\n"+_("Time")+":\t"+"%s".printf(draw_current.get_datetime().to_local().format("%c"));
 
 					fd.set_absolute_size(12*1024);
 					layout.set_font_description(fd);
