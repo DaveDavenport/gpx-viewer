@@ -34,6 +34,7 @@ namespace Gpx
 			SPEED,
 			ELEVATION,
 			DISTANCE,
+			TOTAL_DISTANCE,
 			ACCELERATION_H,
 			SPEED_V,
             HEARTRATE,
@@ -625,6 +626,8 @@ namespace Gpx
 				value = ii.data.speed;
 			}else if(this._mode == GraphMode.ELEVATION){
 				value = ii.data.elevation;
+			}else if(this._mode == GraphMode.TOTAL_DISTANCE){
+				value = ii.data.distance;
 			}else if(this._mode == GraphMode.DISTANCE){
 				value = Gpx.Track.calculate_distance(ii.data, ii.first().data);
 			}else if(this._mode == GraphMode.ACCELERATION_H && ii.prev != null){
@@ -694,7 +697,7 @@ namespace Gpx
 			double max_value = 0;
 			double min_value = 0;
 			double range = 0;
-			if(this._mode == GraphMode.SPEED || this._mode == GraphMode.DISTANCE)
+			if(this._mode == GraphMode.SPEED || this._mode == GraphMode.DISTANCE || this._mode == GraphMode.TOTAL_DISTANCE)
 			{
 				weak List<Point?> iter = this.track.points.first();
 				while(iter.next != null)

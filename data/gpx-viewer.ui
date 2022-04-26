@@ -724,6 +724,17 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkRadioMenuItem" id="view_menu_total_distance">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Total distance</property>
+                        <property name="use_underline">True</property>
+                        <property name="group">view_menu_speed</property>
+                        <signal name="activate" handler="show_total_distance" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkRadioMenuItem" id="view_menu_vertical_speed">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>

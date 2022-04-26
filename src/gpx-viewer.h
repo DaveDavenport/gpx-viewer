@@ -41,6 +41,7 @@ void row_visible_toggled(GtkCellRendererToggle *toggle, const gchar *path, gpoin
 void show_elevation(GtkMenuItem *item, gpointer user_data);
 void show_speed(GtkMenuItem *item, gpointer user_data);
 void show_distance(GtkMenuItem *item, gpointer user_data);
+void show_total_distance(GtkMenuItem *item, gpointer user_data);
 void map_selection_combo_changed_cb(GtkComboBox *box, gpointer data);
 void open_gpx_file(GtkMenu *item, GpxViewer *gpx_viewer);
 
