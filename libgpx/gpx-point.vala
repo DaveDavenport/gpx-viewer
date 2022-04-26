@@ -46,6 +46,7 @@ namespace Gpx
         public bool stopped = false;
 
         private time_t utime  = 0;
+        private DateTime datetime;
 
         public uint32 cadence = 0;
 
@@ -111,6 +112,12 @@ namespace Gpx
             ta.strptime(this.time, "%FT%T%z");
             this.utime = ta.mktime();
             return utime;
+        }
+        public DateTime get_datetime()
+        {
+            if (datetime == null)
+                datetime = new DateTime.from_unix_utc(get_time());
+            return datetime;
         }
     }
 }
