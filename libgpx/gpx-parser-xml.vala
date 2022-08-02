@@ -60,7 +60,7 @@ namespace Gpx
                     else if (pointNode->name == "time")
                     {
                         p.time = pointNode->get_content();
-                        last_datetime = p.get_datetime();
+                        //last_datetime = p.get_datetime();
                     }
                     else if (pointNode->name == "extensions")
                     {
@@ -82,11 +82,15 @@ namespace Gpx
                     pointNode = pointNode->next;
                 }
 
-                if(p.time == null) {
-                    if (last_datetime == null)
+                if(true) {
+                //if(p.time == null) {
+                    if (last_datetime == null) {
+                        print("create time\n");
                         last_datetime = new DateTime.now_utc ();
-                    else
+                    } else {
+                        print("add 10s\n");
                         last_datetime = last_datetime.add_seconds(10);
+                    }
                     p.time = last_datetime.format("%FT%TZ");
                 }
                 return p;

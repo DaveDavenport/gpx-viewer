@@ -595,6 +595,7 @@ void routes_list_changed_cb(GtkTreeSelection * sel, gpointer user_data)
             }
             else
             {
+                printf("total time less than 5 seconds, no graph");
                 gpx_graph_set_track(priv->gpx_graph, NULL);
             }
 
