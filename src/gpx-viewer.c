@@ -483,7 +483,7 @@ static void interface_map_plot_route(ChamplainView * view, struct Route *route)
 	// TODO: Set track not sensitive.
     //gpx_viewer_path_layer_set_stroke_color(route->path, &normal_track_color);
 	gpx_viewer_path_layer_set_track(route->path,route->track);
-    gpx_viewer_map_view_add_layer(GTK_CHAMPLAIN_EMBED(view), CHAMPLAIN_LAYER(route->path));
+    champlain_view_add_layer(view, CHAMPLAIN_LAYER(route->path));
 	clutter_actor_set_z_position(CLUTTER_ACTOR(route->path), -10);
     if(!route->visible) gpx_viewer_path_layer_set_visible(route->path, FALSE);
 }
