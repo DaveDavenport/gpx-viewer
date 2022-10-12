@@ -72,6 +72,7 @@ namespace Gpx
 		private Pango.FontDescription fd = null;
 		private Cairo.Surface surf = null;
 		private int LEFT_OFFSET = 60;
+		private int RIGHT_OFFSET = 10;
 		private int BOTTOM_OFFSET = 30;
 		private time_t highlight = 0;
 
@@ -185,10 +186,18 @@ namespace Gpx
 			Gtk.Allocation alloc;
 			if(this.track == null) return null;
 			this.get_allocation(out alloc);
-			if(x > LEFT_OFFSET && x < (alloc.width-10))
+			if(x <= LEFT_OFFSET)
+			{
+				return track.points.first().data;
+			}
+			if(x >= (alloc.width-RIGHT_OFFSET))
+			{
+				return track.points.last().data;
+			}
+			if(x > LEFT_OFFSET && x < (alloc.width-RIGHT_OFFSET))
 			{
 				double elapsed_time = track.get_total_time();
-				time_t time = (time_t)((x-LEFT_OFFSET)/(alloc.width-10-LEFT_OFFSET)*elapsed_time);
+				time_t time = (time_t)((x-LEFT_OFFSET)/(alloc.width-RIGHT_OFFSET-LEFT_OFFSET)*elapsed_time);
 				weak List<Point?> iter = this.track.points.first();
 				/* calculated time is offset from start time,  get real time */
 				time += iter.data.get_time();
@@ -337,7 +346,7 @@ namespace Gpx
 				{
 					Gpx.Point f = this.track.points.first().data;
 					double elapsed_time = track.get_total_time();
-					double graph_width = alloc.width-LEFT_OFFSET-10;
+					double graph_width = alloc.width-LEFT_OFFSET-RIGHT_OFFSET;
 					double graph_height = alloc.height-20-BOTTOM_OFFSET;
 
 					ctx.set_source_rgba(0.3, 0.2, 0.3, 0.8);
@@ -352,7 +361,7 @@ namespace Gpx
 			{
 				Gpx.Point f = this.track.points.first().data;
 				double elapsed_time = track.get_total_time();
-				double graph_width = alloc.width-LEFT_OFFSET-10;
+				double graph_width = alloc.width-LEFT_OFFSET-RIGHT_OFFSET;
 				double graph_height = alloc.height-20-BOTTOM_OFFSET;
 
 				double hl = (highlight-f.get_time())/elapsed_time*graph_width;
@@ -648,7 +657,7 @@ namespace Gpx
 			ctx.translate(LEFT_OFFSET,20);
 			Point f = track.points.data;
 
-			double graph_width = alloc.width-LEFT_OFFSET-10;
+			double graph_width = alloc.width-LEFT_OFFSET-RIGHT_OFFSET;
 			double graph_height = alloc.height-20-BOTTOM_OFFSET;
 			if(graph_height < 50 ) return;
 			var layout = Pango.cairo_create_layout(ctx);
