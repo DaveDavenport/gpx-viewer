@@ -1,2 +1,17 @@
-- name: Meson Build
-  uses: BSFishy/meson-build@v1.0.3
+name: CI
+
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          apt update
+          apt install -y libarchive-dev valac meson appstream-util xvfb at-spi2-core git build-essential autoconf autoconf-archive autopoint automake pkg-config libtool m4 autoconf-archive gtk-doc-tools libxml2-utils gobject-introspection libgirepository1.0-dev libglib2.0-dev libjson-glib-dev gettext libcairo2-dev libgtk-3-dev
+      - name: Build
+        run: |
+          meson build
+          ninja -C build
+          ninja -C build install
