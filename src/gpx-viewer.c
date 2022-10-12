@@ -739,6 +739,10 @@ static void graph_selection_changed(GpxGraph *graph,GpxTrack *track, GpxPoint *s
 
 static void graph_point_clicked(GpxGraph *graph, GpxPoint *point, gpointer gpx_viewer)
 {
+    if (point == NULL) {
+        graph_point_remove(gpx_viewer);
+        return;
+    }
 	GpxViewerPrivate *priv = gpx_viewer_get_instance_private(gpx_viewer);
     ChamplainView *view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(priv->champlain_view));
 
@@ -1298,6 +1302,24 @@ void dock_item_state_changed(GdlDockItem *dock_item,GParamSpec *sp, GtkWidget *m
 } 
 
 static void
+remove_non_selected_range_activated (GSimpleAction *action,
+                                     GVariant      *parameter,
+                                     gpointer       user_data)
+{
+    GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
+    gpx_graph_remove_non_selected_range(priv->gpx_graph);
+}
+
+static void
+remove_point_activated (GSimpleAction *action,
+                        GVariant      *parameter,
+                        gpointer       user_data)
+{
+    GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
+    gpx_graph_remove_selected(priv->gpx_graph);
+}
+
+static void
 prev_point_activated (GSimpleAction *action,
                       GVariant      *parameter,
                       gpointer       user_data)
@@ -1338,6 +1360,8 @@ zoom_out_activated (GSimpleAction *action,
 static GActionEntry app_entries[] = {
 	{ "next-point", next_point_activated, NULL, NULL, NULL },
 	{ "prev-point", prev_point_activated, NULL, NULL, NULL },
+    { "remove-point", remove_point_activated, NULL, NULL, NULL },
+    { "remove-non-selected-range", remove_non_selected_range_activated, NULL, NULL, NULL },
     { "zoom-in", zoom_in_activated, NULL, NULL, NULL },
     { "zoom-out", zoom_out_activated, NULL, NULL, NULL },
 };
@@ -1412,6 +1436,18 @@ static void create_interface(GtkApplication *gtk_app)
 
 	add_accelerator (GTK_APPLICATION (gtk_app), "app.next-point", "Right");
 	add_accelerator (GTK_APPLICATION (gtk_app), "app.prev-point", "Left");
+	const gchar *remove_points_accels[] = {
+		"Delete",
+		"BackSpace",
+		NULL
+	};
+    gtk_application_set_accels_for_action ((gtk_app), "app.remove-point", remove_points_accels);
+	const gchar *remove_range_accels[] = {
+		"<Shift>Delete",
+		NULL
+	};
+    gtk_application_set_accels_for_action ((gtk_app), "app.remove-non-selected-range", remove_range_accels);
+
     gtk_application_set_accels_for_action (GTK_APPLICATION (gtk_app), "app.zoom-in", zoom_in_accels);
     gtk_application_set_accels_for_action (GTK_APPLICATION (gtk_app), "app.zoom-out", zoom_out_accels);
 

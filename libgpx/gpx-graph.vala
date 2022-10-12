@@ -243,19 +243,115 @@ namespace Gpx
 			}
 			return true;
 		}
+		public void remove_selected() {
+			if (start != null && stop != null) {
+				int start_pos = track.points.index(start);
+				int end_pos = track.points.index(stop);
+				if (end_pos < start_pos) {
+					int tmp_pos = end_pos;
+					end_pos = start_pos;
+					start_pos = tmp_pos;
+				}
+				for (int i = start_pos; i < end_pos; i++) {
+					var p = track.points.nth_data(start_pos);
+					track.remove_point(p, false);
+				}
+				selected = track.points.nth_data(start_pos);
+				remove_selected_point();
+			} else if (this.selected != null) {
+				remove_selected_point();
+			}
+		}
+		public void remove_selected_point() {
+			if (this.selected != null) {
+				var pos = this.track.points.index(selected);
+				var last = this.track.points.length() - 1;
+				if (pos == last) {
+					pos--;
+				}
+				this.track.remove_point(selected);
+				this.selected = this.track.points.nth_data(pos);
+				this.surf = null;
+				point_clicked(selected);
+
+				selection_changed(track, 
+								  start != null
+								     ? start
+								     : track.points.first().data,
+								  stop != null
+								     ? stop
+								     : track.points.last().data);
+				queue_draw();
+			}
+		}
+		public void remove_non_selected_range() {
+			if (start != null && stop != null) {
+				int start_pos = track.points.index(start);
+				int end_pos = track.points.index(stop);
+				var last_pos = track.points.length() - 1;
+				if (start_pos == end_pos)
+					return;
+
+				if (end_pos < start_pos) {
+					int tmp_pos = end_pos;
+					end_pos = start_pos;
+					start_pos = tmp_pos;
+				}
+
+				for (int i = 0; i < start_pos; i++) {
+					var p = track.points.nth_data(0);
+					track.remove_point(p, false);
+				}
+				end_pos -= start_pos - 1;
+				last_pos += start_pos - 1;
+				print("removing trail %d to %u\n", end_pos, last_pos);
+				for (int i = end_pos; i <= last_pos; i++) {
+					var p = track.points.nth_data(end_pos);
+					track.remove_point(p, false);
+				}
+				start = null;
+				stop = null;
+				selected = track.points.nth_data(0);
+				remove_selected_point();
+			}
+		}
 		private bool button_press_event_cb(Gdk.EventButton event)
 		{
 			if(this.track == null) return true;
-			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
+			Gpx.Point *point = get_point_from_position(event.x, event.y);
 			if(point != null) {
 				if(event.button == Gdk.BUTTON_PRIMARY) {
 					this.start = null;
 					this.selected = point;
 					point_clicked(point);
 				} else if(event.button == Gdk.BUTTON_SECONDARY) {
-					this.start = null;
-					this.selected = point;
-					point_clicked(point);
+					bool range_selected = start != null && stop != null;
+					bool point_selected = selected != null;
+					Gtk.Menu menu = new Gtk.Menu ();
+					Gtk.AccelGroup accel_group = new Gtk.AccelGroup();
+
+					if (range_selected || point_selected) {
+					    menu.attach_to_widget (this, null);
+					    Gtk.MenuItem menu_item = new Gtk.MenuItem.with_label (range_selected ? "Remove range": "Remove point");
+					    menu_item.activate.connect(() => {
+					        remove_selected();
+					    });
+					    menu_item.add_accelerator("activate", accel_group, Gdk.Key.Delete, 0, Gtk.AccelFlags.VISIBLE);
+					    menu_item.add_accelerator("activate", accel_group, Gdk.Key.BackSpace, 0, Gtk.AccelFlags.VISIBLE);
+					    menu.add (menu_item);
+					}
+					if (range_selected) {
+					    Gtk.MenuItem menu_item = new Gtk.MenuItem.with_label ("Remove non selected range");
+					    menu_item.activate.connect(() => {
+					        remove_non_selected_range();
+					    });
+					    menu_item.add_accelerator("activate", accel_group, Gdk.Key.Delete, Gdk.ModifierType.SHIFT_MASK, Gtk.AccelFlags.VISIBLE);
+					    menu.add (menu_item);
+					}
+					if (range_selected || point_selected) {
+					    menu.show_all ();
+					    menu.popup (null, null, null, event.button, event.time);
+					}
 				}
 			}
 			return true;
