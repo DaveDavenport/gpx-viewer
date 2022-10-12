@@ -295,11 +295,11 @@ namespace Gpx
 			Gpx.Point *point = this.get_point_from_position(event.x, event.y);
 			if(point != null)
 			{
-				if(event.button == 1)
+				if(event.button == Gdk.BUTTON_PRIMARY)
 					this.stop = point;
 				else this.stop = null;
 				this.queue_draw();
-				if(event.button == 1)
+				if(event.button == Gdk.BUTTON_PRIMARY)
 				{
 					if(this.start != null && this.stop  != null)
 					{
