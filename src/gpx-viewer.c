@@ -1317,9 +1317,29 @@ next_point_activated (GSimpleAction *action,
 	gpx_graph_select_next_point(priv->gpx_graph);
 }
 
+static void
+zoom_in_activated (GSimpleAction *action,
+                      GVariant      *parameter,
+                      gpointer       user_data)
+{
+    GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
+    gpx_viewer_map_view_increase_zoom_level(GPX_VIEWER_MAP_VIEW(priv->champlain_view));
+}
+
+static void
+zoom_out_activated (GSimpleAction *action,
+                      GVariant      *parameter,
+                      gpointer       user_data)
+{
+    GpxViewerPrivate *priv = gpx_viewer_get_instance_private(user_data);
+    gpx_viewer_map_view_decrease_zoom_level(GPX_VIEWER_MAP_VIEW(priv->champlain_view));
+}
+
 static GActionEntry app_entries[] = {
 	{ "next-point", next_point_activated, NULL, NULL, NULL },
 	{ "prev-point", prev_point_activated, NULL, NULL, NULL },
+    { "zoom-in", zoom_in_activated, NULL, NULL, NULL },
+    { "zoom-out", zoom_out_activated, NULL, NULL, NULL },
 };
 
 static void
@@ -1352,6 +1372,8 @@ static void create_interface(GtkApplication *gtk_app)
     gint w,h;
     GtkRecentFilter *grf;
 	GtkWidget *dock;
+    const gchar *zoom_in_accels[] = {"plus", "KP_Add", NULL};
+    const gchar *zoom_out_accels[] = {"minus", "KP_Subtract", NULL};
 
     /* Open UI description file */
     priv->builder = gtk_builder_new();
@@ -1390,6 +1412,8 @@ static void create_interface(GtkApplication *gtk_app)
 
 	add_accelerator (GTK_APPLICATION (gtk_app), "app.next-point", "Right");
 	add_accelerator (GTK_APPLICATION (gtk_app), "app.prev-point", "Left");
+    gtk_application_set_accels_for_action (GTK_APPLICATION (gtk_app), "app.zoom-in", zoom_in_accels);
+    gtk_application_set_accels_for_action (GTK_APPLICATION (gtk_app), "app.zoom-out", zoom_out_accels);
 
 	dock = gdl_dock_new();
 
