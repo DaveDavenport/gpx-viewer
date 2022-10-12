@@ -25,7 +25,6 @@ install_data(
 
 i18n = import('i18n')
 desktop_file = i18n.merge_file(
-	'desktop',
 	input: meson.project_name() + '.desktop.in',
 	output: meson.project_name() + '.desktop',
 	install: true,
