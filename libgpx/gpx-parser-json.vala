@@ -61,7 +61,7 @@ namespace Gpx
                 while ((line = dstream.read_line (null)) != null)
                 {
                     
-                    stdout.printf("%s\n", line);
+                    debug("%s", line);
                     var parser = new Json.Parser ();
                     parser.load_from_data ((string) line, -1);
 

@@ -98,7 +98,7 @@ namespace Gpx
                     var abs_diff = Math.fabs(b.data.speed-a.data.speed)+Math.fabs(c.data.speed-b.data.speed);
                     var diff = Math.fabs((b.data.speed-a.data.speed)+(c.data.speed-b.data.speed));
                     if(  diff < 0.2*abs_diff &&  abs_diff > 3*davg) {
-                        stdout.printf("----- %f %f filter points\n", diff, abs_diff);
+                        debug("----- %f %f filter points", diff, abs_diff);
                         points.remove_link(b); 
                     }
                     else
