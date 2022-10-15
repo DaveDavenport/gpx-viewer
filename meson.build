@@ -7,6 +7,13 @@ project(
 gnome = import('gnome')
 i18n = import('i18n')
 
+if get_option('plain_debug')
+  if get_option('buildtype') != 'plain'
+    error('set buildtype=plain to use option plain_debug')
+  endif
+  add_global_arguments('-g', language:'c')
+endif
+
 add_global_arguments('-DGETTEXT_PACKAGE="@0@"'.format (meson.project_name()), language:'c')
 
 vapi_dir = join_paths(meson.current_source_dir(), 'vapi')

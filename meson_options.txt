@@ -1,0 +1,1 @@
+option('plain_debug', type: 'boolean', value: false, description: 'Debug build without #line directives to vala')
