@@ -231,7 +231,7 @@ namespace Gpx
                         break;
                     default:
                         uint32 val = parse_field(field, fs);
-                        stdout.printf("%d %u\n", field.def_num,val);
+                        debug("%d %u", field.def_num,val);
                         break;                        
                 }
             }
@@ -299,7 +299,7 @@ namespace Gpx
                         // Cycles
                         uint32 val = parse_field(field, fs);
                         if ( val != 0xFF ) {
-                            stdout.printf("Cycles: %u\n", val);
+                            debug("Cycles: %u", val);
                         }
                         break;
                     default:
@@ -356,7 +356,7 @@ namespace Gpx
                     parse_data_record_lap(fs, def);
                     break;
                 default:
-                    stdout.printf("Unknown record: %d\n", def.type);
+                    debug("Unknown record: %d", def.type);
                     foreach ( var field in def->fields ) {
                         fs.skip(field.size);
                         data_length-=field.size;

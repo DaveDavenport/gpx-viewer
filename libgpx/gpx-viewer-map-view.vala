@@ -51,7 +51,7 @@ namespace Gpx
 						marker.set_draw_background(false);
 					}
 				}
-				else stdout.printf("Info is null: %s\n", icon);
+				else debug("Info is null: %s", icon);
 				if(marker == null) {
 					marker = new Champlain.Label();
 				}
@@ -145,7 +145,7 @@ namespace Gpx
 			public MapView ()
 			{
 				view = this.get_view();
-				stdout.printf("MapView init\n");
+				debug("MapView init");
 				/* Setup waypoint color */
 				this.waypoint_color.red = 0xf3;
 				this.waypoint_color.green = 0x94;
