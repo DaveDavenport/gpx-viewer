@@ -8,7 +8,7 @@
 
   <description>
     <p>
-      The program is meant as a simple gpx viewer. It has no intention to become a full blown manager, editor or analyzer.
+      A simple gpx viewer with some editing capabilities.
     </p>
   </description>
 
@@ -18,6 +18,28 @@
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.5" type="development" date="2022-10-16" urgency="medium">
+      <description>
+        <p>GPX-Viewer 0.5.0.</p>
+        <ul>
+          <li>Menu item to clear recent files</li>
+          <li>Only allow to save gpx files to avoid override with different format</li>
+          <li>Save data to disk</li>
+          <li>Show time in point popup</li>
+          <li>Use Ctrl+ primary button from map selection</li>
+          <li>Add elevation in distance calculation</li>
+          <li>Add total distance graph</li>
+          <li>connect switchs to show waypoints and graph points</li>
+          <li>Remove points</li>
+          <li>Add shortcuts for zoom in/out</li>
+          <li>Fix selection outside graph</li>
+          <li>Move selected point using keyboard</li>
+          <li>Allow select parts of track without start selection</li>
+          <li>Any surround of point allow to select it (half distance from prev/next points)</li>
+          <li>Detect active route in negative offsets</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4" type="development" date="2021-09-09" urgency="medium">
       <description>
         <p>GPX-Viewer 0.4.0.</p>

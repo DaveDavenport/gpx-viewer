@@ -1,3 +1,21 @@
+# 0.5.0
+
+-  Menu item to clear recent files
+-  Only allow to save gpx files to avoid override with different format
+-  Save data to disk
+-  Show time in point popup
+-  Use Ctrl+ primary button from map selection
+-  Add elevation in distance calculation
+-  Add total distance graph
+-  connect switchs to show waypoints and graph points
+-  Remove points
+-  Add shortcuts for zoom in/out
+-  Fix selection outside graph
+-  Move selected point using keyboard
+-  Allow select parts of track without start selection
+-  Any surround of point allow to select it (half distance from prev/next points)
+-  Detect active route in negative offsets
+
 # 0.4.0
 
 - Add metadata info

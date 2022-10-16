@@ -7,6 +7,6 @@ Dependencies:
 * libxml2
 * libgdl 3.0
 
-The program is ment as a simple gpx viewer. It has no intention to become a full blown manager, editor or analyzer.
+A simple gpx viewer with some editing capabilities.
 
 Patches with more features are welcome as long as they are maintained.
