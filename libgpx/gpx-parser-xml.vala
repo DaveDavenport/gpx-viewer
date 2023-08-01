@@ -68,9 +68,12 @@ namespace Gpx
                                 var ext = exts->children;
                                 for(; ext != null; ext = ext->next)
                                 {
-                                    if(ext->name == "hr") {
+                                    if (ext->name == "hr") {
                                         var val= ext->get_content();
                                         p.tpe.heartrate = int.parse(val);
+                                    } else if (ext->name == "cad") {
+                                        var val= ext->get_content();
+                                        p.cadence = int.parse(val);
                                     }
                                 }
                             }
