@@ -26,6 +26,8 @@ namespace Gpx
         /* Used for paring */
         private GLib.FileInputStream stream = null;
 
+	private DateTime last_datetime = null;
+
         private Gpx.Point parse_point(Xml.Node *point)
         {
             var lat = point->get_prop("lat");
@@ -58,6 +60,7 @@ namespace Gpx
                     else if (pointNode->name == "time")
                     {
                         p.time = pointNode->get_content();
+                        last_datetime = p.get_datetime();
                     }
                     else if (pointNode->name == "extensions")
                     {
@@ -82,9 +85,14 @@ namespace Gpx
                     pointNode = pointNode->next;
                 }
 
-                if(p.time != null) {
-                    return p;
+                if(p.time == null) {
+                    if (last_datetime == null)
+                        last_datetime = new DateTime.now_utc ();
+                    else
+                        last_datetime = last_datetime.add_seconds(10);
+                    p.time = last_datetime.format("%FT%TZ");
                 }
+                return p;
             }
             return null;
         }
